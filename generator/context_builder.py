@@ -168,7 +168,7 @@ def build_context(inventory: APIInventory) -> dict:
         + len(ctx["stat_tools"])
         + len(ctx["cmd_tools"])
         + sum(
-            len(t["methods"]) + 1  # list + CRUD per method
+            len(t["methods"])  # GET=list, POST=create, PUT=update, DELETE=delete
             for t in ctx["v2_tools"]
         )
         + len(ctx["global_tools"])

@@ -181,6 +181,12 @@ def generate() -> None:
     global_code = global_template.render(**ctx)
     (TESTS_DIR / "test_global.py").write_text(global_code)
 
+    # --- Render server validation tests ---
+    print("Rendering server validation tests...")
+    server_test_template = env.get_template("test_server.py.j2")
+    server_test_code = server_test_template.render(**ctx)
+    (TESTS_DIR / "test_server.py").write_text(server_test_code)
+
     # --- Write tests __init__.py ---
     (TESTS_DIR / "__init__.py").write_text("")
 

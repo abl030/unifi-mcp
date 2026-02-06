@@ -385,7 +385,11 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
 @mcp.tool()
 async def unifi_{{ tool.tool_name }}(
 {% for pname, ptype in tool.params.items() %}
+{% if pname == "site" %}
+    target_site: {{ ptype }},
+{% else %}
     {{ pname }}: {{ ptype }},
+{% endif %}
 {% endfor %}
 {% if tool.is_mutation %}
     confirm: bool = False,
@@ -396,18 +400,26 @@ async def unifi_{{ tool.tool_name }}(
 
 {% for pname, ptype in tool.params.items() %}
     Args:
+{% if pname == "site" %}
+        target_site: Target site for the command ({{ ptype }}).
+{% else %}
         {{ pname }}: {{ pname }} parameter ({{ ptype }}).
+{% endif %}
 {% endfor %}
 {% if tool.is_mutation %}
         confirm: Must be True to execute. Returns preview if False.
 {% endif %}
-        site: Site name (default: from env).
+        site: Site name override (default: from env).
     """
 {% if tool.is_mutation %}
     if not confirm:
         preview = {"action": "{{ tool.tool_name }}", "cmd": "{{ tool.command }}"}
 {% for pname, ptype in tool.params.items() %}
+{% if pname == "site" %}
+        preview["site"] = target_site
+{% else %}
         preview["{{ pname }}"] = {{ pname }}
+{% endif %}
 {% endfor %}
         return _format_response(
             preview,
@@ -416,8 +428,8 @@ async def unifi_{{ tool.tool_name }}(
 {% endif %}
     payload: dict[str, Any] = {"cmd": "{{ tool.command }}"}
 {% for pname, ptype in tool.params.items() %}
-{% if ptype == "list" %}
-    payload["{{ pname }}"] = {{ pname }}
+{% if pname == "site" %}
+    payload["site"] = target_site
 {% else %}
     payload["{{ pname }}"] = {{ pname }}
 {% endif %}
