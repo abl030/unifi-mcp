@@ -6,37 +6,87 @@ This entire project — the generator, the server, the test suite, and this READ
 
 ## Install This MCP Server
 
-### Prerequisites
+### Option 1: Nix Flake (recommended)
 
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) package manager
-- A UniFi Network Controller (standalone or UniFi OS)
+This repo is a Nix flake. Add it as an input to your NixOS config or any flake, and you get a self-contained `unifi-mcp` binary with all dependencies bundled. Updates are a single `nix flake update`.
 
-### Step 1: Clone and generate
+**Add to your flake inputs:**
+
+```nix
+# flake.nix
+{
+  inputs = {
+    unifi-mcp.url = "github:abl030/unifi-mcp";
+  };
+}
+```
+
+**Use the package:**
+
+```nix
+# The binary is at: inputs.unifi-mcp.packages.${system}.default
+# It provides: unifi-mcp (runs fastmcp with the server)
+
+# Example: add to systemPackages
+environment.systemPackages = [ inputs.unifi-mcp.packages.${pkgs.system}.default ];
+
+# Example: use in an MCP server config
+{
+  command = "${inputs.unifi-mcp.packages.${pkgs.system}.default}/bin/unifi-mcp";
+  env = {
+    UNIFI_HOST = "192.168.1.1";
+    UNIFI_USERNAME = "admin";
+    UNIFI_PASSWORD = "your-password";
+  };
+}
+```
+
+**Quick test without installing:**
 
 ```bash
-git clone https://github.com/YOUR_USER/unifi-mcp-generator.git
-cd unifi-mcp-generator
+UNIFI_HOST=192.168.1.1 UNIFI_PASSWORD=secret nix run github:abl030/unifi-mcp
+```
+
+**Build locally:**
+
+```bash
+nix build github:abl030/unifi-mcp
+./result/bin/unifi-mcp  # starts the MCP server on stdio
+```
+
+### Option 2: uv (non-Nix)
+
+```bash
+git clone https://github.com/abl030/unifi-mcp.git
+cd unifi-mcp
 uv sync
 uv run python generate.py
 ```
 
 This produces `generated/server.py` — the MCP server with 137 tools.
 
-### Step 2: Configure your MCP client
-
-Add this to your MCP client configuration:
+### Configure Your MCP Client
 
 **Claude Code** (`claude mcp add`):
 
 ```bash
+# Nix — uses the flake binary directly
 claude mcp add unifi -- \
   env UNIFI_HOST=YOUR_CONTROLLER_IP \
   UNIFI_PORT=8443 \
   UNIFI_USERNAME=admin \
   UNIFI_PASSWORD=YOUR_PASSWORD \
   UNIFI_SITE=default \
-  uv run --directory /path/to/unifi-mcp-generator fastmcp run generated/server.py
+  unifi-mcp
+
+# Non-Nix — uses uv to run
+claude mcp add unifi -- \
+  env UNIFI_HOST=YOUR_CONTROLLER_IP \
+  UNIFI_PORT=8443 \
+  UNIFI_USERNAME=admin \
+  UNIFI_PASSWORD=YOUR_PASSWORD \
+  UNIFI_SITE=default \
+  uv run --directory /path/to/unifi-mcp fastmcp run generated/server.py
 ```
 
 **Claude Desktop** (`claude_desktop_config.json`):
@@ -45,12 +95,7 @@ claude mcp add unifi -- \
 {
   "mcpServers": {
     "unifi": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--directory", "/path/to/unifi-mcp-generator",
-        "fastmcp", "run", "generated/server.py"
-      ],
+      "command": "unifi-mcp",
       "env": {
         "UNIFI_HOST": "YOUR_CONTROLLER_IP",
         "UNIFI_PORT": "8443",
@@ -61,12 +106,6 @@ claude mcp add unifi -- \
     }
   }
 }
-```
-
-**Any MCP client** — the server command is:
-
-```bash
-uv run fastmcp run generated/server.py
 ```
 
 ### Environment Variables
@@ -265,6 +304,9 @@ This project is designed for AI-to-AI use: an AI agent generates the server, and
 
 ## Dependencies
 
+**Nix users:** `nix run github:abl030/unifi-mcp` — everything is bundled, no other deps needed.
+
+**Non-Nix users:**
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) for package management
 - fastmcp, httpx, jinja2 (installed automatically by `uv sync`)
