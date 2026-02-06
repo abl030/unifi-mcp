@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "rc": "ok"
+  },
+  "data": [
+    {
+      "hostname": "anonymized",
+      "name": "UniFi",
+      "_id": "5bc85bd1b48d450485f51070",
+      "key": "super_identity"
+    },
+    {
+      "device_auth": "8b53f3bd-10b0-4f02-835c-60a6ca8d7faa",
+      "device_id": "B4FBE42F9731000000000367D72D00000000038BB05F000000005B815101:1442025287",
+      "ubic_uuid": "9c7bb9ed-bdec-4792-bdb5-d89698fbe4cf",
+      "x_certificate_arn": "arn:aws:iot:us-west-2:297616773877:cert/e5d7da33d4d96e9941f81343fcdebc2cde7df066a4a7eabc5a992b96566bfa20",
+      "_id": "5bc85bd0b48d450485f5106f",
+      "x_private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEArUGMn9IPyDuv3ef+CybPFgc0GF5RuLrAPKlYEnOm5AoVd3Di\nCv3lvTRRSCNSbwo8d0B+6avBiKCCzzlwhsJ+NkYZvylkekdTCgzvO0vWrusYO8qx\nFC4FhVpFIiw16k9p+sSFkyujh3XhpuKlptjg46Zcn+WNhJnUtuw4JEBA7TbQmrCZ\n3oOzL1nu0FVRmAvlrGX8lRw95gk7ZL/WHMLKLsYfs8VzdheHff9KV60Cy/OjB6uS\ngSSn3zBaoxYQ1Ha9S5EmUwt02/SiL5Yq2Sm+hm6/kdn3hwnLQ77bDol3NbhJ6hKV\nNTpO/zGj2XGcXewwvT84fjV9AyW6W8vC+ewkxwIDAQABAoIBABHx7CLRmxjeNcUC\nNmnpRyG89URg4I4FqcuerqSanfqYoMiSRJdm3NjQBms2XV9q7ABeCcciJxWDqojU\nJjePBYuRjzEhlGql4I/17wFxRXcwmn327Ihui9vYEbkMYzk1qIB0wnEP4AwzxX+H\nkijJ5eEuZgGZwSKu3D1mEhqPHSp0iz8B1PjCHe5I6+dIIoCxeEeVQfLjvNdiYwF4\nqOLzpxcFAKnU5yOxohtxxGBxl4kqQzVIzUszAQRWyvM637bgI+If8ocKnwbwyXXX\n6nKKyvRhZTnEIT0ijYzuwkfaFkBvpkVnkoB6/9s9oyOJgGGco7E/6f+Q1BOyu8Wf\nBQBTCqECgYEA4vEBTzjOusdDjvIFpSbMnGjv6tFkzCrSfhRYeviunmqczE8QaSrJ\nqFjdGNc/IvMzkDFpX8d7Xc8toBeVbgKwU2CTykcMLXSfC7SQEQj8+Tv9ufljMjDo\nwsalAU1zz7BtPeoevVvdzhuhyFgK85IwQNan7usooD/8+VCgFLxJFTsCgYEAw3DF\nnmy34tG6kow+teo7x6PMmiGiovFmUcKc+KXLFJWx3GnG9IxxtQQZ5zKqN4o894yk\nKAO4NzsC6AbVJ4FgB8bxHaGZ+kIUje76n/sfIydHee+bUK2h6ZU53IWiUn6Vd4Tv\nxgvXSUo8zDmR9SlgUbvp++dsEKLr1DBTjuNGBeUCgYEAipzDvPyooEKnS/8dXZNG\nNF6P86/zzhR1vtZ0eJ++IDpkDRJZprKguzeTy+Fkydcb7n2PrBWuj0zExFzDQ49W\n3YZGnq0ojfcGUeL2f8EqqpxuzBG7+eMPuDAWhqYlD3zmLIP8RJKA9qu/9Bt6jO0E\nlgXGStLNXJvYyvro2+FpDhMCgYEAsZq1u3ZI1RKKXcqc4mvtz0qHEDootbJxrTMR\nutPPbPFsJETrzCgk3L7RW0yrarVxGfTw6HwY1/gEeB5dbf0f63Fag/brGoUacLEP\niHqInUWAqsqXdgWT8dTuM/wsupLV+TsROgRgq/WOsnhOr1/ea+g8hfKUPboQXU9d\nX6ghZhECgYAB/npmoJ5K4OVagmi53S5Nv7TsQYPEyOCVs89xxQURcCXoahRM5mwt\nDwgZgMPtZT7Kjzk0VYQV3DHYTvaEe1YQUpDRigRMtXhiCLnWZjSPvLaTzbCTkKGI\n77fgXIU38mldo+MCDrux7hq1HNPwtAfjBhmwvAYntAGVnN0UbM46gQ==\n-----END RSA PRIVATE KEY-----\n",
+      "x_certificate_pem": "-----BEGIN CERTIFICATE-----\nMIIDWjCCAkKgAwIBAgIVAKGoZGHv2qRqPSyjKXZliRM4hwCnMA0GCSqGSIb3DQEB\nCwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t\nIEluYy4gTD1TZWF0dGxlIFNUPVdhc2hpbmd0b24gQz1VUzAeFw0yMzA1MTMwMzEx\nMzhaFw00OTEyMzEyMzU5NTlaMB4xHDAaBgNVBAMME0FXUyBJb1QgQ2VydGlmaWNh\ndGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCtQYyf0g/IO6/d5/4L\nJs8WBzQYXlG4usA8qVgSc6bkChV3cOIK/eW9NFFII1JvCjx3QH7pq8GIoILPOXCG\nwn42Rhm/KWR6R1MKDO87S9au6xg7yrEULgWFWkUiLDXqT2n6xIWTK6OHdeGm4qWm\n2ODjplyf5Y2EmdS27DgkQEDtNtCasJneg7MvWe7QVVGYC+WsZfyVHD3mCTtkv9Yc\nwsouxh+zxXN2F4d9/0pXrQLL86MHq5KBJKffMFqjFhDUdr1LkSZTC3Tb9KIvlirZ\nKb6Gbr+R2feHCctDvtsOiXc1uEnqEpU1Ok7/MaPZcZxd7DC9Pzh+NX0DJbpby8L5\n7CTHAgMBAAGjYDBeMB8GA1UdIwQYMBaAFNgFP9ZA35VicaKah43DG6Xf6krOMB0G\nA1UdDgQWBBQpUD2XFfv1KPC4rSPCayA2vKDdtjAMBgNVHRMBAf8EAjAAMA4GA1Ud\nDwEB/wQEAwIHgDANBgkqhkiG9w0BAQsFAAOCAQEAQd5DFZlj3t10Vb6c1schLL0P\nLcFSR/IcFwLgkMJnCvcGz1yumti758Bf/CZUJAygBnXx00zOaGqTqXNQuchxUiyp\nnrBK0tCdwvwH+scMiJn6xY3BI7xPszE1pSSalMDJTYd/iJ84KzrzNNDKeDwxNoGd\nzN1kvhAby9hiWKFPnUhVCfale6chveiozOGoL/yIjQpmDdRe0eNUPxlqrwr20ppi\nZi71V1z6IoBdTJpTuS7bv7ETqQfjpcI4MSkzQc1PsguhKPW8y2JvO0Kq1W/cCQjf\nv3fWQ4i9fsTN14xltBhqRARuBrvCulBx9oMnZ+FhSY1gBE0+G5QLDqWnOruLXA==\n-----END CERTIFICATE-----\n",
+      "key": "super_cloudaccess",
+      "enabled": true
+    },
+    {
+      "provider": "cloud",
+      "_id": "5e26d1d3b48d45253f4d52c9",
+      "key": "super_mail"
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+{
+  "controller_version": "10.0.162",
+  "controller_type": "standalone",
+  "base_url": "https://{host}:{port}",
+  "auth": {
+    "login": {
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "username": "str",
+        "password": "str"
+      }
+    },
+    "logout": {
+      "method": "POST",
+      "path": "/api/logout"
+    }
+  },
+  "global_endpoints": {
+    "status": {
+      "method": "GET",
+      "path": "/status",
+      "auth": false
+    },
+    "self": {
+      "method": "GET",
+      "path": "/api/self"
+    },
+    "sites": {
+      "method": "GET",
+      "path": "/api/self/sites"
+    },
+    "stat_sites": {
+      "method": "GET",
+      "path": "/api/stat/sites"
+    },
+    "stat_admin": {
+      "method": "GET",
+      "path": "/api/stat/admin"
+    }
+  },
+  "rest_endpoints": {
+    "user": {
+      "path": "rest/user",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 147
+    },
+    "usergroup": {
+      "path": "rest/usergroup",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 2
+    },
+    "wlanconf": {
+      "path": "rest/wlanconf",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 3
+    },
+    "wlangroup": {
+      "path": "rest/wlangroup",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 2
+    },
+    "networkconf": {
+      "path": "rest/networkconf",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 3
+    },
+    "portconf": {
+      "path": "rest/portconf",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 2
+    },
+    "portforward": {
+      "path": "rest/portforward",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "setting": {
+      "path": "rest/setting",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "live_status": 200,
+      "sample_count": 38
+    },
+    "dynamicdns": {
+      "path": "rest/dynamicdns",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "routing": {
+      "path": "rest/routing",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "firewallgroup": {
+      "path": "rest/firewallgroup",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "firewallrule": {
+      "path": "rest/firewallrule",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "tag": {
+      "path": "rest/tag",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200,
+      "sample_count": 0
+    },
+    "alarm": {
+      "path": "rest/alarm",
+      "methods": [
+        "GET"
+      ],
+      "live_status": 200,
+      "note": "oldest first"
+    },
+    "event": {
+      "path": "rest/event",
+      "methods": [
+        "GET"
+      ],
+      "live_status": 200,
+      "note": "oldest first"
+    },
+    "radiusprofile": {
+      "path": "rest/radiusprofile",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
+    },
+    "account": {
+      "path": "rest/account",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
+    }
+  },
+  "stat_endpoints": {
+    "device": {
+      "path": "stat/device",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 5,
+      "note": "also POST with macs filter"
+    },
+    "sta": {
+      "path": "stat/sta",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 22
+    },
+    "health": {
+      "path": "stat/health",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 5
+    },
+    "event": {
+      "path": "stat/event",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 469
+    },
+    "alarm": {
+      "path": "stat/alarm",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 14
+    },
+    "rogueap": {
+      "path": "stat/rogueap",
+      "method": "GET",
+      "live_status": 200,
+      "sample_count": 48
+    },
+    "sitedpi": {
+      "path": "stat/sitedpi",
+      "method": "GET",
+      "live_status": 200
+    },
+    "stadpi": {
+      "path": "stat/stadpi",
+      "method": "GET",
+      "live_status": 200
+    },
+    "dynamicdns": {
+      "path": "stat/dynamicdns",
+      "method": "GET",
+      "live_status": 200
+    },
+    "portforward": {
+      "path": "stat/portforward",
+      "method": "GET",
+      "live_status": 200
+    },
+    "sysinfo": {
+      "path": "stat/sysinfo",
+      "method": "GET",
+      "live_status": 200
+    },
+    "ccode": {
+      "path": "stat/ccode",
+      "method": "GET"
+    },
+    "current_channel": {
+      "path": "stat/current-channel",
+      "method": "GET"
+    },
+    "device_basic": {
+      "path": "stat/device-basic",
+      "method": "GET"
+    },
+    "routing": {
+      "path": "stat/routing",
+      "method": "GET"
+    },
+    "authorization": {
+      "path": "stat/authorization",
+      "method": "POST"
+    },
+    "session": {
+      "path": "stat/session",
+      "method": "GET"
+    },
+    "report": {
+      "path": "stat/report/{interval}.{type}",
+      "method": "POST",
+      "note": "intervals: 5minutes, hourly, daily"
+    }
+  },
+  "cmd_endpoints": {
+    "stamgr": {
+      "path": "cmd/stamgr",
+      "commands": [
+        "block-sta",
+        "unblock-sta",
+        "kick-sta",
+        "forget-sta",
+        "unauthorize-guest",
+        "authorize-guest"
+      ]
+    },
+    "devmgr": {
+      "path": "cmd/devmgr",
+      "live_status": 200,
+      "commands": [
+        "adopt",
+        "restart",
+        "force-provision",
+        "power-cycle",
+        "speedtest",
+        "speedtest-status",
+        "set-locate",
+        "unset-locate",
+        "upgrade",
+        "upgrade-external",
+        "migrate",
+        "cancel-migrate",
+        "spectrum-scan"
+      ]
+    },
+    "evtmgr": {
+      "path": "cmd/evtmgr",
+      "commands": [
+        "archive-all-alarms"
+      ]
+    },
+    "sitemgr": {
+      "path": "cmd/sitemgr",
+      "commands": [
+        "add-site",
+        "delete-site",
+        "update-site",
+        "get-admins",
+        "move-device",
+        "delete-device"
+      ]
+    },
+    "backup": {
+      "path": "cmd/backup",
+      "commands": [
+        "list-backups",
+        "delete-backup"
+      ]
+    },
+    "system": {
+      "path": "cmd/system",
+      "commands": [
+        "backup"
+      ]
+    },
+    "stat": {
+      "path": "cmd/stat",
+      "commands": [
+        "clear-dpi"
+      ]
+    }
+  },
+  "v2_endpoints": {
+    "firewall_policies": {
+      "path": "v2/api/site/{site}/firewall-policies",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "live_status": 200
+    },
+    "traffic_rules": {
+      "path": "v2/api/site/{site}/trafficrules",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
+    }
+  }
+}

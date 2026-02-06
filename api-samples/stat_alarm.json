@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "rc": "ok",
+    "count": 14
+  },
+  "data": [
+    {
+      "msg": "AP[fc:ec:da:10:b5:81] was disconnected",
+      "ap_model": "U7PG2",
+      "ap_displayName": "Hallway",
+      "subsystem": "wlan",
+      "ap": "fc:ec:da:10:b5:81",
+      "archived": false,
+      "ap_name": "Hallway",
+      "time": 1767330596302,
+      "datetime": "2026-01-02T05:09:56Z",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "69575324ad50847446c0ea4f",
+      "is_negative": true,
+      "key": "EVT_AP_Lost_Contact"
+    },
+    {
+      "msg": "AP[fc:ec:da:10:b2:41] detected radar on channel 100 (5500 MHz)",
+      "ap_model": "U7PG2",
+      "freq": 5500,
+      "ap_displayName": "Living Room",
+      "subsystem": "wlan",
+      "radar_channel": "100",
+      "ap": "fc:ec:da:10:b2:41",
+      "archived": false,
+      "ap_name": "Living Room",
+      "time": 1766382195000,
+      "datetime": "2025-12-22T05:43:15Z",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "6948da73c0b892331dc6795f",
+      "is_negative": false,
+      "key": "EVT_AP_RadarDetected"
+    },
+    {
+      "msg": "AP[fc:ec:da:10:b5:4a] was disconnected",
+      "ap_model": "U7PG2",
+      "ap_displayName": "Master Bedroom",
+      "subsystem": "wlan",
+      "ap": "fc:ec:da:10:b5:4a",
+      "archived": false,
+      "ap_name": "Master Bedroom",
+      "time": 1765530283571,
+      "datetime": "2025-12-12T09:04:43Z",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "693bdaabd28a957992200af8",
+      "is_negative": true,
+      "key": "EVT_AP_Lost_Contact"
+    }
+  ]
+}

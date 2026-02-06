@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "rc": "ok"
+  },
+  "data": [
+    {
+      "last_ip": "192.168.1.100",
+      "last_uplink_name": "Hallway",
+      "oui": "Example",
+      "first_seen": 1657358187,
+      "last_seen": 1770353626,
+      "is_guest": false,
+      "disconnect_timestamp": 1770353646,
+      "last_radio": "ng",
+      "is_wired": false,
+      "usergroup_id": "",
+      "last_uplink_mac": "fc:ec:da:10:b5:81",
+      "last_connection_network_name": "Default",
+      "mac": "aa:bb:cc:dd:ee:00",
+      "last_connection_network_id": "5bc85cf3b48d450485f5123d",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "62c9476bb48d4504d14dba6a",
+      "wlanconf_id": "647d28563d2ad9000991601a"
+    },
+    {
+      "last_uplink_name": "MastSwitch",
+      "oui": "Example",
+      "first_seen": 1683948012,
+      "last_seen": 1769885371,
+      "is_guest": false,
+      "disconnect_timestamp": 1769885730,
+      "is_wired": true,
+      "usergroup_id": "",
+      "last_uplink_mac": "fc:ec:da:d5:e0:bb",
+      "last_connection_network_name": "Default",
+      "last_uplink_remote_port": 6,
+      "mac": "aa:bb:cc:dd:ee:01",
+      "last_connection_network_id": "5bc85cf3b48d450485f5123d",
+      "last_1x_identity": "",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "645f01ec7abca600a30a0f48",
+      "last_ip": "192.168.1.101"
+    },
+    {
+      "last_ip": "192.168.1.102",
+      "last_uplink_name": "Living Room",
+      "oui": "Example",
+      "first_seen": 1683948015,
+      "last_seen": 1770320716,
+      "is_guest": false,
+      "disconnect_timestamp": 1770320724,
+      "last_radio": "ng",
+      "is_wired": false,
+      "usergroup_id": "",
+      "last_uplink_mac": "fc:ec:da:10:b2:41",
+      "last_connection_network_name": "Default",
+      "mac": "aa:bb:cc:dd:ee:02",
+      "last_connection_network_id": "5bc85cf3b48d450485f5123d",
+      "hostname": "host_2",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "645f01ef7abca600a30a0f49",
+      "wlanconf_id": "5bc85cf3b48d450485f5124d"
+    }
+  ]
+}

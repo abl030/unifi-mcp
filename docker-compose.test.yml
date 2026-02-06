@@ -1,0 +1,22 @@
+services:
+  unifi-controller:
+    image: jacobalberty/unifi:latest
+    container_name: unifi-test-controller
+    ports:
+      - "8443:8443"
+      - "8080:8080"
+    environment:
+      - TZ=UTC
+      - UNIFI_STDOUT=true
+    volumes:
+      - unifi-data:/unifi
+    healthcheck:
+      test: ["CMD", "curl", "-fsk", "https://localhost:8443/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  unifi-data:

@@ -1,0 +1,1 @@
+{"meta":{"rc":"ok"},"data":[{"name":"Default","site_id":"5bc85cf1b48d450485f51087","_id":"5bc85cf3b48d450485f5123a","attr_no_delete":true,"qos_rate_max_up":-1,"attr_hidden_id":"Default","qos_rate_max_down":-1},{"name":"Guest","site_id":"5bc85cf1b48d450485f51087","_id":"5f5ad02bb48d450a687b8cd7","qos_rate_max_up":-1,"qos_rate_max_down":10000}]}

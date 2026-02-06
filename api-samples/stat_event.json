@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "rc": "ok",
+    "count": 469
+  },
+  "data": [
+    {
+      "msg": "User[14:ac:60:46:9f:a3] roams from \"channel 11(ng)\" to \"channel 100(na)\" at AP[fc:ec:da:10:b2:41]",
+      "channel_from": "11",
+      "ap_model": "U7PG2",
+      "ap_displayName": "Living Room",
+      "subsystem": "wlan",
+      "ap": "fc:ec:da:10:b2:41",
+      "ap_name": "Living Room",
+      "time": 1769308648769,
+      "datetime": "2026-01-25T02:37:28Z",
+      "radio_from": "ng",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "697581e8276d7f035a00803e",
+      "user": "14:ac:60:46:9f:a3",
+      "radio_to": "na",
+      "channel_to": "100",
+      "is_negative": false,
+      "key": "EVT_WU_RoamRadio"
+    },
+    {
+      "msg": "User[ea:05:9d:e5:8d:7b] roams from \"channel 149(na)\" to \"channel 1(ng)\" at AP[fc:ec:da:10:b5:81]",
+      "channel_from": "149",
+      "ap_model": "U7PG2",
+      "ap_displayName": "Hallway",
+      "subsystem": "wlan",
+      "ap": "fc:ec:da:10:b5:81",
+      "ap_name": "Hallway",
+      "time": 1769237595312,
+      "datetime": "2026-01-24T06:53:15Z",
+      "radio_from": "na",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "69746c6a276d7f035a0062db",
+      "user": "ea:05:9d:e5:8d:7b",
+      "radio_to": "ng",
+      "channel_to": "1",
+      "is_negative": false,
+      "key": "EVT_WU_RoamRadio"
+    },
+    {
+      "msg": "User[ea:05:9d:e5:8d:7b] roams from \"channel 6(ng)\" to \"channel 48(na)\" at AP[fc:ec:da:10:b5:4a]",
+      "channel_from": "6",
+      "ap_model": "U7PG2",
+      "ap_displayName": "Master Bedroom",
+      "subsystem": "wlan",
+      "ap": "fc:ec:da:10:b5:4a",
+      "ap_name": "Master Bedroom",
+      "time": 1769236292552,
+      "datetime": "2026-01-24T06:31:32Z",
+      "radio_from": "ng",
+      "site_id": "5bc85cf1b48d450485f51087",
+      "_id": "6974675c276d7f035a006238",
+      "user": "ea:05:9d:e5:8d:7b",
+      "radio_to": "na",
+      "channel_to": "48",
+      "is_negative": false,
+      "key": "EVT_WU_RoamRadio"
+    }
+  ]
+}
