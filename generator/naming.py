@@ -152,6 +152,24 @@ V2_RESOURCE_NAMES: dict[str, tuple[str, str]] = {
     "traffic_rules": ("traffic_rule", "traffic_rules"),
 }
 
+# Stat endpoints that need method/body overrides for tests
+# session requires POST with params — GET returns 400 InvalidArgs
+STAT_OVERRIDES: dict[str, dict] = {
+    "session": {"method": "POST", "body": {"mac": "00:00:00:00:00:00"}},
+}
+
+# Commands that are safe but need a real device (return error without one)
+# These are still tested — we assert the correct error response to prove the endpoint works
+DEVICE_DEPENDENT_COMMANDS: set[tuple[str, str]] = {
+    ("devmgr", "set-locate"),
+    ("devmgr", "unset-locate"),
+}
+
+# REST resources that need hardware to create successfully
+# routing: needs gateway device, returns 500 without one
+# wlanconf: needs AP group (requires adopted APs), returns 400 ApGroupMissing
+HARDWARE_DEPENDENT_REST: set[str] = {"routing", "wlanconf"}
+
 # Minimal payloads to create REST resources in tests
 MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
     "networkconf": {
@@ -188,8 +206,23 @@ MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
         "action": "drop",
         "ruleset": "WAN_IN",
         "protocol": "all",
+        "rule_index": 4000,
+        "protocol_match_excepted": False,
         "src_firewallgroup_ids": [],
+        "src_mac_address": "",
+        "src_address": "",
+        "src_networkconf_id": "",
+        "src_networkconf_type": "NETv4",
         "dst_firewallgroup_ids": [],
+        "dst_address": "",
+        "dst_networkconf_id": "",
+        "dst_networkconf_type": "NETv4",
+        "state_new": True,
+        "state_established": True,
+        "state_related": True,
+        "state_invalid": False,
+        "logging": False,
+        "ipsec": "",
         "enabled": True,
     },
     "firewallgroup": {

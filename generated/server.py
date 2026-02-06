@@ -1755,7 +1755,7 @@ async def unifi_list_sessions(site: str = "") -> str:
     """List sessions statistics.
     """
     client = await _get_client()
-    data = await client.request("GET", "stat/session", site=site or None)
+    data = await client.request("POST", "stat/session", json_data={}, site=site or None)
     return _format_response(data, f"Found {len(data)} sessions records")
 
 

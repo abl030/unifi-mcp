@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from generator.context_builder import build_context
 from generator.loader import load_inventory
-from generator.naming import MINIMAL_CREATE_PAYLOADS, READ_ONLY_REST
+from generator.naming import HARDWARE_DEPENDENT_REST, MINIMAL_CREATE_PAYLOADS, READ_ONLY_REST
 
 ROOT = Path(__file__).parent
 INVENTORY_PATH = ROOT / "endpoint-inventory.json"
@@ -146,6 +146,7 @@ def generate() -> None:
             tool["resource"], tool.get("create_payload", {})
         )
         tool_ctx["needs_network_id"] = _needs_network_id(tool["resource"])
+        tool_ctx["is_hardware_dependent"] = tool["resource"] in HARDWARE_DEPENDENT_REST
         update_field, update_value = _get_update_field(tool["resource"])
         tool_ctx["update_field"] = update_field
         tool_ctx["update_value"] = update_value

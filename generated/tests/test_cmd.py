@@ -43,30 +43,40 @@ class TestCmdLocatedevice:
     """Test the 'set-locate' command via devmgr."""
 
     def test_locate_device(self, authenticated_client):
-        """Execute set-locate and verify response."""
+        """Execute set-locate — validates endpoint handles missing device correctly."""
         payload = {"cmd": "set-locate"}
         payload["mac"] = "00:00:00:00:00:00"  # dummy MAC
-        try:
-            result = authenticated_client.api_post("cmd/devmgr", payload)
-            assert result is not None
-        except (RuntimeError, httpx.HTTPStatusError) as e:
-            # Commands may fail without real devices — that's expected
-            pytest.skip(f"Command not available in test environment: {e}")
+        # Send request directly to inspect the response status
+        resp = authenticated_client.client.post(
+            f"/api/s/{authenticated_client.site}/cmd/devmgr",
+            json=payload,
+            headers=authenticated_client._headers(),
+        )
+        # 200 = command accepted, 400 = unknown device (expected without hardware)
+        assert resp.status_code in (200, 400), f"Unexpected status {resp.status_code}"
+        if resp.status_code == 400:
+            body = resp.json()
+            assert body.get("meta", {}).get("rc") == "error"
 
 
 class TestCmdUnlocatedevice:
     """Test the 'unset-locate' command via devmgr."""
 
     def test_unlocate_device(self, authenticated_client):
-        """Execute unset-locate and verify response."""
+        """Execute unset-locate — validates endpoint handles missing device correctly."""
         payload = {"cmd": "unset-locate"}
         payload["mac"] = "00:00:00:00:00:00"  # dummy MAC
-        try:
-            result = authenticated_client.api_post("cmd/devmgr", payload)
-            assert result is not None
-        except (RuntimeError, httpx.HTTPStatusError) as e:
-            # Commands may fail without real devices — that's expected
-            pytest.skip(f"Command not available in test environment: {e}")
+        # Send request directly to inspect the response status
+        resp = authenticated_client.client.post(
+            f"/api/s/{authenticated_client.site}/cmd/devmgr",
+            json=payload,
+            headers=authenticated_client._headers(),
+        )
+        # 200 = command accepted, 400 = unknown device (expected without hardware)
+        assert resp.status_code in (200, 400), f"Unexpected status {resp.status_code}"
+        if resp.status_code == 400:
+            body = resp.json()
+            assert body.get("meta", {}).get("rc") == "error"
 
 
 class TestCmdArchiveallalarms:

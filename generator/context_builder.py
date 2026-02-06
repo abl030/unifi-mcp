@@ -7,12 +7,15 @@ from generator.naming import (
     COMMAND_PARAMS,
     COMMAND_TOOL_NAMES,
     CRUD_REST,
+    DEVICE_DEPENDENT_COMMANDS,
+    HARDWARE_DEPENDENT_REST,
     MINIMAL_CREATE_PAYLOADS,
     MUTATION_COMMANDS,
     READ_ONLY_REST,
     RESOURCE_NAMES,
     SAFE_TEST_COMMANDS,
     STAT_NAMES,
+    STAT_OVERRIDES,
     V2_RESOURCE_NAMES,
 )
 from generator.schema_inference import FieldInfo, infer_schema
@@ -65,6 +68,8 @@ def build_context(inventory: APIInventory) -> dict:
         is_readonly = name in READ_ONLY_REST
         is_setting = name == "setting"
 
+        is_hardware_dependent = name in HARDWARE_DEPENDENT_REST
+
         tool = {
             "resource": name,
             "singular": singular,
@@ -74,6 +79,7 @@ def build_context(inventory: APIInventory) -> dict:
             "is_crud": is_crud,
             "is_readonly": is_readonly,
             "is_setting": is_setting,
+            "is_hardware_dependent": is_hardware_dependent,
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
             "writable_fields": _writable_fields(schema),
@@ -86,11 +92,17 @@ def build_context(inventory: APIInventory) -> dict:
         display_name = STAT_NAMES.get(name, name)
         schema = infer_schema(ep.samples)
 
+        # Apply method/body overrides for endpoints that need them
+        overrides = STAT_OVERRIDES.get(name, {})
+        method = overrides.get("method", ep.method)
+        post_body = overrides.get("body", {})
+
         tool = {
             "resource": name,
             "display_name": display_name,
             "path": ep.path,
-            "method": ep.method,
+            "method": method,
+            "post_body": repr(post_body) if post_body else "{}",
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
             "note": ep.note,
@@ -106,6 +118,7 @@ def build_context(inventory: APIInventory) -> dict:
             params = COMMAND_PARAMS.get(key, {})
             is_mutation = key in MUTATION_COMMANDS
             is_safe_test = key in SAFE_TEST_COMMANDS
+            is_device_dependent = key in DEVICE_DEPENDENT_COMMANDS
 
             tool = {
                 "manager": mgr_name,
@@ -115,6 +128,7 @@ def build_context(inventory: APIInventory) -> dict:
                 "params": params,
                 "is_mutation": is_mutation,
                 "is_safe_test": is_safe_test,
+                "is_device_dependent": is_device_dependent,
             }
             ctx["cmd_tools"].append(tool)
 
