@@ -286,3 +286,16 @@ ID_CROSS_REFS: dict[str, str] = {
     "dst_networkconf_id": "unifi_list_networks",
     "ap_group_ids": "unifi_list_wlan_groups",
 }
+
+# Workflow hints: resource name → note appended to create/update docstrings
+# Helps AI consumers know what to do next after creating a resource
+WORKFLOW_HINTS: dict[str, str] = {
+    "networkconf": "Tip: Use this network's _id as native_networkconf_id in port profiles or networkconf_id in WLANs.",
+    "firewallgroup": "Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.",
+    "portconf": "Tip: Apply this profile to switch ports via unifi_set_port_override with portconf_id.",
+    "firewallrule": "Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.",
+    "portforward": "Tip: Ensure the destination IP (fwd) is a static address or DHCP reservation on your network.",
+    "wlanconf": "Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.",
+    "radiusprofile": "Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.",
+    "usergroup": "Tip: Assign users to this group by setting usergroup_id when creating or updating users.",
+}

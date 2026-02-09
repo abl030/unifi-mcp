@@ -206,7 +206,7 @@ async def unifi_update_setting(
     if not confirm:
         return _format_response(
             {"action": "update_setting", "key": key, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/setting/{id}): Set confirm=True to execute.",
         )
     # Find the setting's _id first
     client = await _get_client()
@@ -282,11 +282,15 @@ async def unifi_create_{{ tool.singular }}(
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+{% if tool.workflow_hint %}
+
+    {{ tool.workflow_hint }}
+{% endif %}
     """
     if not confirm:
         return _format_response(
             {"action": "create_{{ tool.singular }}", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "{{ tool.path }}", json_data=data, site=site or None)
@@ -310,11 +314,15 @@ async def unifi_update_{{ tool.singular }}(
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+{% if tool.workflow_hint %}
+
+    {{ tool.workflow_hint }}
+{% endif %}
     """
     if not confirm:
         return _format_response(
             {"action": "update_{{ tool.singular }}", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT {{ tool.path }}/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "{{ tool.path }}/{id}".format(id=id), json_data=data, site=site or None)
@@ -337,7 +345,7 @@ async def unifi_delete_{{ tool.singular }}(
     if not confirm:
         return _format_response(
             {"action": "delete_{{ tool.singular }}", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE {{ tool.path }}/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "{{ tool.path }}/{id}".format(id=id), site=site or None)
@@ -443,7 +451,7 @@ async def unifi_{{ tool.tool_name }}(
 {% endfor %}
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
         )
 {% endif %}
     payload: dict[str, Any] = {"cmd": "{{ tool.command }}"}
@@ -505,7 +513,7 @@ async def unifi_create_{{ tool.singular }}(
     if not confirm:
         return _format_response(
             {"action": "create_{{ tool.singular }}", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST /{{ tool.path }}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -536,7 +544,7 @@ async def unifi_update_{{ tool.singular }}(
     if not confirm:
         return _format_response(
             {"action": "update_{{ tool.singular }}", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT /{{ tool.path }}/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -562,7 +570,7 @@ async def unifi_delete_{{ tool.singular }}(
     if not confirm:
         return _format_response(
             {"action": "delete_{{ tool.singular }}", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE /{{ tool.path }}/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -649,7 +657,7 @@ async def unifi_set_port_override(
     if not confirm:
         return _format_response(
             {"action": "set_port_override", "device_id": device_id, "override": override},
-            "DRY RUN: Set confirm=True to execute this port override.",
+            "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
         )
 
     client = await _get_client()

@@ -202,7 +202,7 @@ async def unifi_create_account(
     if not confirm:
         return _format_response(
             {"action": "create_account", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/account): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/account", json_data=data, site=site or None)
@@ -227,7 +227,7 @@ async def unifi_update_account(
     if not confirm:
         return _format_response(
             {"action": "update_account", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/account/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/account/{id}".format(id=id), json_data=data, site=site or None)
@@ -250,7 +250,7 @@ async def unifi_delete_account(
     if not confirm:
         return _format_response(
             {"action": "delete_account", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/account/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/account/{id}".format(id=id), site=site or None)
@@ -312,7 +312,7 @@ async def unifi_create_dynamic_dns(
     if not confirm:
         return _format_response(
             {"action": "create_dynamic_dns", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/dynamicdns): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/dynamicdns", json_data=data, site=site or None)
@@ -337,7 +337,7 @@ async def unifi_update_dynamic_dns(
     if not confirm:
         return _format_response(
             {"action": "update_dynamic_dns", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/dynamicdns/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/dynamicdns/{id}".format(id=id), json_data=data, site=site or None)
@@ -360,7 +360,7 @@ async def unifi_delete_dynamic_dns(
     if not confirm:
         return _format_response(
             {"action": "delete_dynamic_dns", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/dynamicdns/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/dynamicdns/{id}".format(id=id), site=site or None)
@@ -418,11 +418,13 @@ async def unifi_create_firewall_group(
         data: Firewall_group configuration.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
     """
     if not confirm:
         return _format_response(
             {"action": "create_firewall_group", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/firewallgroup): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/firewallgroup", json_data=data, site=site or None)
@@ -443,11 +445,13 @@ async def unifi_update_firewall_group(
         data: Fields to update.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
     """
     if not confirm:
         return _format_response(
             {"action": "update_firewall_group", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/firewallgroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/firewallgroup/{id}".format(id=id), json_data=data, site=site or None)
@@ -470,7 +474,7 @@ async def unifi_delete_firewall_group(
     if not confirm:
         return _format_response(
             {"action": "delete_firewall_group", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/firewallgroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/firewallgroup/{id}".format(id=id), site=site or None)
@@ -515,11 +519,13 @@ async def unifi_create_firewall_rule(
         data: Firewall_rule configuration.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
     """
     if not confirm:
         return _format_response(
             {"action": "create_firewall_rule", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/firewallrule): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/firewallrule", json_data=data, site=site or None)
@@ -540,11 +546,13 @@ async def unifi_update_firewall_rule(
         data: Fields to update.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
     """
     if not confirm:
         return _format_response(
             {"action": "update_firewall_rule", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/firewallrule/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/firewallrule/{id}".format(id=id), json_data=data, site=site or None)
@@ -567,7 +575,7 @@ async def unifi_delete_firewall_rule(
     if not confirm:
         return _format_response(
             {"action": "delete_firewall_rule", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/firewallrule/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/firewallrule/{id}".format(id=id), site=site or None)
@@ -615,11 +623,13 @@ async def unifi_create_network(
             Fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"|"vlan-only"), setting_preference (str: "manual"), external_id (str), is_nat (bool), name (str), vlan_enabled (bool)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Use this network's _id as native_networkconf_id in port profiles or networkconf_id in WLANs.
     """
     if not confirm:
         return _format_response(
             {"action": "create_network", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/networkconf): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/networkconf", json_data=data, site=site or None)
@@ -641,11 +651,13 @@ async def unifi_update_network(
             Fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"|"vlan-only"), setting_preference (str: "manual"), external_id (str), is_nat (bool), name (str), vlan_enabled (bool)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Use this network's _id as native_networkconf_id in port profiles or networkconf_id in WLANs.
     """
     if not confirm:
         return _format_response(
             {"action": "update_network", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/networkconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/networkconf/{id}".format(id=id), json_data=data, site=site or None)
@@ -668,7 +680,7 @@ async def unifi_delete_network(
     if not confirm:
         return _format_response(
             {"action": "delete_network", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/networkconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/networkconf/{id}".format(id=id), site=site or None)
@@ -716,11 +728,13 @@ async def unifi_create_port_profile(
             Fields: dot1x_ctrl (str: "force_authorized"), forward (str: "customize"), native_networkconf_id (str, see unifi_list_networks), op_mode (str: "switch"), poe_mode (str: "auto"), setting_preference (str: "auto"), tagged_vlan_mgmt (str: "auto"), voice_networkconf_id (str, see unifi_list_networks), autoneg (bool), dot1x_idle_timeout (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Apply this profile to switch ports via unifi_set_port_override with portconf_id.
     """
     if not confirm:
         return _format_response(
             {"action": "create_port_profile", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/portconf): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/portconf", json_data=data, site=site or None)
@@ -742,11 +756,13 @@ async def unifi_update_port_profile(
             Fields: dot1x_ctrl (str: "force_authorized"), forward (str: "customize"), native_networkconf_id (str, see unifi_list_networks), op_mode (str: "switch"), poe_mode (str: "auto"), setting_preference (str: "auto"), tagged_vlan_mgmt (str: "auto"), voice_networkconf_id (str, see unifi_list_networks), autoneg (bool), dot1x_idle_timeout (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Apply this profile to switch ports via unifi_set_port_override with portconf_id.
     """
     if not confirm:
         return _format_response(
             {"action": "update_port_profile", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/portconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/portconf/{id}".format(id=id), json_data=data, site=site or None)
@@ -769,7 +785,7 @@ async def unifi_delete_port_profile(
     if not confirm:
         return _format_response(
             {"action": "delete_port_profile", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/portconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/portconf/{id}".format(id=id), site=site or None)
@@ -814,11 +830,13 @@ async def unifi_create_port_forward(
         data: Port_forward configuration.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Ensure the destination IP (fwd) is a static address or DHCP reservation on your network.
     """
     if not confirm:
         return _format_response(
             {"action": "create_port_forward", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/portforward): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/portforward", json_data=data, site=site or None)
@@ -839,11 +857,13 @@ async def unifi_update_port_forward(
         data: Fields to update.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Ensure the destination IP (fwd) is a static address or DHCP reservation on your network.
     """
     if not confirm:
         return _format_response(
             {"action": "update_port_forward", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/portforward/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/portforward/{id}".format(id=id), json_data=data, site=site or None)
@@ -866,7 +886,7 @@ async def unifi_delete_port_forward(
     if not confirm:
         return _format_response(
             {"action": "delete_port_forward", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/portforward/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/portforward/{id}".format(id=id), site=site or None)
@@ -911,11 +931,13 @@ async def unifi_create_radius_profile(
         data: Radius_profile configuration.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
     """
     if not confirm:
         return _format_response(
             {"action": "create_radius_profile", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/radiusprofile): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/radiusprofile", json_data=data, site=site or None)
@@ -936,11 +958,13 @@ async def unifi_update_radius_profile(
         data: Fields to update.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
     """
     if not confirm:
         return _format_response(
             {"action": "update_radius_profile", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/radiusprofile/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/radiusprofile/{id}".format(id=id), json_data=data, site=site or None)
@@ -963,7 +987,7 @@ async def unifi_delete_radius_profile(
     if not confirm:
         return _format_response(
             {"action": "delete_radius_profile", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/radiusprofile/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/radiusprofile/{id}".format(id=id), site=site or None)
@@ -1012,7 +1036,7 @@ async def unifi_create_route(
     if not confirm:
         return _format_response(
             {"action": "create_route", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/routing): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/routing", json_data=data, site=site or None)
@@ -1037,7 +1061,7 @@ async def unifi_update_route(
     if not confirm:
         return _format_response(
             {"action": "update_route", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/routing/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/routing/{id}".format(id=id), json_data=data, site=site or None)
@@ -1060,7 +1084,7 @@ async def unifi_delete_route(
     if not confirm:
         return _format_response(
             {"action": "delete_route", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/routing/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/routing/{id}".format(id=id), site=site or None)
@@ -1111,7 +1135,7 @@ async def unifi_update_setting(
     if not confirm:
         return _format_response(
             {"action": "update_setting", "key": key, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/setting/{id}): Set confirm=True to execute.",
         )
     # Find the setting's _id first
     client = await _get_client()
@@ -1169,7 +1193,7 @@ async def unifi_create_tag(
     if not confirm:
         return _format_response(
             {"action": "create_tag", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/tag): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/tag", json_data=data, site=site or None)
@@ -1194,7 +1218,7 @@ async def unifi_update_tag(
     if not confirm:
         return _format_response(
             {"action": "update_tag", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/tag/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/tag/{id}".format(id=id), json_data=data, site=site or None)
@@ -1217,7 +1241,7 @@ async def unifi_delete_tag(
     if not confirm:
         return _format_response(
             {"action": "delete_tag", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/tag/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/tag/{id}".format(id=id), site=site or None)
@@ -1269,7 +1293,7 @@ async def unifi_create_user(
     if not confirm:
         return _format_response(
             {"action": "create_user", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/user): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/user", json_data=data, site=site or None)
@@ -1295,7 +1319,7 @@ async def unifi_update_user(
     if not confirm:
         return _format_response(
             {"action": "update_user", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/user/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/user/{id}".format(id=id), json_data=data, site=site or None)
@@ -1318,7 +1342,7 @@ async def unifi_delete_user(
     if not confirm:
         return _format_response(
             {"action": "delete_user", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/user/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/user/{id}".format(id=id), site=site or None)
@@ -1366,11 +1390,13 @@ async def unifi_create_user_group(
             Fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Assign users to this group by setting usergroup_id when creating or updating users.
     """
     if not confirm:
         return _format_response(
             {"action": "create_user_group", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/usergroup): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/usergroup", json_data=data, site=site or None)
@@ -1392,11 +1418,13 @@ async def unifi_update_user_group(
             Fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Assign users to this group by setting usergroup_id when creating or updating users.
     """
     if not confirm:
         return _format_response(
             {"action": "update_user_group", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/usergroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/usergroup/{id}".format(id=id), json_data=data, site=site or None)
@@ -1419,7 +1447,7 @@ async def unifi_delete_user_group(
     if not confirm:
         return _format_response(
             {"action": "delete_user_group", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/usergroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/usergroup/{id}".format(id=id), site=site or None)
@@ -1467,11 +1495,13 @@ async def unifi_create_wlan(
             Fields: ap_group_ids (list, see unifi_list_wlan_groups), ap_group_mode (str: "all"), dtim_mode (str: "custom"|"default"), mac_filter_policy (str: "allow"), mdns_proxy_mode (str: "off"), minrate_setting_preference (str: "auto"|"manual"), networkconf_id (str, see unifi_list_networks), pmf_mode (str: "disabled"), radius_macacl_format (str: "none_lower"), security (str: "wpapsk")
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
     """
     if not confirm:
         return _format_response(
             {"action": "create_wlan", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/wlanconf): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/wlanconf", json_data=data, site=site or None)
@@ -1493,11 +1523,13 @@ async def unifi_update_wlan(
             Fields: ap_group_ids (list, see unifi_list_wlan_groups), ap_group_mode (str: "all"), dtim_mode (str: "custom"|"default"), mac_filter_policy (str: "allow"), mdns_proxy_mode (str: "off"), minrate_setting_preference (str: "auto"|"manual"), networkconf_id (str, see unifi_list_networks), pmf_mode (str: "disabled"), radius_macacl_format (str: "none_lower"), security (str: "wpapsk")
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
     """
     if not confirm:
         return _format_response(
             {"action": "update_wlan", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/wlanconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/wlanconf/{id}".format(id=id), json_data=data, site=site or None)
@@ -1520,7 +1552,7 @@ async def unifi_delete_wlan(
     if not confirm:
         return _format_response(
             {"action": "delete_wlan", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/wlanconf/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/wlanconf/{id}".format(id=id), site=site or None)
@@ -1572,7 +1604,7 @@ async def unifi_create_wlan_group(
     if not confirm:
         return _format_response(
             {"action": "create_wlan_group", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST rest/wlangroup): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("POST", "rest/wlangroup", json_data=data, site=site or None)
@@ -1598,7 +1630,7 @@ async def unifi_update_wlan_group(
     if not confirm:
         return _format_response(
             {"action": "update_wlan_group", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT rest/wlangroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("PUT", "rest/wlangroup/{id}".format(id=id), json_data=data, site=site or None)
@@ -1621,7 +1653,7 @@ async def unifi_delete_wlan_group(
     if not confirm:
         return _format_response(
             {"action": "delete_wlan_group", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE rest/wlangroup/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     result = await client.request("DELETE", "rest/wlangroup/{id}".format(id=id), site=site or None)
@@ -1856,7 +1888,7 @@ async def unifi_delete_backup(
         preview["filename"] = filename
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/backup): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "delete-backup"}
     payload["filename"] = filename
@@ -1883,7 +1915,7 @@ async def unifi_adopt_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "adopt"}
     payload["mac"] = mac
@@ -1910,7 +1942,7 @@ async def unifi_restart_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "restart"}
     payload["mac"] = mac
@@ -1937,7 +1969,7 @@ async def unifi_force_provision_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "force-provision"}
     payload["mac"] = mac
@@ -1968,7 +2000,7 @@ async def unifi_power_cycle_port(
         preview["port_idx"] = port_idx
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "power-cycle"}
     payload["mac"] = mac
@@ -1992,7 +2024,7 @@ async def unifi_run_speedtest(
         preview = {"action": "run_speedtest", "cmd": "speedtest"}
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "speedtest"}
     client = await _get_client()
@@ -2032,7 +2064,7 @@ async def unifi_locate_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "set-locate"}
     payload["mac"] = mac
@@ -2059,7 +2091,7 @@ async def unifi_unlocate_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "unset-locate"}
     payload["mac"] = mac
@@ -2086,7 +2118,7 @@ async def unifi_upgrade_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "upgrade"}
     payload["mac"] = mac
@@ -2117,7 +2149,7 @@ async def unifi_upgrade_device_external(
         preview["url"] = url
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "upgrade-external"}
     payload["mac"] = mac
@@ -2149,7 +2181,7 @@ async def unifi_migrate_device(
         preview["inform_url"] = inform_url
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "migrate"}
     payload["mac"] = mac
@@ -2177,7 +2209,7 @@ async def unifi_cancel_migrate_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "cancel-migrate"}
     payload["mac"] = mac
@@ -2204,7 +2236,7 @@ async def unifi_spectrum_scan(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "spectrum-scan"}
     payload["mac"] = mac
@@ -2227,7 +2259,7 @@ async def unifi_archive_all_alarms(
         preview = {"action": "archive_all_alarms", "cmd": "archive-all-alarms"}
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/evtmgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "archive-all-alarms"}
     client = await _get_client()
@@ -2253,7 +2285,7 @@ async def unifi_add_site(
         preview["desc"] = desc
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "add-site"}
     payload["desc"] = desc
@@ -2280,7 +2312,7 @@ async def unifi_delete_site(
         preview["site"] = target_site
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "delete-site"}
     payload["site"] = target_site
@@ -2307,7 +2339,7 @@ async def unifi_update_site(
         preview["desc"] = desc
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "update-site"}
     payload["desc"] = desc
@@ -2352,7 +2384,7 @@ async def unifi_move_device(
         preview["site"] = target_site
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "move-device"}
     payload["mac"] = mac
@@ -2380,7 +2412,7 @@ async def unifi_delete_device(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "delete-device"}
     payload["mac"] = mac
@@ -2407,7 +2439,7 @@ async def unifi_block_client(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "block-sta"}
     payload["mac"] = mac
@@ -2434,7 +2466,7 @@ async def unifi_unblock_client(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "unblock-sta"}
     payload["mac"] = mac
@@ -2461,7 +2493,7 @@ async def unifi_kick_client(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "kick-sta"}
     payload["mac"] = mac
@@ -2488,7 +2520,7 @@ async def unifi_forget_client(
         preview["macs"] = macs
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "forget-sta"}
     payload["macs"] = macs
@@ -2515,7 +2547,7 @@ async def unifi_unauthorize_guest(
         preview["mac"] = mac
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "unauthorize-guest"}
     payload["mac"] = mac
@@ -2546,7 +2578,7 @@ async def unifi_authorize_guest(
         preview["minutes"] = minutes
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "authorize-guest"}
     payload["mac"] = mac
@@ -2570,7 +2602,7 @@ async def unifi_clear_dpi(
         preview = {"action": "clear_dpi", "cmd": "clear-dpi"}
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/stat): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "clear-dpi"}
     client = await _get_client()
@@ -2592,7 +2624,7 @@ async def unifi_create_backup(
         preview = {"action": "create_backup", "cmd": "backup"}
         return _format_response(
             preview,
-            "DRY RUN: Set confirm=True to execute this command.",
+            "DRY RUN (POST cmd/system): Set confirm=True to execute.",
         )
     payload: dict[str, Any] = {"cmd": "backup"}
     client = await _get_client()
@@ -2634,7 +2666,7 @@ async def unifi_create_firewall_policy(
     if not confirm:
         return _format_response(
             {"action": "create_firewall_policy", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST /v2/api/site/{site}/firewall-policies): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2660,7 +2692,7 @@ async def unifi_update_firewall_policy(
     if not confirm:
         return _format_response(
             {"action": "update_firewall_policy", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2684,7 +2716,7 @@ async def unifi_delete_firewall_policy(
     if not confirm:
         return _format_response(
             {"action": "delete_firewall_policy", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2722,7 +2754,7 @@ async def unifi_create_traffic_rule(
     if not confirm:
         return _format_response(
             {"action": "create_traffic_rule", "data": data},
-            "DRY RUN: Set confirm=True to execute this create.",
+            "DRY RUN (POST /v2/api/site/{site}/trafficrules): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2748,7 +2780,7 @@ async def unifi_update_traffic_rule(
     if not confirm:
         return _format_response(
             {"action": "update_traffic_rule", "id": id, "data": data},
-            "DRY RUN: Set confirm=True to execute this update.",
+            "DRY RUN (PUT /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2772,7 +2804,7 @@ async def unifi_delete_traffic_rule(
     if not confirm:
         return _format_response(
             {"action": "delete_traffic_rule", "id": id},
-            "DRY RUN: Set confirm=True to execute this delete.",
+            "DRY RUN (DELETE /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
         )
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -2884,7 +2916,7 @@ async def unifi_set_port_override(
     if not confirm:
         return _format_response(
             {"action": "set_port_override", "device_id": device_id, "override": override},
-            "DRY RUN: Set confirm=True to execute this port override.",
+            "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
         )
 
     client = await _get_client()

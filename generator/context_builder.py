@@ -18,6 +18,7 @@ from generator.naming import (
     STAT_NAMES,
     STAT_OVERRIDES,
     V2_RESOURCE_NAMES,
+    WORKFLOW_HINTS,
 )
 from generator.schema_inference import FieldInfo, infer_schema
 
@@ -111,6 +112,7 @@ def build_context(inventory: APIInventory) -> dict:
             "schema": _schema_to_dict(schema),
             "writable_fields": _writable_fields(schema),
             "create_payload": MINIMAL_CREATE_PAYLOADS.get(name, {}),
+            "workflow_hint": WORKFLOW_HINTS.get(name, ""),
         }
         ctx["rest_tools"].append(tool)
 
