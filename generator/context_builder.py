@@ -9,6 +9,7 @@ from generator.naming import (
     CRUD_REST,
     DEVICE_DEPENDENT_COMMANDS,
     HARDWARE_DEPENDENT_REST,
+    ID_CROSS_REFS,
     MINIMAL_CREATE_PAYLOADS,
     MUTATION_COMMANDS,
     READ_ONLY_REST,
@@ -30,22 +31,48 @@ def _schema_to_dict(schema: dict[str, FieldInfo]) -> list[dict]:
             "read_only": fi.read_only,
             "common": fi.common,
             "annotation": fi.annotation,
+            "enum_values": fi.enum_values,
         }
         for fi in schema.values()
     ]
 
 
+def _field_description(fi: FieldInfo) -> str:
+    """Build a rich description string for a field: name (type: enum|cross-ref)."""
+    parts = [fi.name]
+    type_detail = fi.python_type
+    if fi.enum_values:
+        type_detail += ": " + "|".join(f'"{v}"' for v in fi.enum_values)
+    cross_ref = ID_CROSS_REFS.get(fi.name)
+    if cross_ref:
+        type_detail += f", see {cross_ref}"
+    parts.append(f"({type_detail})")
+    return " ".join(parts)
+
+
+def _field_sort_key(fi: FieldInfo) -> tuple[int, str]:
+    """Sort fields: enum/cross-ref fields first, then common, then alpha."""
+    has_enum = bool(fi.enum_values)
+    has_xref = fi.name in ID_CROSS_REFS
+    # Lower = first: fields with enums or cross-refs are most useful
+    priority = 0 if (has_enum or has_xref) else (1 if fi.common else 2)
+    return (priority, fi.name)
+
+
 def _writable_fields(schema: dict[str, FieldInfo]) -> list[dict]:
-    """Return only writable fields from schema."""
+    """Return only writable fields from schema, prioritized for usefulness."""
+    fields = [fi for fi in schema.values() if not fi.read_only]
+    fields.sort(key=_field_sort_key)
     return [
         {
             "name": fi.name,
             "python_type": fi.python_type,
             "annotation": fi.annotation,
             "common": fi.common,
+            "enum_values": fi.enum_values,
+            "description": _field_description(fi),
         }
-        for fi in schema.values()
-        if not fi.read_only
+        for fi in fields
     ]
 
 

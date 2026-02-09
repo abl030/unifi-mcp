@@ -268,3 +268,21 @@ CRUD_REST: set[str] = set(RESOURCE_NAMES.keys()) - READ_ONLY_REST
 
 # Resources where settings has special handling (keyed by 'key' field)
 SETTINGS_RESOURCE = "setting"
+
+# Cross-reference hints: field name → tool to call to find valid IDs
+# Used in docstrings to help AI consumers chain tool calls correctly
+ID_CROSS_REFS: dict[str, str] = {
+    "native_networkconf_id": "unifi_list_networks",
+    "networkconf_id": "unifi_list_networks",
+    "voice_networkconf_id": "unifi_list_networks",
+    "last_connection_network_id": "unifi_list_networks",
+    "portconf_id": "unifi_list_port_profiles",
+    "wlangroup_id": "unifi_list_wlan_groups",
+    "usergroup_id": "unifi_list_user_groups",
+    "radiusprofile_id": "unifi_list_radius_profiles",
+    "src_firewallgroup_ids": "unifi_list_firewall_groups",
+    "dst_firewallgroup_ids": "unifi_list_firewall_groups",
+    "src_networkconf_id": "unifi_list_networks",
+    "dst_networkconf_id": "unifi_list_networks",
+    "ap_group_ids": "unifi_list_wlan_groups",
+}

@@ -90,9 +90,20 @@ class UniFiClient:
         if self._csrf_token:
             headers["x-csrf-token"] = self._csrf_token
 
-        resp = await self._client.request(
-            method, full_path, json=json_data, headers=headers,
-        )
+        try:
+            resp = await self._client.request(
+                method, full_path, json=json_data, headers=headers,
+            )
+        except httpx.ConnectError:
+            raise RuntimeError(
+                f"Connection failed: cannot reach UniFi controller at "
+                f"{UNIFI_HOST}:{UNIFI_PORT}. Check UNIFI_HOST and UNIFI_PORT."
+            )
+        except httpx.TimeoutException:
+            raise RuntimeError(
+                f"Request timed out: {method} {full_path}. "
+                f"The controller at {UNIFI_HOST}:{UNIFI_PORT} may be overloaded or unreachable."
+            )
 
         # Auto-relogin on 401
         if resp.status_code == 401:
@@ -103,6 +114,12 @@ class UniFiClient:
                 method, full_path, json=json_data, headers=headers,
             )
 
+        if resp.status_code == 403:
+            raise RuntimeError(
+                f"Authentication failed (403 Forbidden): {method} {full_path}. "
+                f"Check UNIFI_USERNAME and UNIFI_PASSWORD."
+            )
+
         resp.raise_for_status()
         data = resp.json()
 
@@ -110,7 +127,7 @@ class UniFiClient:
         if isinstance(data, dict) and "meta" in data:
             if data["meta"].get("rc") != "ok":
                 msg = data["meta"].get("msg", "Unknown error")
-                raise RuntimeError(f"UniFi API error: {msg}")
+                raise RuntimeError(f"UniFi API error on {method} {full_path}: {msg}")
             return data.get("data", [])
 
         return data
@@ -225,9 +242,9 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
 @mcp.tool()
 async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
     """List all {{ tool.plural }}.
-{% if tool.has_samples %}
+{% if tool.writable_fields %}
 
-    Key fields: {{ tool.writable_fields[:5] | map(attribute='name') | join(', ') }}
+    Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
     """
     client = await _get_client()
@@ -261,7 +278,7 @@ async def unifi_create_{{ tool.singular }}(
     Args:
         data: {{ tool.singular | title }} configuration.
 {% if tool.writable_fields %}
-            Writable fields include: {{ tool.writable_fields[:8] | map(attribute='name') | join(', ') }}
+            Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -288,6 +305,9 @@ async def unifi_update_{{ tool.singular }}(
     Args:
         id: The _id of the {{ tool.singular }} to update.
         data: Fields to update.
+{% if tool.writable_fields %}
+            Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -451,9 +471,9 @@ async def unifi_{{ tool.tool_name }}(
 @mcp.tool()
 async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
     """List all {{ tool.plural }} (v2 API).
-{% if tool.has_samples %}
+{% if tool.writable_fields %}
 
-    Key fields: {{ tool.writable_fields[:5] | map(attribute='name') | join(', ') }}
+    Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
     """
     client = await _get_client()
@@ -476,6 +496,9 @@ async def unifi_create_{{ tool.singular }}(
 
     Args:
         data: {{ tool.singular | title }} configuration.
+{% if tool.writable_fields %}
+            Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -504,6 +527,9 @@ async def unifi_update_{{ tool.singular }}(
     Args:
         id: The ID of the {{ tool.singular }} to update.
         data: Fields to update.
+{% if tool.writable_fields %}
+            Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """

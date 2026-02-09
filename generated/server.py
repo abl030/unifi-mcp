@@ -90,9 +90,20 @@ class UniFiClient:
         if self._csrf_token:
             headers["x-csrf-token"] = self._csrf_token
 
-        resp = await self._client.request(
-            method, full_path, json=json_data, headers=headers,
-        )
+        try:
+            resp = await self._client.request(
+                method, full_path, json=json_data, headers=headers,
+            )
+        except httpx.ConnectError:
+            raise RuntimeError(
+                f"Connection failed: cannot reach UniFi controller at "
+                f"{UNIFI_HOST}:{UNIFI_PORT}. Check UNIFI_HOST and UNIFI_PORT."
+            )
+        except httpx.TimeoutException:
+            raise RuntimeError(
+                f"Request timed out: {method} {full_path}. "
+                f"The controller at {UNIFI_HOST}:{UNIFI_PORT} may be overloaded or unreachable."
+            )
 
         # Auto-relogin on 401
         if resp.status_code == 401:
@@ -103,6 +114,12 @@ class UniFiClient:
                 method, full_path, json=json_data, headers=headers,
             )
 
+        if resp.status_code == 403:
+            raise RuntimeError(
+                f"Authentication failed (403 Forbidden): {method} {full_path}. "
+                f"Check UNIFI_USERNAME and UNIFI_PASSWORD."
+            )
+
         resp.raise_for_status()
         data = resp.json()
 
@@ -110,7 +127,7 @@ class UniFiClient:
         if isinstance(data, dict) and "meta" in data:
             if data["meta"].get("rc") != "ok":
                 msg = data["meta"].get("msg", "Unknown error")
-                raise RuntimeError(f"UniFi API error: {msg}")
+                raise RuntimeError(f"UniFi API error on {method} {full_path}: {msg}")
             return data.get("data", [])
 
         return data
@@ -563,7 +580,7 @@ async def unifi_delete_firewall_rule(
 async def unifi_list_networks(site: str = "") -> str:
     """List all networks.
 
-    Key fields: auto_scale_enabled, dhcpd_conflict_checking, dhcpd_enabled, dhcpd_start, dhcpd_stop
+    Key fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"|"vlan-only"), setting_preference (str: "manual"), external_id (str), is_nat (bool)
     """
     client = await _get_client()
     data = await client.request("GET", "rest/networkconf", site=site or None)
@@ -595,7 +612,7 @@ async def unifi_create_network(
 
     Args:
         data: Network configuration.
-            Writable fields include: auto_scale_enabled, dhcpd_conflict_checking, dhcpd_enabled, dhcpd_start, dhcpd_stop, dhcpdv6_dns_auto, dhcpdv6_enabled, dhcpdv6_leasetime
+            Fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"|"vlan-only"), setting_preference (str: "manual"), external_id (str), is_nat (bool), name (str), vlan_enabled (bool)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -621,6 +638,7 @@ async def unifi_update_network(
     Args:
         id: The _id of the network to update.
         data: Fields to update.
+            Fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"|"vlan-only"), setting_preference (str: "manual"), external_id (str), is_nat (bool), name (str), vlan_enabled (bool)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -663,7 +681,7 @@ async def unifi_delete_network(
 async def unifi_list_port_profiles(site: str = "") -> str:
     """List all port_profiles.
 
-    Key fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled
+    Key fields: dot1x_ctrl (str: "force_authorized"), forward (str: "customize"), native_networkconf_id (str, see unifi_list_networks), op_mode (str: "switch"), poe_mode (str: "auto"), setting_preference (str: "auto"), tagged_vlan_mgmt (str: "auto"), voice_networkconf_id (str, see unifi_list_networks)
     """
     client = await _get_client()
     data = await client.request("GET", "rest/portconf", site=site or None)
@@ -695,7 +713,7 @@ async def unifi_create_port_profile(
 
     Args:
         data: Port_profile configuration.
-            Writable fields include: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation
+            Fields: dot1x_ctrl (str: "force_authorized"), forward (str: "customize"), native_networkconf_id (str, see unifi_list_networks), op_mode (str: "switch"), poe_mode (str: "auto"), setting_preference (str: "auto"), tagged_vlan_mgmt (str: "auto"), voice_networkconf_id (str, see unifi_list_networks), autoneg (bool), dot1x_idle_timeout (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -721,6 +739,7 @@ async def unifi_update_port_profile(
     Args:
         id: The _id of the port_profile to update.
         data: Fields to update.
+            Fields: dot1x_ctrl (str: "force_authorized"), forward (str: "customize"), native_networkconf_id (str, see unifi_list_networks), op_mode (str: "switch"), poe_mode (str: "auto"), setting_preference (str: "auto"), tagged_vlan_mgmt (str: "auto"), voice_networkconf_id (str, see unifi_list_networks), autoneg (bool), dot1x_idle_timeout (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1211,7 +1230,7 @@ async def unifi_delete_tag(
 async def unifi_list_users(site: str = "") -> str:
     """List all users.
 
-    Key fields: disconnect_timestamp, first_seen, hostname, is_guest, is_wired
+    Key fields: last_connection_network_id (str, see unifi_list_networks), last_radio (str: "ng"), oui (str: "Example"), usergroup_id (str, see unifi_list_user_groups), disconnect_timestamp (int), first_seen (int), is_guest (bool), is_wired (bool)
     """
     client = await _get_client()
     data = await client.request("GET", "rest/user", site=site or None)
@@ -1243,7 +1262,7 @@ async def unifi_create_user(
 
     Args:
         data: User configuration.
-            Writable fields include: disconnect_timestamp, first_seen, hostname, is_guest, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name
+            Fields: last_connection_network_id (str, see unifi_list_networks), last_radio (str: "ng"), oui (str: "Example"), usergroup_id (str, see unifi_list_user_groups), disconnect_timestamp (int), first_seen (int), is_guest (bool), is_wired (bool), last_connection_network_name (str), last_ip (str)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1269,6 +1288,7 @@ async def unifi_update_user(
     Args:
         id: The _id of the user to update.
         data: Fields to update.
+            Fields: last_connection_network_id (str, see unifi_list_networks), last_radio (str: "ng"), oui (str: "Example"), usergroup_id (str, see unifi_list_user_groups), disconnect_timestamp (int), first_seen (int), is_guest (bool), is_wired (bool), last_connection_network_name (str), last_ip (str)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1311,7 +1331,7 @@ async def unifi_delete_user(
 async def unifi_list_user_groups(site: str = "") -> str:
     """List all user_groups.
 
-    Key fields: name, qos_rate_max_down, qos_rate_max_up
+    Key fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
     """
     client = await _get_client()
     data = await client.request("GET", "rest/usergroup", site=site or None)
@@ -1343,7 +1363,7 @@ async def unifi_create_user_group(
 
     Args:
         data: User_group configuration.
-            Writable fields include: name, qos_rate_max_down, qos_rate_max_up
+            Fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1369,6 +1389,7 @@ async def unifi_update_user_group(
     Args:
         id: The _id of the user_group to update.
         data: Fields to update.
+            Fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1411,7 +1432,7 @@ async def unifi_delete_user_group(
 async def unifi_list_wlans(site: str = "") -> str:
     """List all wlans.
 
-    Key fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list
+    Key fields: ap_group_ids (list, see unifi_list_wlan_groups), ap_group_mode (str: "all"), dtim_mode (str: "custom"|"default"), mac_filter_policy (str: "allow"), mdns_proxy_mode (str: "off"), minrate_setting_preference (str: "auto"|"manual"), networkconf_id (str, see unifi_list_networks), pmf_mode (str: "disabled")
     """
     client = await _get_client()
     data = await client.request("GET", "rest/wlanconf", site=site or None)
@@ -1443,7 +1464,7 @@ async def unifi_create_wlan(
 
     Args:
         data: Wlan configuration.
-            Writable fields include: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode
+            Fields: ap_group_ids (list, see unifi_list_wlan_groups), ap_group_mode (str: "all"), dtim_mode (str: "custom"|"default"), mac_filter_policy (str: "allow"), mdns_proxy_mode (str: "off"), minrate_setting_preference (str: "auto"|"manual"), networkconf_id (str, see unifi_list_networks), pmf_mode (str: "disabled"), radius_macacl_format (str: "none_lower"), security (str: "wpapsk")
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1469,6 +1490,7 @@ async def unifi_update_wlan(
     Args:
         id: The _id of the wlan to update.
         data: Fields to update.
+            Fields: ap_group_ids (list, see unifi_list_wlan_groups), ap_group_mode (str: "all"), dtim_mode (str: "custom"|"default"), mac_filter_policy (str: "allow"), mdns_proxy_mode (str: "off"), minrate_setting_preference (str: "auto"|"manual"), networkconf_id (str, see unifi_list_networks), pmf_mode (str: "disabled"), radius_macacl_format (str: "none_lower"), security (str: "wpapsk")
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1511,7 +1533,7 @@ async def unifi_delete_wlan(
 async def unifi_list_wlan_groups(site: str = "") -> str:
     """List all wlan_groups.
 
-    Key fields: name
+    Key fields: name (str)
     """
     client = await _get_client()
     data = await client.request("GET", "rest/wlangroup", site=site or None)
@@ -1543,7 +1565,7 @@ async def unifi_create_wlan_group(
 
     Args:
         data: Wlan_group configuration.
-            Writable fields include: name
+            Fields: name (str)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1569,6 +1591,7 @@ async def unifi_update_wlan_group(
     Args:
         id: The _id of the wlan_group to update.
         data: Fields to update.
+            Fields: name (str)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
