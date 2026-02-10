@@ -9,15 +9,6 @@ import httpx
 import pytest
 
 
-class TestGlobalLogout:
-    """Tests for the global logout endpoint."""
-
-    def test_logout(self, authenticated_client):
-        """Verify logout endpoint returns valid data."""
-        data = authenticated_client.global_get("/api/logout")
-        assert data is not None
-
-
 class TestGlobalSelf:
     """Tests for the global self endpoint."""
 
@@ -64,22 +55,4 @@ class TestGlobalStatus:
             assert resp.status_code == 200
             data = resp.json()
             assert data is not None
-
-
-class TestGlobalSystempoweroff:
-    """Tests for the global system_poweroff endpoint."""
-
-    def test_system_poweroff(self, authenticated_client):
-        """Verify system_poweroff endpoint returns valid data."""
-        data = authenticated_client.global_get("/api/system/poweroff")
-        assert data is not None
-
-
-class TestGlobalSystemreboot:
-    """Tests for the global system_reboot endpoint."""
-
-    def test_system_reboot(self, authenticated_client):
-        """Verify system_reboot endpoint returns valid data."""
-        data = authenticated_client.global_get("/api/system/reboot")
-        assert data is not None
 

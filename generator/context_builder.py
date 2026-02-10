@@ -17,6 +17,7 @@ from generator.naming import (
     SAFE_TEST_COMMANDS,
     STAT_NAMES,
     STAT_OVERRIDES,
+    UNTESTABLE_GLOBALS,
     V2_RESOURCE_NAMES,
     WORKFLOW_HINTS,
 )
@@ -185,6 +186,7 @@ def build_context(inventory: APIInventory) -> dict:
             "method": ep.method,
             "path": ep.path,
             "auth": ep.auth,
+            "skip_test": name in UNTESTABLE_GLOBALS,
         }
         ctx["global_tools"].append(tool)
 

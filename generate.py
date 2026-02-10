@@ -136,6 +136,9 @@ def generate() -> None:
     (OUTPUT_DIR / "conftest.py").write_text(conftest_code)
 
     # --- Render per-resource REST test files ---
+    # Clean up stale REST test files before regenerating
+    for old_file in TESTS_DIR.glob("test_rest_*.py"):
+        old_file.unlink()
     print("Rendering REST test files...")
     rest_template = env.get_template("test_rest.py.j2")
     rest_test_count = 0

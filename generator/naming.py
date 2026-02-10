@@ -304,6 +304,14 @@ DEVICE_DEPENDENT_COMMANDS: set[tuple[str, str]] = {
 # device/dnsrecord/broadcastgroup/element: needs adopted devices
 HARDWARE_DEPENDENT_REST: set[str] = {
     "routing", "wlanconf", "device", "dnsrecord", "broadcastgroup", "element",
+    "mediafile", "radiusaccount",
+}
+
+# Global endpoints that should be skipped in integration tests
+UNTESTABLE_GLOBALS: set[str] = {
+    "logout",           # Breaks the test session
+    "system_poweroff",  # Would power off the controller
+    "system_reboot",    # Would reboot the controller
 }
 
 # Minimal payloads to create REST resources in tests

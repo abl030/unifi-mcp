@@ -9,6 +9,7 @@ import httpx
 import pytest
 
 {% for tool in global_tools %}
+{% if not tool.skip_test %}
 
 class TestGlobal{{ tool.name | title | replace('_', '') }}:
     """Tests for the global {{ tool.name }} endpoint."""
@@ -28,4 +29,5 @@ class TestGlobal{{ tool.name | title | replace('_', '') }}:
         assert data is not None
 {% endif %}
 
+{% endif %}
 {% endfor %}
