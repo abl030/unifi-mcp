@@ -5,6 +5,7 @@ from __future__ import annotations
 # Resource name → (singular, plural) for tool naming
 # e.g. networkconf → ("network", "networks") → unifi_list_networks, unifi_get_network
 RESOURCE_NAMES: dict[str, tuple[str, str]] = {
+    # --- Core (existing) ---
     "networkconf": ("network", "networks"),
     "wlanconf": ("wlan", "wlans"),
     "wlangroup": ("wlan_group", "wlan_groups"),
@@ -22,10 +23,33 @@ RESOURCE_NAMES: dict[str, tuple[str, str]] = {
     "event": ("event", "events"),
     "radiusprofile": ("radius_profile", "radius_profiles"),
     "account": ("account", "accounts"),
+    # --- Discovered by probe (CRUD) ---
+    "hotspotop": ("hotspot_operator", "hotspot_operators"),
+    "hotspotpackage": ("hotspot_package", "hotspot_packages"),
+    "hotspot2conf": ("hotspot2_config", "hotspot2_configs"),
+    "radiusaccount": ("radius_account", "radius_accounts"),
+    "broadcastgroup": ("broadcast_group", "broadcast_groups"),
+    "mediafile": ("media_file", "media_files"),
+    "scheduletask": ("schedule_task", "schedule_tasks"),
+    "map": ("map", "maps"),
+    "dnsrecord": ("dns_record", "dns_records"),
+    "dhcpoption": ("dhcp_option", "dhcp_options"),
+    "heatmap": ("heatmap", "heatmaps"),
+    "heatmappoint": ("heatmap_point", "heatmap_points"),
+    "spatialrecord": ("spatial_record", "spatial_records"),
+    "dpiapp": ("dpi_app", "dpi_apps"),
+    "dpigroup": ("dpi_group", "dpi_groups"),
+    # --- Discovered by probe (read-only) ---
+    "device": ("device_config", "device_configs"),
+    "channelplan": ("channel_plan", "channel_plans"),
+    "virtualdevice": ("virtual_device", "virtual_devices"),
+    "rogueknown": ("known_rogue_ap", "known_rogue_aps"),
+    "element": ("element", "elements"),
 }
 
 # Stat endpoint name → display name for tools
 STAT_NAMES: dict[str, str] = {
+    # --- Core (existing) ---
     "device": "devices",
     "sta": "clients",
     "health": "health",
@@ -44,6 +68,28 @@ STAT_NAMES: dict[str, str] = {
     "authorization": "authorizations",
     "session": "sessions",
     "report": "report",
+    # --- Discovered by probe ---
+    "guest": "guests",
+    "dashboard": "dashboard",
+    "spectrum_scan": "spectrum_scans",
+    "alluser": "all_users",
+    "voucher": "vouchers",
+    "payment": "payments",
+    "sdn": "sdn_status",
+    "gateway": "gateway_stats",
+    "dpi": "dpi_stats",
+    "remoteuservpn": "remote_user_vpn",
+    "anomalies": "anomalies",
+    "ips_event": "ips_events",
+    "report_archive_speedtest": "speedtest_results",
+    "report_5min_gw": "report_5min_gateway",
+    "report_hourly_gw": "report_hourly_gateway",
+    "report_daily_gw": "report_daily_gateway",
+    "report_monthly_site": "report_monthly_site",
+    "report_monthly_ap": "report_monthly_ap",
+    "report_monthly_user": "report_monthly_user",
+    "report_monthly_gw": "report_monthly_gateway",
+    "report_5min_ap": "report_5min_ap",
 }
 
 # (manager, command) → tool function name (without unifi_ prefix)
@@ -55,6 +101,7 @@ COMMAND_TOOL_NAMES: dict[tuple[str, str], str] = {
     ("stamgr", "forget-sta"): "forget_client",
     ("stamgr", "unauthorize-guest"): "unauthorize_guest",
     ("stamgr", "authorize-guest"): "authorize_guest",
+    ("stamgr", "reconnect-sta"): "reconnect_client",
     # devmgr
     ("devmgr", "adopt"): "adopt_device",
     ("devmgr", "restart"): "restart_device",
@@ -69,8 +116,24 @@ COMMAND_TOOL_NAMES: dict[tuple[str, str], str] = {
     ("devmgr", "migrate"): "migrate_device",
     ("devmgr", "cancel-migrate"): "cancel_migrate_device",
     ("devmgr", "spectrum-scan"): "spectrum_scan",
+    ("devmgr", "rename"): "rename_device",
+    ("devmgr", "led-override"): "led_override_device",
+    ("devmgr", "disable-ap"): "disable_ap",
+    ("devmgr", "rolling-upgrade"): "rolling_upgrade",
+    ("devmgr", "cancel-rolling-upgrade"): "cancel_rolling_upgrade",
+    ("devmgr", "check-firmware-update"): "check_firmware_update",
+    ("devmgr", "upgrade-all-devices"): "upgrade_all_devices",
+    ("devmgr", "advanced-adopt"): "advanced_adopt_device",
+    ("devmgr", "set-rollupgrade"): "set_rollupgrade",
+    ("devmgr", "unset-rollupgrade"): "unset_rollupgrade",
+    ("devmgr", "restart-http-portal"): "restart_http_portal",
+    ("devmgr", "enable"): "enable_device",
+    ("devmgr", "disable"): "disable_device",
+    ("devmgr", "cable-test"): "cable_test",
+    ("devmgr", "set-inform"): "set_inform_device",
     # evtmgr
     ("evtmgr", "archive-all-alarms"): "archive_all_alarms",
+    ("evtmgr", "archive-alarm"): "archive_alarm",
     # sitemgr
     ("sitemgr", "add-site"): "add_site",
     ("sitemgr", "delete-site"): "delete_site",
@@ -78,13 +141,36 @@ COMMAND_TOOL_NAMES: dict[tuple[str, str], str] = {
     ("sitemgr", "get-admins"): "get_admins",
     ("sitemgr", "move-device"): "move_device",
     ("sitemgr", "delete-device"): "delete_device",
+    ("sitemgr", "site-leds"): "set_site_leds",
+    ("sitemgr", "invite-admin"): "invite_admin",
+    ("sitemgr", "assign-existing-admin"): "assign_existing_admin",
+    ("sitemgr", "update-admin"): "update_admin",
+    ("sitemgr", "revoke-admin"): "revoke_admin",
+    ("sitemgr", "delete-admin"): "delete_admin",
+    ("sitemgr", "grant-super-admin"): "grant_super_admin",
+    ("sitemgr", "create-admin"): "create_admin",
+    ("sitemgr", "revoke-super-admin"): "revoke_super_admin",
+    ("sitemgr", "set-site-name"): "set_site_name",
     # backup
     ("backup", "list-backups"): "list_backups",
     ("backup", "delete-backup"): "delete_backup",
+    ("backup", "generate-backup"): "generate_backup",
+    ("backup", "generate-backup-site"): "generate_backup_site",
     # system
     ("system", "backup"): "create_backup",
+    ("system", "reboot-cloudkey"): "reboot_cloudkey",
+    ("system", "element-adoption"): "element_adoption",
+    ("system", "download-backup"): "download_backup",
     # stat
     ("stat", "clear-dpi"): "clear_dpi",
+    # hotspot
+    ("hotspot", "authorize-guest"): "hotspot_authorize_guest",
+    ("hotspot", "create-voucher"): "create_voucher",
+    ("hotspot", "revoke-voucher"): "revoke_voucher",
+    ("hotspot", "extend-guest-validity"): "extend_guest_validity",
+    ("hotspot", "delete-voucher"): "delete_voucher",
+    # alarm
+    ("alarm", "archive"): "alarm_archive",
 }
 
 # Extra parameters required by each command (beyond "cmd")
@@ -97,6 +183,7 @@ COMMAND_PARAMS: dict[tuple[str, str], dict[str, str]] = {
     ("stamgr", "forget-sta"): {"macs": "list"},
     ("stamgr", "unauthorize-guest"): {"mac": "str"},
     ("stamgr", "authorize-guest"): {"mac": "str", "minutes": "int"},
+    ("stamgr", "reconnect-sta"): {"mac": "str"},
     # devmgr
     ("devmgr", "adopt"): {"mac": "str"},
     ("devmgr", "restart"): {"mac": "str"},
@@ -111,8 +198,24 @@ COMMAND_PARAMS: dict[tuple[str, str], dict[str, str]] = {
     ("devmgr", "migrate"): {"mac": "str", "inform_url": "str"},
     ("devmgr", "cancel-migrate"): {"mac": "str"},
     ("devmgr", "spectrum-scan"): {"mac": "str"},
+    ("devmgr", "rename"): {"mac": "str", "name": "str"},
+    ("devmgr", "led-override"): {"mac": "str", "led_override": "str"},
+    ("devmgr", "disable-ap"): {"mac": "str"},
+    ("devmgr", "rolling-upgrade"): {},
+    ("devmgr", "cancel-rolling-upgrade"): {},
+    ("devmgr", "check-firmware-update"): {},
+    ("devmgr", "upgrade-all-devices"): {},
+    ("devmgr", "advanced-adopt"): {"mac": "str", "url": "str", "key": "str"},
+    ("devmgr", "set-rollupgrade"): {"mac": "str"},
+    ("devmgr", "unset-rollupgrade"): {"mac": "str"},
+    ("devmgr", "restart-http-portal"): {},
+    ("devmgr", "enable"): {"mac": "str"},
+    ("devmgr", "disable"): {"mac": "str"},
+    ("devmgr", "cable-test"): {"mac": "str", "port_idx": "int"},
+    ("devmgr", "set-inform"): {"mac": "str", "inform_url": "str"},
     # evtmgr
     ("evtmgr", "archive-all-alarms"): {},
+    ("evtmgr", "archive-alarm"): {"_id": "str"},
     # sitemgr
     ("sitemgr", "add-site"): {"desc": "str"},
     ("sitemgr", "delete-site"): {"site": "str"},
@@ -120,13 +223,36 @@ COMMAND_PARAMS: dict[tuple[str, str], dict[str, str]] = {
     ("sitemgr", "get-admins"): {},
     ("sitemgr", "move-device"): {"mac": "str", "site": "str"},
     ("sitemgr", "delete-device"): {"mac": "str"},
+    ("sitemgr", "site-leds"): {"led_enabled": "bool"},
+    ("sitemgr", "invite-admin"): {"email": "str", "name": "str", "role": "str"},
+    ("sitemgr", "assign-existing-admin"): {"admin": "str", "role": "str"},
+    ("sitemgr", "update-admin"): {"admin": "str", "role": "str"},
+    ("sitemgr", "revoke-admin"): {"admin": "str"},
+    ("sitemgr", "delete-admin"): {"admin": "str"},
+    ("sitemgr", "grant-super-admin"): {"admin": "str"},
+    ("sitemgr", "create-admin"): {"name": "str", "email": "str", "x_password": "str", "role": "str"},
+    ("sitemgr", "revoke-super-admin"): {"admin": "str"},
+    ("sitemgr", "set-site-name"): {"desc": "str"},
     # backup
     ("backup", "list-backups"): {},
     ("backup", "delete-backup"): {"filename": "str"},
+    ("backup", "generate-backup"): {},
+    ("backup", "generate-backup-site"): {},
     # system
     ("system", "backup"): {},
+    ("system", "reboot-cloudkey"): {},
+    ("system", "element-adoption"): {"mac": "str"},
+    ("system", "download-backup"): {"filename": "str"},
     # stat
     ("stat", "clear-dpi"): {},
+    # hotspot
+    ("hotspot", "authorize-guest"): {"mac": "str", "minutes": "int"},
+    ("hotspot", "create-voucher"): {"expire": "int", "n": "int", "quota": "int"},
+    ("hotspot", "revoke-voucher"): {"_id": "str"},
+    ("hotspot", "extend-guest-validity"): {"_id": "str"},
+    ("hotspot", "delete-voucher"): {"_id": "str"},
+    # alarm
+    ("alarm", "archive"): {"_id": "str"},
 }
 
 # Commands that are safe to run in tests (no side effects on real devices)
@@ -134,6 +260,7 @@ SAFE_TEST_COMMANDS: set[tuple[str, str]] = {
     ("devmgr", "set-locate"),
     ("devmgr", "unset-locate"),
     ("devmgr", "speedtest-status"),
+    ("devmgr", "check-firmware-update"),
     ("evtmgr", "archive-all-alarms"),
     ("sitemgr", "get-admins"),
     ("backup", "list-backups"),
@@ -142,6 +269,7 @@ SAFE_TEST_COMMANDS: set[tuple[str, str]] = {
 # Commands that mutate state and need confirm=True
 MUTATION_COMMANDS: set[tuple[str, str]] = set(COMMAND_TOOL_NAMES.keys()) - {
     ("devmgr", "speedtest-status"),
+    ("devmgr", "check-firmware-update"),
     ("sitemgr", "get-admins"),
     ("backup", "list-backups"),
 }
@@ -150,6 +278,11 @@ MUTATION_COMMANDS: set[tuple[str, str]] = set(COMMAND_TOOL_NAMES.keys()) - {
 V2_RESOURCE_NAMES: dict[str, tuple[str, str]] = {
     "firewall_policies": ("firewall_policy", "firewall_policies"),
     "traffic_rules": ("traffic_rule", "traffic_rules"),
+    "clients_active": ("active_client", "active_clients"),
+    "clients_history": ("client_history", "clients_history"),
+    "apgroups": ("ap_group", "ap_groups"),
+    "trafficroutes": ("traffic_route", "traffic_routes"),
+    "firewall_zones": ("firewall_zone", "firewall_zones"),
 }
 
 # Stat endpoints that need method/body overrides for tests
@@ -168,7 +301,10 @@ DEVICE_DEPENDENT_COMMANDS: set[tuple[str, str]] = {
 # REST resources that need hardware to create successfully
 # routing: needs gateway device, returns 500 without one
 # wlanconf: needs AP group (requires adopted APs), returns 400 ApGroupMissing
-HARDWARE_DEPENDENT_REST: set[str] = {"routing", "wlanconf"}
+# device/dnsrecord/broadcastgroup/element: needs adopted devices
+HARDWARE_DEPENDENT_REST: set[str] = {
+    "routing", "wlanconf", "device", "dnsrecord", "broadcastgroup", "element",
+}
 
 # Minimal payloads to create REST resources in tests
 MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
@@ -261,7 +397,10 @@ MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
 }
 
 # REST resources that are read-only (no create/update/delete)
-READ_ONLY_REST: set[str] = {"setting", "alarm", "event"}
+READ_ONLY_REST: set[str] = {
+    "setting", "alarm", "event",
+    "device", "channelplan", "virtualdevice", "rogueknown", "element",
+}
 
 # REST resources that support CRUD (create, update, delete)
 CRUD_REST: set[str] = set(RESOURCE_NAMES.keys()) - READ_ONLY_REST

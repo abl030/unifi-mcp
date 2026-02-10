@@ -1,0 +1,1284 @@
+{
+  "_comment": "Declarative list of all UniFi API endpoints to probe. Source: 'existing' = from endpoint-inventory.json, 'community' = from Art-of-WiFi PHP client, Ubiquiti Community Wiki, nickovs/unificontrol, or other reverse-engineering.",
+
+  "global_endpoints": {
+    "status": {
+      "method": "GET",
+      "path": "/status",
+      "auth": false,
+      "source": "existing"
+    },
+    "self": {
+      "method": "GET",
+      "path": "/api/self",
+      "source": "existing"
+    },
+    "sites": {
+      "method": "GET",
+      "path": "/api/self/sites",
+      "source": "existing"
+    },
+    "stat_sites": {
+      "method": "GET",
+      "path": "/api/stat/sites",
+      "source": "existing"
+    },
+    "stat_admin": {
+      "method": "GET",
+      "path": "/api/stat/admin",
+      "source": "existing"
+    },
+    "self_profile": {
+      "method": "GET",
+      "path": "/api/self/profile",
+      "source": "community"
+    },
+    "system_poweroff": {
+      "method": "GET",
+      "path": "/api/system/poweroff",
+      "source": "community",
+      "note": "only GET to check existence, never POST"
+    },
+    "system_reboot": {
+      "method": "GET",
+      "path": "/api/system/reboot",
+      "source": "community",
+      "note": "only GET to check existence, never POST"
+    },
+    "auth_login": {
+      "method": "GET",
+      "path": "/api/auth/login",
+      "source": "community",
+      "note": "UniFi OS login (UDM/UDR/UCG) — GET to check existence only"
+    },
+    "auth_logout": {
+      "method": "GET",
+      "path": "/api/auth/logout",
+      "source": "community",
+      "note": "UniFi OS logout — GET to check existence only"
+    },
+    "users_self": {
+      "method": "GET",
+      "path": "/api/users/self",
+      "source": "community",
+      "note": "UniFi OS self endpoint (replaces /api/self on UDM)"
+    },
+    "logout": {
+      "method": "GET",
+      "path": "/api/logout",
+      "source": "community",
+      "note": "standard controller logout — GET to check existence"
+    }
+  },
+
+  "rest_endpoints": {
+    "user": {
+      "path": "rest/user",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "usergroup": {
+      "path": "rest/usergroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "wlanconf": {
+      "path": "rest/wlanconf",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "wlangroup": {
+      "path": "rest/wlangroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "networkconf": {
+      "path": "rest/networkconf",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "portconf": {
+      "path": "rest/portconf",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "portforward": {
+      "path": "rest/portforward",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "setting": {
+      "path": "rest/setting",
+      "methods": ["GET", "PUT"],
+      "source": "existing"
+    },
+    "dynamicdns": {
+      "path": "rest/dynamicdns",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "routing": {
+      "path": "rest/routing",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "firewallgroup": {
+      "path": "rest/firewallgroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "firewallrule": {
+      "path": "rest/firewallrule",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "tag": {
+      "path": "rest/tag",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "alarm": {
+      "path": "rest/alarm",
+      "methods": ["GET"],
+      "source": "existing",
+      "note": "oldest first"
+    },
+    "event": {
+      "path": "rest/event",
+      "methods": ["GET"],
+      "source": "existing",
+      "note": "oldest first"
+    },
+    "radiusprofile": {
+      "path": "rest/radiusprofile",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "account": {
+      "path": "rest/account",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "apgroup": {
+      "path": "rest/apgroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "device": {
+      "path": "rest/device",
+      "methods": ["GET", "PUT"],
+      "source": "community",
+      "note": "device config, used for port_overrides"
+    },
+    "dnsrecord": {
+      "path": "rest/dnsrecord",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "hotspotop": {
+      "path": "rest/hotspotop",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "hotspotpackage": {
+      "path": "rest/hotspotpackage",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "hotspot2conf": {
+      "path": "rest/hotspot2conf",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "radiusaccount": {
+      "path": "rest/radiusaccount",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "broadcastgroup": {
+      "path": "rest/broadcastgroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "mediafile": {
+      "path": "rest/mediafile",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "scheduletask": {
+      "path": "rest/scheduletask",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "map": {
+      "path": "rest/map",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community"
+    },
+    "element": {
+      "path": "rest/element",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "dashboard": {
+      "path": "rest/dashboard",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "channelplan": {
+      "path": "rest/channelplan",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "virtualdevice": {
+      "path": "rest/virtualdevice",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "rogueknown": {
+      "path": "rest/rogueknown",
+      "methods": ["GET"],
+      "source": "community",
+      "note": "known/neighboring rogue APs"
+    },
+    "dhcpoption": {
+      "path": "rest/dhcpoption",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "DHCP option management (from py-unifi OpenAPI spec)"
+    },
+    "heatmap": {
+      "path": "rest/heatmap",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "site heatmap data (from py-unifi OpenAPI spec)"
+    },
+    "heatmappoint": {
+      "path": "rest/heatmappoint",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "heatmap data points (from py-unifi OpenAPI spec)"
+    },
+    "spatialrecord": {
+      "path": "rest/spatialrecord",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "spatial/positioning records (from py-unifi OpenAPI spec)"
+    },
+    "dpiapp": {
+      "path": "rest/dpiapp",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "DPI application definitions (py-unifi + aiounifi)"
+    },
+    "dpigroup": {
+      "path": "rest/dpigroup",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "community",
+      "note": "DPI restriction groups (py-unifi + aiounifi)"
+    }
+  },
+
+  "list_endpoints": {
+    "apgroup": {
+      "path": "list/apgroup",
+      "source": "community"
+    },
+    "networkconf": {
+      "path": "list/networkconf",
+      "source": "community"
+    },
+    "wlanconf": {
+      "path": "list/wlanconf",
+      "source": "community"
+    },
+    "wlangroup": {
+      "path": "list/wlangroup",
+      "source": "community"
+    },
+    "user": {
+      "path": "list/user",
+      "source": "community"
+    },
+    "usergroup": {
+      "path": "list/usergroup",
+      "source": "community"
+    },
+    "firewallgroup": {
+      "path": "list/firewallgroup",
+      "source": "community"
+    },
+    "firewallrule": {
+      "path": "list/firewallrule",
+      "source": "community"
+    },
+    "routing": {
+      "path": "list/routing",
+      "source": "community"
+    },
+    "tag": {
+      "path": "list/tag",
+      "source": "community"
+    },
+    "alarm": {
+      "path": "list/alarm",
+      "source": "community"
+    },
+    "backup": {
+      "path": "list/backup",
+      "source": "community"
+    },
+    "admin": {
+      "path": "list/admin",
+      "source": "community"
+    },
+    "firmware": {
+      "path": "list/firmware",
+      "source": "community"
+    },
+    "rogueap": {
+      "path": "list/rogueap",
+      "source": "community"
+    },
+    "dynamicdns": {
+      "path": "list/dynamicdns",
+      "source": "community"
+    },
+    "radiusprofile": {
+      "path": "list/radiusprofile",
+      "source": "community"
+    },
+    "radiusaccount": {
+      "path": "list/radiusaccount",
+      "source": "community"
+    },
+    "portforward": {
+      "path": "list/portforward",
+      "source": "community"
+    },
+    "portconf": {
+      "path": "list/portconf",
+      "source": "community"
+    },
+    "extension": {
+      "path": "list/extension",
+      "source": "community"
+    },
+    "wifichannels": {
+      "path": "list/wifichannels",
+      "source": "community"
+    },
+    "country": {
+      "path": "list/country",
+      "source": "community"
+    },
+    "devices": {
+      "path": "list/devices",
+      "source": "community"
+    },
+    "device": {
+      "path": "list/device",
+      "source": "community"
+    },
+    "settings": {
+      "path": "list/settings",
+      "source": "community"
+    },
+    "setting": {
+      "path": "list/setting",
+      "source": "community"
+    },
+    "dnsrecord": {
+      "path": "list/dnsrecord",
+      "source": "community"
+    },
+    "hotspotop": {
+      "path": "list/hotspotop",
+      "source": "community"
+    },
+    "hotspotpackage": {
+      "path": "list/hotspotpackage",
+      "source": "community"
+    },
+    "hotspot2conf": {
+      "path": "list/hotspot2conf",
+      "source": "community"
+    },
+    "account": {
+      "path": "list/account",
+      "source": "community"
+    },
+    "broadcastgroup": {
+      "path": "list/broadcastgroup",
+      "source": "community"
+    },
+    "scheduletask": {
+      "path": "list/scheduletask",
+      "source": "community"
+    },
+    "map": {
+      "path": "list/map",
+      "source": "community"
+    },
+    "element": {
+      "path": "list/element",
+      "source": "community"
+    },
+    "channelplan": {
+      "path": "list/channelplan",
+      "source": "community"
+    },
+    "dashboard": {
+      "path": "list/dashboard",
+      "source": "community"
+    },
+    "virtualdevice": {
+      "path": "list/virtualdevice",
+      "source": "community"
+    },
+    "mediafile": {
+      "path": "list/mediafile",
+      "source": "community"
+    },
+    "rogueknown": {
+      "path": "list/rogueknown",
+      "source": "community"
+    },
+    "dhcpoption": {
+      "path": "list/dhcpoption",
+      "source": "community"
+    },
+    "heatmap": {
+      "path": "list/heatmap",
+      "source": "community"
+    },
+    "heatmappoint": {
+      "path": "list/heatmappoint",
+      "source": "community"
+    },
+    "spatialrecord": {
+      "path": "list/spatialrecord",
+      "source": "community"
+    },
+    "dpiapp": {
+      "path": "list/dpiapp",
+      "source": "community"
+    },
+    "dpigroup": {
+      "path": "list/dpigroup",
+      "source": "community"
+    }
+  },
+
+  "stat_endpoints": {
+    "device": {
+      "path": "stat/device",
+      "method": "GET",
+      "source": "existing",
+      "note": "also POST with macs filter"
+    },
+    "sta": {
+      "path": "stat/sta",
+      "method": "GET",
+      "source": "existing"
+    },
+    "health": {
+      "path": "stat/health",
+      "method": "GET",
+      "source": "existing"
+    },
+    "event": {
+      "path": "stat/event",
+      "method": "GET",
+      "source": "existing"
+    },
+    "alarm": {
+      "path": "stat/alarm",
+      "method": "GET",
+      "source": "existing"
+    },
+    "rogueap": {
+      "path": "stat/rogueap",
+      "method": "GET",
+      "source": "existing"
+    },
+    "sitedpi": {
+      "path": "stat/sitedpi",
+      "method": "GET",
+      "source": "existing"
+    },
+    "stadpi": {
+      "path": "stat/stadpi",
+      "method": "GET",
+      "source": "existing"
+    },
+    "dynamicdns": {
+      "path": "stat/dynamicdns",
+      "method": "GET",
+      "source": "existing"
+    },
+    "portforward": {
+      "path": "stat/portforward",
+      "method": "GET",
+      "source": "existing"
+    },
+    "sysinfo": {
+      "path": "stat/sysinfo",
+      "method": "GET",
+      "source": "existing"
+    },
+    "ccode": {
+      "path": "stat/ccode",
+      "method": "GET",
+      "source": "existing"
+    },
+    "current_channel": {
+      "path": "stat/current-channel",
+      "method": "GET",
+      "source": "existing"
+    },
+    "device_basic": {
+      "path": "stat/device-basic",
+      "method": "GET",
+      "source": "existing"
+    },
+    "routing": {
+      "path": "stat/routing",
+      "method": "GET",
+      "source": "existing"
+    },
+    "authorization": {
+      "path": "stat/authorization",
+      "method": "POST",
+      "source": "existing"
+    },
+    "session": {
+      "path": "stat/session",
+      "method": "GET",
+      "source": "existing"
+    },
+    "report": {
+      "path": "stat/report/{interval}.{type}",
+      "method": "POST",
+      "source": "existing",
+      "note": "intervals: 5minutes, hourly, daily, monthly; types: site, ap, user, gw"
+    },
+    "guest": {
+      "path": "stat/guest",
+      "method": "GET",
+      "source": "community"
+    },
+    "dashboard": {
+      "path": "stat/dashboard",
+      "method": "GET",
+      "source": "community"
+    },
+    "spectrumscan": {
+      "path": "stat/spectrumscan",
+      "method": "GET",
+      "source": "community"
+    },
+    "spectrum_scan": {
+      "path": "stat/spectrum-scan",
+      "method": "GET",
+      "source": "community"
+    },
+    "syslog": {
+      "path": "stat/syslog",
+      "method": "GET",
+      "source": "community"
+    },
+    "speedtest": {
+      "path": "stat/speedtest",
+      "method": "GET",
+      "source": "community"
+    },
+    "ips_events": {
+      "path": "stat/ips/events",
+      "method": "POST",
+      "source": "community"
+    },
+    "sessions": {
+      "path": "stat/sessions",
+      "method": "GET",
+      "source": "community"
+    },
+    "sta_sessions": {
+      "path": "stat/sta-sessions",
+      "method": "GET",
+      "source": "community"
+    },
+    "auths": {
+      "path": "stat/auths",
+      "method": "GET",
+      "source": "community"
+    },
+    "allusers": {
+      "path": "stat/allusers",
+      "method": "GET",
+      "source": "community"
+    },
+    "alluser": {
+      "path": "stat/alluser",
+      "method": "GET",
+      "source": "community"
+    },
+    "user_sessions": {
+      "path": "stat/user-sessions",
+      "method": "GET",
+      "source": "community"
+    },
+    "status": {
+      "path": "stat/status",
+      "method": "GET",
+      "source": "community"
+    },
+    "voucher": {
+      "path": "stat/voucher",
+      "method": "GET",
+      "source": "community"
+    },
+    "payment": {
+      "path": "stat/payment",
+      "method": "GET",
+      "source": "community"
+    },
+    "sdn": {
+      "path": "stat/sdn",
+      "method": "GET",
+      "source": "community"
+    },
+    "stream": {
+      "path": "stat/stream",
+      "method": "GET",
+      "source": "community"
+    },
+    "gateway": {
+      "path": "stat/gateway",
+      "method": "GET",
+      "source": "community"
+    },
+    "dpi": {
+      "path": "stat/dpi",
+      "method": "GET",
+      "source": "community"
+    },
+    "remoteuservpn": {
+      "path": "stat/remoteuservpn",
+      "method": "GET",
+      "source": "community",
+      "note": "remote user VPN stats"
+    },
+    "anomalies": {
+      "path": "stat/anomalies",
+      "method": "GET",
+      "source": "community",
+      "note": "site anomalies (unpoller). Supports ?scale=hourly&end=<timestamp>"
+    },
+    "ips_event": {
+      "path": "stat/ips/event",
+      "method": "POST",
+      "source": "community",
+      "note": "IDS/IPS events — singular form (unpoller APIEventPathIDS)"
+    },
+    "report_archive_speedtest": {
+      "path": "stat/report/archive.speedtest",
+      "method": "POST",
+      "source": "community",
+      "note": "archived speedtest results with start/end timestamps (Art-of-WiFi)"
+    },
+    "report_5min_gw": {
+      "path": "stat/report/5minutes.gw",
+      "method": "POST",
+      "source": "community",
+      "note": "5-minute gateway stats"
+    },
+    "report_hourly_gw": {
+      "path": "stat/report/hourly.gw",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_daily_gw": {
+      "path": "stat/report/daily.gw",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_monthly_site": {
+      "path": "stat/report/monthly.site",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_monthly_ap": {
+      "path": "stat/report/monthly.ap",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_monthly_user": {
+      "path": "stat/report/monthly.user",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_monthly_gw": {
+      "path": "stat/report/monthly.gw",
+      "method": "POST",
+      "source": "community"
+    },
+    "report_5min_ap": {
+      "path": "stat/report/5minutes.ap",
+      "method": "POST",
+      "source": "community"
+    }
+  },
+
+  "cmd_endpoints": {
+    "stamgr": {
+      "path": "cmd/stamgr",
+      "commands": [
+        "block-sta",
+        "unblock-sta",
+        "kick-sta",
+        "forget-sta",
+        "unauthorize-guest",
+        "authorize-guest",
+        "reconnect-sta"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "devmgr": {
+      "path": "cmd/devmgr",
+      "commands": [
+        "adopt",
+        "restart",
+        "force-provision",
+        "power-cycle",
+        "speedtest",
+        "speedtest-status",
+        "set-locate",
+        "unset-locate",
+        "upgrade",
+        "upgrade-external",
+        "migrate",
+        "cancel-migrate",
+        "spectrum-scan",
+        "rename",
+        "led-override",
+        "disable-ap",
+        "rolling-upgrade",
+        "cancel-rolling-upgrade",
+        "check-firmware-update",
+        "upgrade-all-devices",
+        "advanced-adopt",
+        "set-rollupgrade",
+        "unset-rollupgrade",
+        "restart-http-portal",
+        "enable",
+        "disable",
+        "cable-test",
+        "set-inform"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "evtmgr": {
+      "path": "cmd/evtmgr",
+      "commands": [
+        "archive-all-alarms",
+        "archive-alarm"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "sitemgr": {
+      "path": "cmd/sitemgr",
+      "commands": [
+        "add-site",
+        "delete-site",
+        "update-site",
+        "get-admins",
+        "move-device",
+        "delete-device",
+        "site-leds",
+        "invite-admin",
+        "assign-existing-admin",
+        "update-admin",
+        "revoke-admin",
+        "delete-admin",
+        "grant-super-admin",
+        "create-admin",
+        "revoke-super-admin",
+        "set-site-name"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "backup": {
+      "path": "cmd/backup",
+      "commands": [
+        "list-backups",
+        "delete-backup",
+        "generate-backup",
+        "generate-backup-site"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "system": {
+      "path": "cmd/system",
+      "commands": [
+        "backup",
+        "reboot-cloudkey",
+        "element-adoption",
+        "download-backup"
+      ],
+      "source": "existing",
+      "new_commands_source": "community"
+    },
+    "stat": {
+      "path": "cmd/stat",
+      "commands": [
+        "clear-dpi"
+      ],
+      "source": "existing"
+    },
+    "hotspot": {
+      "path": "cmd/hotspot",
+      "commands": [
+        "authorize-guest",
+        "create-voucher",
+        "revoke-voucher",
+        "extend-guest-validity",
+        "delete-voucher"
+      ],
+      "source": "community"
+    },
+    "alarm": {
+      "path": "cmd/alarm",
+      "commands": [
+        "archive"
+      ],
+      "source": "community"
+    }
+  },
+
+  "v2_endpoints": {
+    "firewall_policies": {
+      "path": "v2/api/site/{site}/firewall-policies",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "traffic_rules": {
+      "path": "v2/api/site/{site}/trafficrules",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "source": "existing"
+    },
+    "clients_active": {
+      "path": "v2/api/site/{site}/clients/active",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "clients_history": {
+      "path": "v2/api/site/{site}/clients/history",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "apgroups": {
+      "path": "v2/api/site/{site}/apgroups",
+      "methods": ["GET"],
+      "source": "community"
+    },
+    "fingerprint_devices": {
+      "path": "v2/api/fingerprint_devices/defaults",
+      "methods": ["GET"],
+      "source": "community",
+      "note": "device fingerprint database"
+    },
+    "trafficroutes": {
+      "path": "v2/api/site/{site}/trafficroutes",
+      "methods": ["GET", "PUT"],
+      "source": "community",
+      "note": "traffic routes / policy-based routing (aiounifi + HA)"
+    },
+    "firewall_zones": {
+      "path": "v2/api/site/{site}/firewall/zone",
+      "methods": ["GET", "PUT"],
+      "source": "community",
+      "note": "firewall zones — zone-based firewall, Network 9+ (aiounifi)"
+    }
+  },
+
+  "upd_endpoints": {
+    "user": {
+      "path": "upd/user",
+      "source": "community",
+      "note": "update client properties (name, note, usergroup_id) — probe with GET only"
+    },
+    "device": {
+      "path": "upd/device",
+      "source": "community",
+      "note": "update device properties (name, note, radio settings) — probe with GET only"
+    }
+  },
+
+  "group_endpoints": {
+    "user": {
+      "path": "group/user",
+      "source": "community",
+      "note": "create new client (different from rest/user)"
+    }
+  },
+
+  "cnt_endpoints": {
+    "alarm": {
+      "path": "cnt/alarm",
+      "source": "community",
+      "note": "count of alarms"
+    },
+    "sta": {
+      "path": "cnt/sta",
+      "source": "community"
+    },
+    "user": {
+      "path": "cnt/user",
+      "source": "community"
+    },
+    "event": {
+      "path": "cnt/event",
+      "source": "community"
+    }
+  },
+
+  "get_endpoints": {
+    "setting": {
+      "path": "get/setting",
+      "source": "community",
+      "note": "returns all settings (29 records on v10.0.162)"
+    },
+    "setting_auto_speedtest": {
+      "path": "get/setting/auto_speedtest",
+      "source": "community",
+      "note": "from py-unifi OpenAPI spec"
+    },
+    "setting_baresip": {
+      "path": "get/setting/baresip",
+      "source": "community",
+      "note": "SIP phone settings"
+    },
+    "setting_broadcast": {
+      "path": "get/setting/broadcast",
+      "source": "community"
+    },
+    "setting_doh": {
+      "path": "get/setting/doh",
+      "source": "community",
+      "note": "DNS-over-HTTPS settings"
+    },
+    "setting_dpi": {
+      "path": "get/setting/dpi",
+      "source": "community"
+    },
+    "setting_element_adopt": {
+      "path": "get/setting/element_adopt",
+      "source": "community"
+    },
+    "setting_ether_lighting": {
+      "path": "get/setting/ether_lighting",
+      "source": "community",
+      "note": "Ethernet port LED settings"
+    },
+    "setting_global_ap": {
+      "path": "get/setting/global_ap",
+      "source": "community"
+    },
+    "setting_global_switch": {
+      "path": "get/setting/global_switch",
+      "source": "community"
+    },
+    "setting_guest_access": {
+      "path": "get/setting/guest_access",
+      "source": "community"
+    },
+    "setting_ips": {
+      "path": "get/setting/ips",
+      "source": "community",
+      "note": "IDS/IPS settings"
+    },
+    "setting_lcm": {
+      "path": "get/setting/lcm",
+      "source": "community",
+      "note": "LED/LCD display settings"
+    },
+    "setting_locale": {
+      "path": "get/setting/locale",
+      "source": "community"
+    },
+    "setting_magic_site_to_site_vpn": {
+      "path": "get/setting/magic_site_to_site_vpn",
+      "source": "community"
+    },
+    "setting_mgmt": {
+      "path": "get/setting/mgmt",
+      "source": "community"
+    },
+    "setting_network_optimization": {
+      "path": "get/setting/network_optimization",
+      "source": "community"
+    },
+    "setting_ntp": {
+      "path": "get/setting/ntp",
+      "source": "community"
+    },
+    "setting_porta": {
+      "path": "get/setting/porta",
+      "source": "community",
+      "note": "captive portal settings"
+    },
+    "setting_radio_ai": {
+      "path": "get/setting/radio_ai",
+      "source": "community",
+      "note": "Radio AI optimization"
+    },
+    "setting_radius": {
+      "path": "get/setting/radius",
+      "source": "community"
+    },
+    "setting_rsyslogd": {
+      "path": "get/setting/rsyslogd",
+      "source": "community",
+      "note": "remote syslog settings"
+    },
+    "setting_snmp": {
+      "path": "get/setting/snmp",
+      "source": "community"
+    },
+    "setting_connectivity": {
+      "path": "get/setting/connectivity",
+      "source": "community"
+    },
+    "setting_country": {
+      "path": "get/setting/country",
+      "source": "community"
+    },
+    "setting_super_cloudaccess": {
+      "path": "get/setting/super_cloudaccess",
+      "source": "community"
+    },
+    "setting_super_events": {
+      "path": "get/setting/super_events",
+      "source": "community"
+    },
+    "setting_super_fwupdate": {
+      "path": "get/setting/super_fwupdate",
+      "source": "community"
+    },
+    "setting_super_identity": {
+      "path": "get/setting/super_identity",
+      "source": "community"
+    },
+    "setting_super_mail": {
+      "path": "get/setting/super_mail",
+      "source": "community"
+    },
+    "setting_super_mgmt": {
+      "path": "get/setting/super_mgmt",
+      "source": "community"
+    },
+    "setting_super_sdn": {
+      "path": "get/setting/super_sdn",
+      "source": "community"
+    },
+    "setting_super_smtp": {
+      "path": "get/setting/super_smtp",
+      "source": "community"
+    },
+    "setting_teleport": {
+      "path": "get/setting/teleport",
+      "source": "community",
+      "note": "Teleport VPN settings"
+    },
+    "setting_usg": {
+      "path": "get/setting/usg",
+      "source": "community",
+      "note": "USG/gateway settings"
+    },
+    "setting_usw": {
+      "path": "get/setting/usw",
+      "source": "community",
+      "note": "USW/switch settings"
+    }
+  },
+
+  "set_endpoints": {
+    "setting_mgmt": {
+      "path": "set/setting/mgmt",
+      "source": "community",
+      "note": "all set/ endpoints are PUT only — probe with GET to check existence"
+    },
+    "setting_country": {
+      "path": "set/setting/country",
+      "source": "community"
+    },
+    "setting_locale": {
+      "path": "set/setting/locale",
+      "source": "community"
+    },
+    "setting_snmp": {
+      "path": "set/setting/snmp",
+      "source": "community"
+    },
+    "setting_guest_access": {
+      "path": "set/setting/guest_access",
+      "source": "community"
+    },
+    "setting_ntp": {
+      "path": "set/setting/ntp",
+      "source": "community"
+    },
+    "setting_connectivity": {
+      "path": "set/setting/connectivity",
+      "source": "community"
+    },
+    "setting_auto_speedtest": {
+      "path": "set/setting/auto_speedtest",
+      "source": "community"
+    },
+    "setting_baresip": {
+      "path": "set/setting/baresip",
+      "source": "community"
+    },
+    "setting_broadcast": {
+      "path": "set/setting/broadcast",
+      "source": "community"
+    },
+    "setting_doh": {
+      "path": "set/setting/doh",
+      "source": "community"
+    },
+    "setting_dpi": {
+      "path": "set/setting/dpi",
+      "source": "community"
+    },
+    "setting_element_adopt": {
+      "path": "set/setting/element_adopt",
+      "source": "community"
+    },
+    "setting_ether_lighting": {
+      "path": "set/setting/ether_lighting",
+      "source": "community"
+    },
+    "setting_global_ap": {
+      "path": "set/setting/global_ap",
+      "source": "community"
+    },
+    "setting_global_switch": {
+      "path": "set/setting/global_switch",
+      "source": "community"
+    },
+    "setting_ips": {
+      "path": "set/setting/ips",
+      "source": "community"
+    },
+    "setting_lcm": {
+      "path": "set/setting/lcm",
+      "source": "community"
+    },
+    "setting_magic_site_to_site_vpn": {
+      "path": "set/setting/magic_site_to_site_vpn",
+      "source": "community"
+    },
+    "setting_network_optimization": {
+      "path": "set/setting/network_optimization",
+      "source": "community"
+    },
+    "setting_porta": {
+      "path": "set/setting/porta",
+      "source": "community"
+    },
+    "setting_radio_ai": {
+      "path": "set/setting/radio_ai",
+      "source": "community"
+    },
+    "setting_radius": {
+      "path": "set/setting/radius",
+      "source": "community"
+    },
+    "setting_rsyslogd": {
+      "path": "set/setting/rsyslogd",
+      "source": "community"
+    },
+    "setting_super_cloudaccess": {
+      "path": "set/setting/super_cloudaccess",
+      "source": "community"
+    },
+    "setting_super_events": {
+      "path": "set/setting/super_events",
+      "source": "community"
+    },
+    "setting_super_fwupdate": {
+      "path": "set/setting/super_fwupdate",
+      "source": "community"
+    },
+    "setting_super_identity": {
+      "path": "set/setting/super_identity",
+      "source": "community"
+    },
+    "setting_super_mail": {
+      "path": "set/setting/super_mail",
+      "source": "community"
+    },
+    "setting_super_mgmt": {
+      "path": "set/setting/super_mgmt",
+      "source": "community"
+    },
+    "setting_super_sdn": {
+      "path": "set/setting/super_sdn",
+      "source": "community"
+    },
+    "setting_super_smtp": {
+      "path": "set/setting/super_smtp",
+      "source": "community"
+    },
+    "setting_teleport": {
+      "path": "set/setting/teleport",
+      "source": "community"
+    },
+    "setting_usg": {
+      "path": "set/setting/usg",
+      "source": "community"
+    },
+    "setting_usw": {
+      "path": "set/setting/usw",
+      "source": "community"
+    }
+  },
+
+  "dl_endpoints": {
+    "firmware_bundles": {
+      "method": "GET",
+      "path": "/dl/firmware/bundles.json",
+      "source": "community",
+      "note": "firmware version/device name mappings"
+    }
+  },
+
+  "guest_endpoints": {
+    "hotspotconfig": {
+      "method": "GET",
+      "path": "/guest/s/{site}/hotspotconfig",
+      "source": "community"
+    },
+    "hotspotpackages": {
+      "method": "GET",
+      "path": "/guest/s/{site}/hotspotpackages",
+      "source": "community"
+    }
+  },
+
+  "websocket_endpoints": {
+    "events": {
+      "path": "/wss/s/{site}/events",
+      "source": "community",
+      "note": "WebSocket — check for 101/400 to confirm existence"
+    }
+  }
+}

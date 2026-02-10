@@ -1,0 +1,715 @@
+{
+  "probed_at": "2026-02-09T23:58:30Z",
+  "controller_version": "10.0.162",
+  "model": "sonnet",
+  "results": [
+    {
+      "category": "global",
+      "name": "self_profile",
+      "path": "/api/self/profile",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The /api/self/profile endpoint does not exist on this controller version. GET, POST, and PUT all return api.err.InvalidObject. The actual user profile is available via GET /api/self, which returns the authenticated user's details successfully."
+    },
+    {
+      "category": "global",
+      "name": "system_poweroff",
+      "path": "/api/system/poweroff",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST /api/system/poweroff (no body required). Shuts down the UniFi controller immediately. DANGEROUS \u2014 should never be called during normal operation."
+    },
+    {
+      "category": "global",
+      "name": "system_reboot",
+      "path": "/api/system/reboot",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST /api/system/reboot (likely with empty body or confirmation parameter). Endpoint exists and is functional but MUST NOT be called as it reboots the controller."
+    },
+    {
+      "category": "global",
+      "name": "auth_login",
+      "path": "/api/auth/login",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "/api/auth/login is a UniFi OS-specific endpoint that does not work on standalone controllers. Standalone controllers use /api/login for authentication. The error responses indicate the endpoint is registered in the routing table but rejects all request formats, consistent with version-specific API differences."
+    },
+    {
+      "category": "global",
+      "name": "auth_logout",
+      "path": "/api/auth/logout",
+      "original_status": 400,
+      "verdict": "UNCERTAIN",
+      "notes": "The /api/auth/logout endpoint exists (returns 400 with structured error, not 404) but requires unknown parameters or may only work in UniFi OS context. The traditional /api/logout endpoint works for standalone controllers. The 400 api.err.InvalidObject error suggests it needs specific data fields we haven't identified."
+    },
+    {
+      "category": "global",
+      "name": "users_self",
+      "path": "/api/users/self",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The path /api/users/self does not exist on standalone controllers (returns api.err.InvalidObject). This appears to be a UniFi OS-specific path. The standalone equivalent is /api/self which already exists as the global/self endpoint in the inventory."
+    },
+    {
+      "category": "global",
+      "name": "logout",
+      "path": "/api/logout",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST to /api/logout with empty JSON body {}. Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": []}. Used to invalidate the current session (client should discard cookies after calling).",
+      "response_status": 200
+    },
+    {
+      "category": "rest",
+      "name": "apgroup",
+      "path": "/api/s/default/rest/apgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "rest/apgroup exists structurally (returns 400/invalid, not 404) but cannot be successfully called with standard REST patterns. Functionality appears to have been superseded by v2/apgroups endpoint which works correctly.",
+      "response_status": 200
+    },
+    {
+      "category": "rest",
+      "name": "dnsrecord",
+      "path": "/api/s/default/rest/dnsrecord",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (returns InvalidObject, not 404) but likely requires a UniFi gateway with DNS service configured. Without a gateway device running DNS resolver, there are no DNS records to manage."
+    },
+    {
+      "category": "rest",
+      "name": "radiusaccount",
+      "path": "/api/s/default/rest/radiusaccount",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "endpoint exists at /api/s/default/rest/radiusaccount and responds with api.err.InvalidObject when RADIUS authentication is not configured. The endpoint requires RADIUS to be enabled and configured via /api/s/default/set/setting/radius before RADIUS accounts can be managed. Standard REST CRUD pattern applies once RADIUS is configured: GET lists accounts, POST creates, PUT updates, DELETE removes."
+    },
+    {
+      "category": "rest",
+      "name": "broadcastgroup",
+      "path": "/api/s/default/rest/broadcastgroup",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint likely exists for controllers with broadcast group capable devices (possibly related to multicast/broadcast features on specific UniFi devices), but returns InvalidObject error on this standalone controller without such devices"
+    },
+    {
+      "category": "rest",
+      "name": "mediafile",
+      "path": "/api/s/default/rest/mediafile",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "endpoint exists at /api/s/default/rest/mediafile and accepts multipart form-data POST requests for uploading hotspot portal media files. GET returns api.err.InvalidObject (not for listing). Proper usage requires multipart file upload with appropriate form field names (likely file or media plus metadata fields), but cannot be fully tested without actual media files and knowledge of required form parameters."
+    },
+    {
+      "category": "rest",
+      "name": "element",
+      "path": "/api/s/default/rest/element",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists but requires actual Element device attempting adoption with proper device identifiers (MAC, adoption credentials, etc.). The element_adopt settings exist at get/setting/element_adopt, but rest/element POST operations need real device data to succeed."
+    },
+    {
+      "category": "list",
+      "name": "apgroup",
+      "path": "/api/s/default/list/apgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/apgroup does not exist. The apgroup resource is only available via the v2 API at /v2/api/site/default/apgroups (which already works and is documented in probe results)."
+    },
+    {
+      "category": "list",
+      "name": "backup",
+      "path": "/api/s/default/list/backup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/backup does not exist. The backup listing functionality is available via POST /api/s/default/cmd/backup with {\"cmd\": \"list-backups\"}, which is already captured as a cmd endpoint (not a list endpoint)."
+    },
+    {
+      "category": "list",
+      "name": "firmware",
+      "path": "/api/s/default/list/firmware",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (responds with api.err.InvalidObject rather than 404) but likely requires adopted devices to return firmware information"
+    },
+    {
+      "category": "list",
+      "name": "rogueap",
+      "path": "/api/s/default/list/rogueap",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/rogueap returns api.err.InvalidObject for all methods. Use stat/rogueap instead (GET works, returns ok with empty data)."
+    },
+    {
+      "category": "list",
+      "name": "radiusaccount",
+      "path": "/api/s/default/list/radiusaccount",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject for both /list/radiusaccount and /rest/radiusaccount, indicating this resource type does not exist on this controller version (v10.0.162). The correct resource name is likely radiusprofile instead, which is confirmed to work in the probe results."
+    },
+    {
+      "category": "list",
+      "name": "broadcastgroup",
+      "path": "/api/s/default/list/broadcastgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The endpoint returns api.err.InvalidObject for both GET and POST requests, and the corresponding REST endpoint also doesn't exist. This resource type is not available on this controller version (v10.0.162)."
+    },
+    {
+      "category": "list",
+      "name": "extension",
+      "path": "/api/s/default/list/extension",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject for all attempted methods (GET 400, POST with various bodies). Likely requires UniFi extensions/plugins to be installed or is version-specific."
+    },
+    {
+      "category": "list",
+      "name": "wifichannels",
+      "path": "/api/s/default/list/wifichannels",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "The endpoint responds (not 404) and accepts POST requests, but returns \"api.err.InvalidObject\" for all parameter combinations. This suggests it requires a valid device MAC address or device-specific context that doesn't exist in this bare controller. The endpoint likely works when querying WiFi channel information for actual adopted access points."
+    },
+    {
+      "category": "list",
+      "name": "country",
+      "path": "/api/s/default/list/country",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns InvalidObject error for all POST variants and 400 for GET, suggesting it doesn't exist or is not implemented in v10.0.162"
+    },
+    {
+      "category": "list",
+      "name": "devices",
+      "path": "/api/s/default/list/devices",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (returns 400 InvalidObject, not 404) but likely requires adopted devices to function properly or requires unknown parameters we cannot determine without documentation"
+    },
+    {
+      "category": "list",
+      "name": "settings",
+      "path": "/api/s/default/list/settings",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/settings (plural) does not exist. The correct endpoint is list/setting (singular), which already works and returns setting records."
+    },
+    {
+      "category": "list",
+      "name": "dnsrecord",
+      "path": "/api/s/default/list/dnsrecord",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint returns api.err.InvalidObject consistently on standalone controller v10.0.162. This feature appears to be specific to UniFi OS devices (Dream Machine, Console) which have integrated DNS server functionality. Standalone controllers don't manage DNS records."
+    },
+    {
+      "category": "list",
+      "name": "mediafile",
+      "path": "/api/s/default/list/mediafile",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/mediafile returns api.err.InvalidObject on both GET and POST. The rest/mediafile endpoint also returns the same error, indicating the mediafile resource type is not recognized by this controller version (v10.0.162 standalone)."
+    },
+    {
+      "category": "list",
+      "name": "element",
+      "path": "/api/s/default/list/element",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject regardless of method (GET/POST) or parameters, suggesting the \"element\" resource type does not exist on this v10.0.162 controller"
+    },
+    {
+      "category": "stat",
+      "name": "session",
+      "path": "/api/s/default/stat/session",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST to /api/s/default/stat/session with body {\"type\":\"all\",\"start\":0,\"end\":9999999999} (date range required). Returns session history data. Empty data array on fresh controllers is expected (no sessions recorded yet)."
+    },
+    {
+      "category": "v2",
+      "name": "fingerprint_devices",
+      "path": "/v2/api/fingerprint_devices/defaults",
+      "original_status": 400,
+      "verdict": "UNCERTAIN",
+      "notes": "The endpoint exists at /v2/api/fingerprint_devices/defaults (returns 400 not 404), but consistently returns HTTP 400 Bad Request on GET. This suggests either: (1) it requires specific query parameters not documented, (2) it requires device fingerprinting to be enabled in the controller, or (3) it's a feature that requires specific hardware/licenses. The fact that it's a \"defaults\" endpoint suggests it may be a configuration endpoint that only works when the fingerprinting feature is active."
+    },
+    {
+      "category": "cnt",
+      "name": "sta",
+      "path": "/api/s/default/cnt/sta",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists and responds but requires an active connected client (station) to query. The api.err.InvalidObject error suggests it needs a valid MAC address or client identifier, but there are no connected clients in this test environment to validate against."
+    },
+    {
+      "category": "rest",
+      "name": "device",
+      "path": "/api/s/default/rest/device",
+      "original_status": 404,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "The rest/device endpoint likely works as GET/PUT /api/s/{site}/rest/device/{device_id} but requires an actual adopted device to test. Without physical UniFi hardware (AP, switch, gateway), we can't probe this endpoint. The endpoint is used for updating device configuration including port_overrides for switch port profiles."
+    },
+    {
+      "category": "rest",
+      "name": "dashboard",
+      "path": "/api/s/default/rest/dashboard",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "/api/s/default/rest/dashboard does not exist. Dashboard data is available at /api/s/default/stat/dashboard instead (GET, returns time-series data with 25 hourly records)."
+    },
+    {
+      "category": "list",
+      "name": "admin",
+      "path": "/api/s/default/list/admin",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "The list/admin and list/admins endpoints return errors (404 or InvalidObject). Admin information is already accessible via the working cmd/sitemgr get-admins command, which is the proper API for admin management in UniFi controllers. List endpoints typically mirror REST resources, but admins don't follow the REST pattern."
+    },
+    {
+      "category": "list",
+      "name": "device",
+      "path": "/api/s/default/list/device",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version. Device data is available via stat/device instead (confirmed working in previous probes)."
+    },
+    {
+      "category": "list",
+      "name": "dashboard",
+      "path": "/api/s/default/list/dashboard",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "list/dashboard does not exist on this controller version (v10.0.162). The corresponding endpoint is stat/dashboard which works via POST with date range body and returns time-series dashboard data."
+    },
+    {
+      "category": "stat",
+      "name": "spectrumscan",
+      "path": "/api/s/default/stat/spectrumscan",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "Use /api/s/{site}/stat/spectrum-scan (with hyphen). Both GET and POST work. Returns spectrum scan results from APs (empty array when no scans available). POST supports optional mac parameter to filter by device.",
+      "response_status": 200
+    },
+    {
+      "category": "stat",
+      "name": "syslog",
+      "path": "/api/s/default/stat/syslog",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "stat/syslog endpoint does not exist on this controller version (v10.0.162). All HTTP methods (GET, POST with empty body, POST with time range, POST with limit) return api.err.NotFound."
+    },
+    {
+      "category": "stat",
+      "name": "speedtest",
+      "path": "/api/s/default/stat/speedtest",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version. The correct endpoint is /api/s/default/stat/report/archive.speedtest which is already discovered."
+    },
+    {
+      "category": "stat",
+      "name": "ips_events",
+      "path": "/api/s/default/stat/ips/events",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist; use stat/ips/event (singular) instead, which is already confirmed working"
+    },
+    {
+      "category": "stat",
+      "name": "sessions",
+      "path": "/api/s/default/stat/sessions",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version. All request methods (GET, POST with various payloads including {\"type\":\"all\",\"start\":0,\"end\":9999999999}) return api.err.NotFound."
+    },
+    {
+      "category": "stat",
+      "name": "sta_sessions",
+      "path": "/api/s/default/stat/sta-sessions",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version (v10.0.162 standalone). The consistent api.err.NotFound error indicates this endpoint is not implemented, likely deprecated or only available in newer/older versions or specific deployment types."
+    },
+    {
+      "category": "stat",
+      "name": "auths",
+      "path": "/api/s/default/stat/auths",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version"
+    },
+    {
+      "category": "stat",
+      "name": "allusers",
+      "path": "/api/s/default/stat/allusers",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "stat/allusers does not exist; the correct endpoint is stat/alluser (singular)",
+      "response_status": 200
+    },
+    {
+      "category": "stat",
+      "name": "user_sessions",
+      "path": "/api/s/default/stat/user-sessions",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version (v10.0.162). The stat/user-sessions endpoint is not available, returning api.err.NotFound for all tested methods (GET, POST with empty body, POST with date range, POST with MAC parameter)."
+    },
+    {
+      "category": "stat",
+      "name": "status",
+      "path": "/api/s/default/stat/status",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "/api/s/default/stat/status does not exist on this controller version (v10.0.162). Both GET and POST return api.err.NotFound. The global /status endpoint is a separate, working endpoint that provides system health status, not site-scoped statistics."
+    },
+    {
+      "category": "stat",
+      "name": "stream",
+      "path": "/api/s/default/stat/stream",
+      "original_status": 404,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint does not exist on this controller version (v10.0.162 standalone). May be UniFi OS-specific or deprecated."
+    },
+    {
+      "category": "stat",
+      "name": "gateway",
+      "path": "/api/s/default/stat/gateway",
+      "original_status": 404,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists but requires an adopted USG/UDM gateway device to return data. Returns api.err.NotFound on controllers without gateway hardware."
+    },
+    {
+      "category": "upd",
+      "name": "user",
+      "path": "/api/s/default/upd/user/{user_id}",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT /api/s/default/upd/user/{user_id} with JSON body containing fields to update (e.g., {\"name\":\"new-name\"}, {\"usergroup_id\":\"...\"}, {\"noted\":true}, etc.). Returns standard {\"meta\":{\"rc\":\"ok\"},\"data\":[{...}]} response with the updated user object.",
+      "response_status": 200
+    },
+    {
+      "category": "upd",
+      "name": "device",
+      "path": "/api/s/default/upd/device/{device_id}",
+      "original_status": 404,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "The endpoint exists and works correctly. Both PUT and POST accept JSON body with device fields (like {\"name\":\"test\"}). Returns api.err.IdInvalid for non-existent device IDs, which confirms the endpoint is functional but requires an adopted device to test fully. Used for updating device configuration (name, LED settings, etc.)."
+    },
+    {
+      "category": "group",
+      "name": "user",
+      "path": "/api/s/default/group/user",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "Batch user group assignment endpoint. POST to /api/s/default/group/user with body {\"objects\":[{\"data\":{\"mac\":\"<client_mac>\",\"usergroup_id\":\"<group_id>\"}}]} to assign multiple users to groups in one request. Requires valid MAC addresses of known clients and valid usergroup_id references. Returns structured per-object errors in data[] array."
+    },
+    {
+      "category": "set",
+      "name": "setting_mgmt",
+      "path": "/api/s/default/set/setting/mgmt",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT-only endpoint at /api/s/default/set/setting/mgmt. Read current value with GET /api/s/default/get/setting/mgmt, then PUT to /api/s/default/set/setting/mgmt with modified fields. Response includes the updated setting object. This is the standard UniFi settings pattern: get/setting/{name} for reads, set/setting/{name} for writes.",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_country",
+      "path": "/api/s/default/set/setting/country",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/country is a PUT-only endpoint for configuring the country/region setting (affects regulatory domain for WiFi). Call with PUT to /api/s/{site}/set/setting/country with body like {\"code\": 840} for USA (numeric country code). Read current value first via GET /api/s/{site}/get/setting/country."
+    },
+    {
+      "category": "set",
+      "name": "setting_locale",
+      "path": "/api/s/default/set/setting/locale",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT /api/s/default/set/setting/locale with JSON body updates locale settings. Read current value first with GET /api/s/default/get/setting/locale, then PUT to update."
+    },
+    {
+      "category": "set",
+      "name": "setting_snmp",
+      "path": "/api/s/default/set/setting/snmp",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/snmp with JSON body containing SNMP configuration. GET the current settings from /api/s/default/get/setting/snmp first, modify desired fields, then PUT to set/setting/snmp. Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": [{\"key\": \"snmp\", \"site_id\": \"...\", \"_id\": \"...\"}]} on success.",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_guest_access",
+      "path": "/api/s/default/set/setting/guest_access",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT /api/s/default/set/setting/guest_access with full setting object from GET /api/s/default/get/setting/guest_access. Controls guest portal authentication (none/hotspot/simple), portal customization (colors, text, logos), redirect behavior, restricted subnets, and session expiration (expire_number \u00d7 expire_unit seconds). Returns updated setting object with \"rc\":\"ok\".",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_ntp",
+      "path": "/api/s/default/set/setting/ntp",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/ntp requires PUT with NTP configuration fields. Read current value via GET /api/s/default/get/setting/ntp, then PUT to /api/s/default/set/setting/ntp with fields: setting_preference (auto/manual), ntp_server_1 through ntp_server_4 (NTP server hostnames)."
+    },
+    {
+      "category": "set",
+      "name": "setting_connectivity",
+      "path": "/api/s/default/set/setting/connectivity",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT-only endpoint for updating connectivity settings (wireless uplink/mesh configuration). Read current value with GET /api/s/default/get/setting/connectivity, then PUT /api/s/default/set/setting/connectivity with the full setting object. Response includes uplink_type, x_mesh_psk, x_mesh_essid, and enabled fields."
+    },
+    {
+      "category": "set",
+      "name": "setting_auto_speedtest",
+      "path": "/api/s/default/set/setting/auto_speedtest",
+      "original_status": 404,
+      "verdict": "UNCERTAIN",
+      "notes": "The endpoint path exists (GET returns 200 with empty data, not 404), but PUT requests return 500 Internal Server Error even with minimal payloads. This suggests either: (1) the auto_speedtest feature is not fully implemented in v10.0.162, (2) it requires specific hardware/licensing, or (3) it needs fields we don't know about. The endpoint is recognized by the controller but not functional for configuration."
+    },
+    {
+      "category": "set",
+      "name": "setting_baresip",
+      "path": "/api/s/default/set/setting/baresip",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/baresip endpoint exists and works via PUT. First read the current value with GET /api/s/default/get/setting/baresip, then update it with PUT /api/s/default/set/setting/baresip with the modified JSON body. The setting appears to be for Baresip (open-source SIP stack) configuration but is empty by default on this controller."
+    },
+    {
+      "category": "set",
+      "name": "setting_broadcast",
+      "path": "/api/s/default/set/setting/broadcast",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/broadcast is a valid PUT-only endpoint for updating broadcast settings. Use GET /api/s/default/get/setting/broadcast to read current values, then PUT /api/s/default/set/setting/broadcast with a JSON body containing the setting fields to update. The setting has key=\"broadcast\", site_id, and _id fields. An empty body {} is valid (no-op)."
+    },
+    {
+      "category": "set",
+      "name": "setting_doh",
+      "path": "/api/s/default/set/setting/doh",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/doh accepts PUT requests with DoH (DNS-over-HTTPS) configuration. Required fields: key (must be \"doh\"), state (\"off\" or presumably \"on\"), server_names (array of DNS providers like [\"cloudflare\", \"google\"]). Read current value via GET /api/s/default/get/setting/doh before updating."
+    },
+    {
+      "category": "set",
+      "name": "setting_dpi",
+      "path": "/api/s/default/set/setting/dpi",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/dpi is a PUT-only endpoint for updating DPI (Deep Packet Inspection) settings. Call pattern: GET /api/s/{site}/get/setting/dpi to retrieve current settings, modify the fields as needed (enabled, fingerprintingEnabled), then PUT the full object to /api/s/{site}/set/setting/dpi. Returns the updated setting object on success."
+    },
+    {
+      "category": "set",
+      "name": "setting_element_adopt",
+      "path": "/api/s/default/set/setting/element_adopt",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT /api/s/default/set/setting/element_adopt with body: {\"x_element_essid\": \"string\", \"x_element_psk\": \"string\", \"enabled\": boolean}. Read current values first with GET /api/s/default/get/setting/element_adopt. This controls Element platform adoption credentials."
+    },
+    {
+      "category": "set",
+      "name": "setting_ether_lighting",
+      "path": "/api/s/default/set/setting/ether_lighting",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/{site}/set/setting/ether_lighting with body containing network_defaults, network_overrides, speed_defaults, and speed_overrides arrays. Controls RGB LED colors for switch ports based on network assignment and link speed. GET the current value from /api/s/{site}/get/setting/ether_lighting first, modify desired fields, then PUT."
+    },
+    {
+      "category": "set",
+      "name": "setting_global_ap",
+      "path": "/api/s/default/set/setting/global_ap",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/global_ap with JSON body containing setting fields. Read current value first with GET /api/s/default/get/setting/global_ap, then PUT the modified object back. Empty {} body is valid (no-op)."
+    },
+    {
+      "category": "set",
+      "name": "setting_global_switch",
+      "path": "/api/s/default/set/setting/global_switch",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/global_switch accepts PUT with the global switch configuration object. Read current value via GET /api/s/default/rest/setting/global_switch, then PUT the modified object to /api/s/default/set/setting/global_switch. Controls global switch settings like STP version, jumbo frames, DHCP snooping, flow control, 802.1X port control, and multicast flooding behavior."
+    },
+    {
+      "category": "set",
+      "name": "setting_ips",
+      "path": "/api/s/default/set/setting/ips",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/ips is a PUT endpoint for configuring IPS/IDS (intrusion prevention system) settings. First GET from /api/s/default/rest/setting/ips, modify desired fields (ips_mode, advanced_filtering_preference, endpoint_scanning, honeypot_enabled, memory_optimized, content_filtering_blocking_page_enabled), then PUT to /api/s/default/set/setting/ips. The response includes the full updated settings."
+    },
+    {
+      "category": "set",
+      "name": "setting_lcm",
+      "path": "/api/s/default/set/setting/lcm",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/lcm is a PUT-only endpoint for configuring LCD/display module settings (brightness, touch events, idle timeout, sync). Read current value with GET /api/s/default/get/setting/lcm, then PUT /api/s/default/set/setting/lcm with JSON body containing brightness (int), touch_event (bool), idle_timeout (int seconds), sync (bool), enabled (bool), and key: \"lcm\"."
+    },
+    {
+      "category": "set",
+      "name": "setting_magic_site_to_site_vpn",
+      "path": "/api/s/default/set/setting/magic_site_to_site_vpn",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/{site}/set/setting/magic_site_to_site_vpn with JSON body containing {\"enabled\": true/false}. Read current value first from GET /api/s/{site}/get/setting/magic_site_to_site_vpn. Returns standard {\"meta\": {\"rc\": \"ok\"}, \"data\": [...]} with the updated setting object.",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_network_optimization",
+      "path": "/api/s/default/set/setting/network_optimization",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/network_optimization is a working PUT-only endpoint. Read current config with GET /api/s/default/get/setting/network_optimization, then PUT /api/s/default/set/setting/network_optimization with the desired fields (or {} for defaults). Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": [{\"key\": \"network_optimization\", \"_id\": \"...\", \"site_id\": \"...\"}]} on success.",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_porta",
+      "path": "/api/s/default/set/setting/porta",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/porta with body {\"key\": \"porta\", ...} (additional porta-specific fields can be included). GET returns 404 as expected for set/ endpoints. Read current value via GET /api/s/default/get/setting/porta first."
+    },
+    {
+      "category": "set",
+      "name": "setting_radio_ai",
+      "path": "/api/s/default/set/setting/radio_ai",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "This is a standard UniFi settings endpoint. Read current value with GET /api/s/default/get/setting/radio_ai, then update with PUT /api/s/default/set/setting/radio_ai + JSON body containing the changed fields. Controls Radio AI features (auto channel optimization, channel selection, DFS settings, optimization schedule). The setting has key \"radio_ai\" and configures automatic WiFi channel optimization across 2.4GHz (ng), 5GHz (na), and 6GHz (6e) radios."
+    },
+    {
+      "category": "set",
+      "name": "setting_radius",
+      "path": "/api/s/default/set/setting/radius",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/radius with JSON body containing RADIUS configuration fields. GET the current settings first from /api/s/default/get/setting/radius, then PUT the modified settings. Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": [{\"key\": \"radius\", \"site_id\": \"...\", \"_id\": \"...\"}]} on success. Empty body {} is valid (uses defaults).",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_rsyslogd",
+      "path": "/api/s/default/set/setting/rsyslogd",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/rsyslogd is a working PUT-only endpoint. Read current value with GET /api/s/default/get/setting/rsyslogd, then modify and PUT /api/s/default/set/setting/rsyslogd with updated fields. Returns standard {\"meta\":{\"rc\":\"ok\"},\"data\":[...]} response. Controls rsyslog/remote syslog settings with fields: enabled, this_controller, log_all_contents, this_controller_encrypted_only.",
+      "response_status": 200
+    },
+    {
+      "category": "set",
+      "name": "setting_super_cloudaccess",
+      "path": "/api/s/default/set/setting/super_cloudaccess",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/super_cloudaccess is a working PUT-only endpoint. Read current value with GET /api/s/default/get/setting/super_cloudaccess, then modify and PUT /api/s/default/set/setting/super_cloudaccess with the full setting object (must include _id and key fields). Standard settings pattern."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_events",
+      "path": "/api/s/default/set/setting/super_events",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT-only setting endpoint. Read current value with GET /api/s/default/get/setting/super_events, then PUT to /api/s/default/set/setting/super_events with JSON body containing desired fields. Currently accepts empty object {} and persists the setting."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_fwupdate",
+      "path": "/api/s/default/set/setting/super_fwupdate",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/super_fwupdate with {} body (or specific fields to modify). Returns firmware update channel configuration."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_identity",
+      "path": "/api/s/default/set/setting/super_identity",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT /api/s/default/set/setting/super_identity with body {\"hostname\": \"...\", \"name\": \"...\"}. First read current value with GET /api/s/default/get/setting/super_identity, then PUT to update. Controls the site identity settings (hostname and display name)."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_mail",
+      "path": "/api/s/default/set/setting/super_mail",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/{site}/set/setting/super_mail with JSON body containing mail configuration fields. Read current value first with GET /api/s/{site}/get/setting/super_mail, then PUT back with modifications. The setting controls super admin mail notifications."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_mgmt",
+      "path": "/api/s/default/set/setting/super_mgmt",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT-only setting endpoint at /api/s/default/set/setting/super_mgmt. Must first GET /api/s/default/get/setting/super_mgmt to retrieve current values, then PUT with modified fields. Controls super management settings: data retention times (5min/hourly/daily/monthly scales), analytics, autobackup schedule, discoverable mode, live updates, and multi-site enablement."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_sdn",
+      "path": "/api/s/default/set/setting/super_sdn",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/super_sdn works via PUT with the setting body (retrieved from GET /api/s/default/get/setting/super_sdn). Standard settings pattern: GET to read current value, PUT to set/setting/{name} to update."
+    },
+    {
+      "category": "set",
+      "name": "setting_super_smtp",
+      "path": "/api/s/default/set/setting/super_smtp",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/super_smtp with JSON body containing SMTP configuration fields (e.g., enabled, host, port, username, password, use_ssl, use_sender, sender). Read current value first from get/setting/super_smtp."
+    },
+    {
+      "category": "set",
+      "name": "setting_teleport",
+      "path": "/api/s/default/set/setting/teleport",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT-only endpoint at /api/s/default/set/setting/teleport. Accepts {\"enabled\": boolean} and returns updated setting. Must first GET from /api/s/default/get/setting/teleport to see current value before making changes."
+    },
+    {
+      "category": "set",
+      "name": "setting_usg",
+      "path": "/api/s/default/set/setting/usg",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "set/setting/usg accepts PUT requests with USG (gateway) configuration. Read current settings with GET /api/s/default/rest/setting/usg, then PUT to /api/s/default/set/setting/usg with modified fields. Controls gateway firewall timeouts, NAT modules (H.323, GRE, FTP, TFTP, PPTP, SIP), UPnP settings, MSS clamping, and hardware offloading."
+    },
+    {
+      "category": "set",
+      "name": "setting_usw",
+      "path": "/api/s/default/set/setting/usw",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "PUT to /api/s/default/set/setting/usw with JSON body (at minimum {}). Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": [{setting object}]}. Use GET /api/s/default/get/setting/usw to read current value first, modify fields as needed, then PUT to set/setting/usw. This is the USW (UniFi Switch) global settings endpoint.",
+      "response_status": 200
+    },
+    {
+      "category": "websocket",
+      "name": "events",
+      "path": "/wss/s/default/events",
+      "original_status": 404,
+      "verdict": "FOUND",
+      "notes": "WebSocket endpoint at /wss/s/default/events successfully accepts WebSocket upgrade requests (returns HTTP 101 with proper upgrade headers). Used for streaming real-time events. Requires WebSocket client library (not REST API calls) with authentication cookies and CSRF token. Connection stays open for event stream."
+    }
+  ],
+  "summary": {
+    "total_probed": 86,
+    "found": 44,
+    "not_found": 28,
+    "needs_device": 11,
+    "uncertain": 3
+  }
+}

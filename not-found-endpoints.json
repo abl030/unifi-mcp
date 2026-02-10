@@ -1,0 +1,519 @@
+{
+  "_comment": "Endpoints that our automated probe could NOT confirm on UniFi v10.0.162. Candidates for LLM-based interactive probing — trying different HTTP methods, path variations, POST bodies, and parameter combinations.",
+  "controller_version": "10.0.162",
+  "controller_type": "standalone",
+  "probed_at": "2026-02-10",
+  "probe_spec_version": "306 endpoints",
+
+  "not_found_404": {
+    "_comment": "Returned HTTP 404. May be deprecated, renamed, version-specific, POST-only, or need a different path format.",
+    "count": 50,
+    "rest_endpoints": [
+      {
+        "name": "device",
+        "path": "/api/s/{site}/rest/device",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "Device config endpoint for port_overrides. Art-of-WiFi uses it. May need a device _id suffix.",
+        "try_next": ["GET /api/s/{site}/rest/device/{device_id}", "POST with empty body"]
+      },
+      {
+        "name": "dashboard",
+        "path": "/api/s/{site}/rest/dashboard",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with date range body"]
+      }
+    ],
+    "list_endpoints": [
+      {
+        "name": "admin",
+        "path": "/api/s/{site}/list/admin",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["GET /api/s/{site}/list/admins", "POST with empty body"]
+      },
+      {
+        "name": "device",
+        "path": "/api/s/{site}/list/device",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["GET /api/s/{site}/list/devices"]
+      },
+      {
+        "name": "dashboard",
+        "path": "/api/s/{site}/list/dashboard",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with date range body"]
+      }
+    ],
+    "stat_endpoints": [
+      {
+        "name": "spectrumscan",
+        "path": "/api/s/{site}/stat/spectrumscan",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with mac param", "stat/spectrum-scan returned 200 (use that instead)"]
+      },
+      {
+        "name": "syslog",
+        "path": "/api/s/{site}/stat/syslog",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with empty body", "POST with {\"start\":0,\"end\":9999999999}"]
+      },
+      {
+        "name": "speedtest",
+        "path": "/api/s/{site}/stat/speedtest",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "stat/report/archive.speedtest returned 200 via POST — use that instead",
+        "try_next": ["POST with empty body"]
+      },
+      {
+        "name": "ips_events",
+        "path": "/api/s/{site}/stat/ips/events",
+        "method_tried": "POST",
+        "source": "community",
+        "note": "stat/ips/event (singular) returned 200 — use that instead",
+        "try_next": ["already resolved: use stat/ips/event"]
+      },
+      {
+        "name": "sessions",
+        "path": "/api/s/{site}/stat/sessions",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with {\"type\":\"all\",\"start\":0,\"end\":9999999999}"]
+      },
+      {
+        "name": "sta_sessions",
+        "path": "/api/s/{site}/stat/sta-sessions",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with mac param", "POST with date range"]
+      },
+      {
+        "name": "auths",
+        "path": "/api/s/{site}/stat/auths",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with empty body", "POST with date range"]
+      },
+      {
+        "name": "allusers",
+        "path": "/api/s/{site}/stat/allusers",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "stat/alluser (no trailing s) returned 200 — use that instead",
+        "try_next": ["already resolved: use stat/alluser"]
+      },
+      {
+        "name": "user_sessions",
+        "path": "/api/s/{site}/stat/user-sessions",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with mac param", "POST with date range"]
+      },
+      {
+        "name": "status",
+        "path": "/api/s/{site}/stat/status",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "/status (global, no auth) already works",
+        "try_next": ["POST with empty body"]
+      },
+      {
+        "name": "stream",
+        "path": "/api/s/{site}/stat/stream",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with empty body", "WebSocket upgrade"]
+      },
+      {
+        "name": "gateway",
+        "path": "/api/s/{site}/stat/gateway",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "May only exist when a USG/UDM gateway is adopted.",
+        "try_next": ["POST with empty body"]
+      }
+    ],
+    "upd_endpoints": [
+      {
+        "name": "user",
+        "path": "/api/s/{site}/upd/user/{user_id}",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "PUT/POST only — GET returns 404 as expected.",
+        "try_next": ["PUT with {\"name\":\"test\"} and a real user _id"]
+      },
+      {
+        "name": "device",
+        "path": "/api/s/{site}/upd/device/{device_id}",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "PUT/POST only — GET returns 404 as expected.",
+        "try_next": ["PUT with {\"name\":\"test\"} and a real device _id"]
+      }
+    ],
+    "group_endpoints": [
+      {
+        "name": "user",
+        "path": "/api/s/{site}/group/user",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "Batch user operations. POST only.",
+        "try_next": ["POST with {\"objects\":[{\"data\":{}}]}"]
+      }
+    ],
+    "set_endpoints": [
+      {
+        "name": "setting_mgmt",
+        "path": "/api/s/{site}/set/setting/mgmt",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "All 28 set/ endpoints return 404 to GET — they are PUT-only. Every matching get/setting/* endpoint returned 200 with data, confirming the settings exist. An LLM could verify these by doing PUT with the exact data returned from get/.",
+        "try_next": ["PUT with body from get/setting/mgmt"]
+      },
+      {"name": "setting_country", "path": "/api/s/{site}/set/setting/country"},
+      {"name": "setting_locale", "path": "/api/s/{site}/set/setting/locale"},
+      {"name": "setting_snmp", "path": "/api/s/{site}/set/setting/snmp"},
+      {"name": "setting_guest_access", "path": "/api/s/{site}/set/setting/guest_access"},
+      {"name": "setting_ntp", "path": "/api/s/{site}/set/setting/ntp"},
+      {"name": "setting_connectivity", "path": "/api/s/{site}/set/setting/connectivity"},
+      {"name": "setting_auto_speedtest", "path": "/api/s/{site}/set/setting/auto_speedtest"},
+      {"name": "setting_baresip", "path": "/api/s/{site}/set/setting/baresip"},
+      {"name": "setting_broadcast", "path": "/api/s/{site}/set/setting/broadcast"},
+      {"name": "setting_doh", "path": "/api/s/{site}/set/setting/doh"},
+      {"name": "setting_dpi", "path": "/api/s/{site}/set/setting/dpi"},
+      {"name": "setting_element_adopt", "path": "/api/s/{site}/set/setting/element_adopt"},
+      {"name": "setting_ether_lighting", "path": "/api/s/{site}/set/setting/ether_lighting"},
+      {"name": "setting_global_ap", "path": "/api/s/{site}/set/setting/global_ap"},
+      {"name": "setting_global_switch", "path": "/api/s/{site}/set/setting/global_switch"},
+      {"name": "setting_ips", "path": "/api/s/{site}/set/setting/ips"},
+      {"name": "setting_lcm", "path": "/api/s/{site}/set/setting/lcm"},
+      {"name": "setting_magic_site_to_site_vpn", "path": "/api/s/{site}/set/setting/magic_site_to_site_vpn"},
+      {"name": "setting_network_optimization", "path": "/api/s/{site}/set/setting/network_optimization"},
+      {"name": "setting_porta", "path": "/api/s/{site}/set/setting/porta"},
+      {"name": "setting_radio_ai", "path": "/api/s/{site}/set/setting/radio_ai"},
+      {"name": "setting_radius", "path": "/api/s/{site}/set/setting/radius"},
+      {"name": "setting_rsyslogd", "path": "/api/s/{site}/set/setting/rsyslogd"},
+      {"name": "setting_super_cloudaccess", "path": "/api/s/{site}/set/setting/super_cloudaccess"},
+      {"name": "setting_super_events", "path": "/api/s/{site}/set/setting/super_events"},
+      {"name": "setting_super_fwupdate", "path": "/api/s/{site}/set/setting/super_fwupdate"},
+      {"name": "setting_super_identity", "path": "/api/s/{site}/set/setting/super_identity"},
+      {"name": "setting_super_mail", "path": "/api/s/{site}/set/setting/super_mail"},
+      {"name": "setting_super_mgmt", "path": "/api/s/{site}/set/setting/super_mgmt"},
+      {"name": "setting_super_sdn", "path": "/api/s/{site}/set/setting/super_sdn"},
+      {"name": "setting_super_smtp", "path": "/api/s/{site}/set/setting/super_smtp"},
+      {"name": "setting_teleport", "path": "/api/s/{site}/set/setting/teleport"},
+      {"name": "setting_usg", "path": "/api/s/{site}/set/setting/usg"},
+      {"name": "setting_usw", "path": "/api/s/{site}/set/setting/usw"}
+    ],
+    "websocket_endpoints": [
+      {
+        "name": "events",
+        "path": "/wss/s/{site}/events",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "WebSocket endpoint. Needs upgrade headers, not plain GET.",
+        "try_next": ["WebSocket connect with Upgrade headers", "wss:// protocol"]
+      }
+    ]
+  },
+
+  "ambiguous_400": {
+    "_comment": "Returned HTTP 400 (Bad Request). The endpoint EXISTS on the server but our GET probe was rejected — needs POST, specific parameters, or different content type. High priority for LLM probing.",
+    "count": 30,
+    "global_endpoints": [
+      {
+        "name": "self_profile",
+        "path": "/api/self/profile",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with empty body", "PUT with profile data"]
+      },
+      {
+        "name": "system_poweroff",
+        "path": "/api/system/poweroff",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "DANGEROUS — do NOT POST. 400 confirms endpoint exists.",
+        "try_next": ["CONFIRMED EXISTS (400). Do not execute."]
+      },
+      {
+        "name": "system_reboot",
+        "path": "/api/system/reboot",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "DANGEROUS — do NOT POST. 400 confirms endpoint exists.",
+        "try_next": ["CONFIRMED EXISTS (400). Do not execute."]
+      },
+      {
+        "name": "auth_login",
+        "path": "/api/auth/login",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "UniFi OS login endpoint. 400 = exists but needs POST with credentials. Standalone uses /api/login instead.",
+        "try_next": ["POST with {\"username\":\"...\",\"password\":\"...\"}"]
+      },
+      {
+        "name": "auth_logout",
+        "path": "/api/auth/logout",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "UniFi OS logout. 400 = exists.",
+        "try_next": ["POST with empty body"]
+      },
+      {
+        "name": "users_self",
+        "path": "/api/users/self",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "UniFi OS self info. 400 may mean it needs different auth headers (UniFi OS vs standalone).",
+        "try_next": ["GET with different auth headers"]
+      },
+      {
+        "name": "logout",
+        "path": "/api/logout",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "Standard logout. 400 = exists but needs POST.",
+        "try_next": ["POST with empty body"]
+      }
+    ],
+    "rest_endpoints": [
+      {
+        "name": "apgroup",
+        "path": "/api/s/{site}/rest/apgroup",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "400 = exists. v2/apgroups returned 200 with data — may be v2-only on this version.",
+        "try_next": ["POST with {\"name\":\"test\"}", "GET with different Accept header"]
+      },
+      {
+        "name": "dnsrecord",
+        "path": "/api/s/{site}/rest/dnsrecord",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["check if DNS feature is enabled first"]
+      },
+      {
+        "name": "radiusaccount",
+        "path": "/api/s/{site}/rest/radiusaccount",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["check if RADIUS is configured first"]
+      },
+      {
+        "name": "broadcastgroup",
+        "path": "/api/s/{site}/rest/broadcastgroup",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["POST with empty body"]
+      },
+      {
+        "name": "mediafile",
+        "path": "/api/s/{site}/rest/mediafile",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "Hotspot portal media files.",
+        "try_next": ["POST with multipart form data"]
+      },
+      {
+        "name": "element",
+        "path": "/api/s/{site}/rest/element",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "Element adoption / management.",
+        "try_next": ["POST with device data"]
+      }
+    ],
+    "list_endpoints": [
+      {"name": "apgroup", "path": "/api/s/{site}/list/apgroup", "try_next": ["POST with empty body"]},
+      {"name": "backup", "path": "/api/s/{site}/list/backup", "try_next": ["POST with empty body"]},
+      {"name": "firmware", "path": "/api/s/{site}/list/firmware", "try_next": ["POST with {\"device_type\":\"usw\"}"]},
+      {"name": "rogueap", "path": "/api/s/{site}/list/rogueap", "try_next": ["POST with {\"within\":24}"]},
+      {"name": "radiusaccount", "path": "/api/s/{site}/list/radiusaccount", "try_next": ["POST with empty body"]},
+      {"name": "broadcastgroup", "path": "/api/s/{site}/list/broadcastgroup", "try_next": ["POST with empty body"]},
+      {"name": "extension", "path": "/api/s/{site}/list/extension", "try_next": ["POST with empty body"]},
+      {"name": "wifichannels", "path": "/api/s/{site}/list/wifichannels", "try_next": ["POST with empty body"]},
+      {"name": "country", "path": "/api/s/{site}/list/country", "try_next": ["POST with empty body"]},
+      {"name": "devices", "path": "/api/s/{site}/list/devices", "try_next": ["POST with empty body"]},
+      {"name": "settings", "path": "/api/s/{site}/list/settings", "note": "list/setting (singular) returned 200 with 29 records", "try_next": ["POST with empty body"]},
+      {"name": "dnsrecord", "path": "/api/s/{site}/list/dnsrecord", "try_next": ["POST with empty body"]},
+      {"name": "mediafile", "path": "/api/s/{site}/list/mediafile", "try_next": ["POST with empty body"]},
+      {"name": "element", "path": "/api/s/{site}/list/element", "try_next": ["POST with empty body"]}
+    ],
+    "stat_endpoints": [
+      {
+        "name": "session",
+        "path": "/api/s/{site}/stat/session",
+        "method_tried": "GET",
+        "source": "existing",
+        "note": "Existing endpoint returned 400 — needs POST with date range or MAC filter.",
+        "try_next": ["POST with {\"type\":\"all\",\"start\":0,\"end\":9999999999}"]
+      }
+    ],
+    "v2_endpoints": [
+      {
+        "name": "fingerprint_devices",
+        "path": "/v2/api/fingerprint_devices/defaults",
+        "method_tried": "GET",
+        "source": "community",
+        "try_next": ["GET /v2/api/site/{site}/fingerprint_devices", "GET /v2/api/fingerprint-devices/defaults"]
+      }
+    ],
+    "cnt_endpoints": [
+      {
+        "name": "sta",
+        "path": "/api/s/{site}/cnt/sta",
+        "method_tried": "GET",
+        "source": "community",
+        "note": "cnt/alarm, cnt/user, cnt/event all return 200. sta returns 400.",
+        "try_next": ["POST with empty body", "POST with {\"type\":\"all\"}"]
+      }
+    ]
+  },
+
+  "unverified_commands": {
+    "_comment": "Commands declared in probe-spec.json but never executed (too dangerous for automated probe). Commands marked safe_to_try are read-only or easily reversible.",
+    "count": 66,
+    "managers": {
+      "stamgr": {
+        "path": "/api/s/{site}/cmd/stamgr",
+        "commands": [
+          {"cmd": "block-sta", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "unblock-sta", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "kick-sta", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "forget-sta", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "unauthorize-guest", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "authorize-guest", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "reconnect-sta", "params": ["mac"], "safe_to_try": false, "note": "force client reconnect (Art-of-WiFi, aiounifi)"}
+        ]
+      },
+      "devmgr": {
+        "path": "/api/s/{site}/cmd/devmgr",
+        "commands": [
+          {"cmd": "adopt", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "restart", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "force-provision", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "power-cycle", "params": ["mac", "port_idx"], "safe_to_try": false},
+          {"cmd": "speedtest", "params": [], "safe_to_try": true, "note": "run speed test — read-only"},
+          {"cmd": "set-locate", "params": ["mac"], "safe_to_try": true, "note": "blink LED — harmless, reversible"},
+          {"cmd": "unset-locate", "params": ["mac"], "safe_to_try": true, "note": "stop blinking LED"},
+          {"cmd": "upgrade", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "upgrade-external", "params": ["mac", "url"], "safe_to_try": false},
+          {"cmd": "migrate", "params": ["mac", "inform_url"], "safe_to_try": false},
+          {"cmd": "cancel-migrate", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "spectrum-scan", "params": ["mac"], "safe_to_try": true, "note": "trigger RF spectrum scan — read-only"},
+          {"cmd": "rename", "params": ["mac", "name"], "safe_to_try": false},
+          {"cmd": "led-override", "params": ["mac", "led_override"], "safe_to_try": false},
+          {"cmd": "disable-ap", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "rolling-upgrade", "params": [], "safe_to_try": false},
+          {"cmd": "cancel-rolling-upgrade", "params": [], "safe_to_try": false},
+          {"cmd": "upgrade-all-devices", "params": [], "safe_to_try": false},
+          {"cmd": "advanced-adopt", "params": ["mac", "url", "key"], "safe_to_try": false},
+          {"cmd": "set-rollupgrade", "params": [], "safe_to_try": false},
+          {"cmd": "unset-rollupgrade", "params": [], "safe_to_try": false},
+          {"cmd": "restart-http-portal", "params": [], "safe_to_try": false},
+          {"cmd": "enable", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "disable", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "cable-test", "params": ["mac", "port_idx"], "safe_to_try": true, "note": "cable diagnostics — read-only"},
+          {"cmd": "set-inform", "params": ["mac", "inform_url"], "safe_to_try": false}
+        ]
+      },
+      "evtmgr": {
+        "path": "/api/s/{site}/cmd/evtmgr",
+        "commands": [
+          {"cmd": "archive-all-alarms", "params": [], "safe_to_try": false, "note": "archives all alarms — destructive"},
+          {"cmd": "archive-alarm", "params": ["_id"], "safe_to_try": false}
+        ]
+      },
+      "sitemgr": {
+        "path": "/api/s/{site}/cmd/sitemgr",
+        "commands": [
+          {"cmd": "add-site", "params": ["desc"], "safe_to_try": false},
+          {"cmd": "delete-site", "params": ["site"], "safe_to_try": false},
+          {"cmd": "update-site", "params": ["desc"], "safe_to_try": false},
+          {"cmd": "move-device", "params": ["mac", "site"], "safe_to_try": false},
+          {"cmd": "delete-device", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "site-leds", "params": ["led_enabled"], "safe_to_try": true, "note": "toggle site LEDs — easily reversible"},
+          {"cmd": "invite-admin", "params": ["email", "role"], "safe_to_try": false},
+          {"cmd": "assign-existing-admin", "params": ["admin_id", "role"], "safe_to_try": false},
+          {"cmd": "update-admin", "params": ["admin_id", "role"], "safe_to_try": false},
+          {"cmd": "revoke-admin", "params": ["admin_id"], "safe_to_try": false},
+          {"cmd": "delete-admin", "params": ["admin_id"], "safe_to_try": false},
+          {"cmd": "grant-super-admin", "params": ["admin_id"], "safe_to_try": false},
+          {"cmd": "create-admin", "params": ["name", "email", "x_password", "role"], "safe_to_try": false},
+          {"cmd": "revoke-super-admin", "params": ["admin_id"], "safe_to_try": false},
+          {"cmd": "set-site-name", "params": ["desc"], "safe_to_try": false, "note": "from nickovs/unificontrol"}
+        ]
+      },
+      "backup": {
+        "path": "/api/s/{site}/cmd/backup",
+        "commands": [
+          {"cmd": "delete-backup", "params": ["filename"], "safe_to_try": false},
+          {"cmd": "generate-backup", "params": [], "safe_to_try": true, "note": "creates a backup — safe"},
+          {"cmd": "generate-backup-site", "params": [], "safe_to_try": true, "note": "site-specific backup (Art-of-WiFi)"}
+        ]
+      },
+      "system": {
+        "path": "/api/s/{site}/cmd/system",
+        "commands": [
+          {"cmd": "backup", "params": [], "safe_to_try": true, "note": "trigger a backup"},
+          {"cmd": "reboot-cloudkey", "params": [], "safe_to_try": false},
+          {"cmd": "element-adoption", "params": [], "safe_to_try": false},
+          {"cmd": "download-backup", "params": ["filename"], "safe_to_try": false}
+        ]
+      },
+      "stat": {
+        "path": "/api/s/{site}/cmd/stat",
+        "commands": [
+          {"cmd": "clear-dpi", "params": [], "safe_to_try": false, "note": "clears DPI statistics — destructive"}
+        ]
+      },
+      "hotspot": {
+        "path": "/api/s/{site}/cmd/hotspot",
+        "commands": [
+          {"cmd": "authorize-guest", "params": ["mac"], "safe_to_try": false},
+          {"cmd": "create-voucher", "params": ["count", "quota", "expire"], "safe_to_try": true, "note": "creates voucher — easily deletable"},
+          {"cmd": "revoke-voucher", "params": ["_id"], "safe_to_try": false},
+          {"cmd": "extend-guest-validity", "params": ["_id"], "safe_to_try": false},
+          {"cmd": "delete-voucher", "params": ["_id"], "safe_to_try": false}
+        ]
+      },
+      "alarm": {
+        "path": "/api/s/{site}/cmd/alarm",
+        "commands": [
+          {"cmd": "archive", "params": ["_id"], "safe_to_try": false}
+        ]
+      }
+    }
+  },
+
+  "summary": {
+    "total_not_found_404": 50,
+    "total_ambiguous_400": 30,
+    "total_unverified_commands": 66,
+    "grand_total_unconfirmed": 146,
+    "already_resolved": [
+      "stat/ips/events → use stat/ips/event (singular, returned 200)",
+      "stat/allusers → use stat/alluser (no trailing s, returned 200)",
+      "stat/spectrumscan → use stat/spectrum-scan (hyphenated, returned 200)",
+      "stat/speedtest → use stat/report/archive.speedtest (POST, returned 200)",
+      "list/settings → use list/setting (singular, returned 200 with 29 records)"
+    ],
+    "probing_hints": [
+      "All 28 set/ endpoints return 404 to GET — they are PUT-only. Every matching get/setting/* returned 200.",
+      "upd/ and group/ are POST/PUT-only — GET returns 404 as expected.",
+      "400 responses CONFIRM the endpoint exists — it just rejected our GET or needs parameters.",
+      "stat/ endpoints often need POST with date ranges: {\"start\":epoch,\"end\":epoch}.",
+      "list/ endpoints returning 400 may need POST with empty {} body.",
+      "WebSocket endpoint needs proper Upgrade headers, not plain HTTP GET.",
+      "auth_login/auth_logout are UniFi OS specific — may not work on standalone controllers.",
+      "Commands marked safe_to_try are read-only or easily reversible."
+    ]
+  }
+}

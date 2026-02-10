@@ -8,13 +8,59 @@ Build a **self-contained, auto-generated MCP server** for the UniFi Network Cont
 
 This directory contains everything you need to understand the UniFi API surface:
 
-- `endpoint-inventory.json` — Complete map of every discovered API endpoint (REST CRUD, stat reads, command endpoints, v2 endpoints) with HTTP methods, live status codes, and record counts from a real v10.0.162 standalone controller
+- `endpoint-inventory.json` — Complete map of every discovered API endpoint with HTTP methods, live status codes, and record counts from a real v10.0.162 standalone controller
 - `api-samples/` — Real (scrubbed) JSON responses from every working endpoint, giving you exact field names and types for schema inference
-- `community-swagger.yaml` — Community-maintained OpenAPI spec fragment (incomplete but useful reference)
+- `probe-spec.json` — Declarative list of ALL endpoints to probe (existing + community-discovered)
+- `probe.py` — Single-file probe script that hammers a live controller to discover endpoints
+- `scripts/run_probe.sh` — Automated: start container → seed admin → run probe → teardown
+
+## API Surface (from endpoint-inventory.json)
+
+Run `uv run python count_tools.py` to recompute these from the spec.
+
+### Endpoints: 196 total (after probe + LLM probe)
+- **37 REST** endpoints (17 existing + 20 community-discovered)
+- **39 Stat** endpoints (18 existing + 21 community)
+- **9 Cmd** managers with **68 commands** total
+- **7 v2** endpoints (firewall policies, traffic rules, clients, ap groups, traffic routes, firewall zones)
+- **8 Global** endpoints (status, self, sites, stat_sites, stat_admin, logout, system_poweroff, system_reboot)
+- **34 List** endpoints (community — read-only `list/` prefix mirrors `rest/`)
+- **2 Guest** endpoints (community — hotspot config/packages)
+- **1 WebSocket** endpoint (community — events stream)
+- Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
+
+### Generated Tools: 286 total
+- **155 REST** tools (29 CRUD × 5 + settings × 3 + 5 read-only × 1)
+- **39 Stat** tools (1 per stat endpoint)
+- **68 Cmd** tools (1 per command across 9 managers)
+- **15 v2** tools (7 resources, tools per HTTP method)
+- **8 Global** tools (1 per global endpoint)
+- **1 Port override** helper tool
 
 ## Architecture
 
-### The Generator (`generate.py` or similar)
+### The Probe (`probe.py` + `probe-spec.json`)
+
+A reusable endpoint discovery tool. When Ubiquiti releases a new controller version, re-run the probe to discover new/changed/removed endpoints:
+
+```bash
+# Full automated cycle (start container, seed admin, probe, teardown):
+scripts/run_probe.sh
+
+# Or manually against a running controller:
+uv run python probe.py --host HOST --username admin --password pass --no-verify-ssl
+
+# Preview what would be probed:
+uv run python probe.py --dry-run
+```
+
+**Safety rules (hardcoded):** Never POST/PUT/DELETE to rest/, never execute unsafe commands, never hit system/reboot or poweroff. Only 4 safe commands executed: `speedtest-status`, `get-admins`, `list-backups`, `check-firmware-update`.
+
+**Sample scrubbing:** All sensitive fields (`x_password`, `x_passphrase`, `x_shadow`, `x_private_key`, etc.) are replaced with `"REDACTED"` before writing to disk.
+
+**Output:** Updates `endpoint-inventory.json` (same schema as before, plus new categories: `list_endpoints`, `guest_endpoints`, `websocket_endpoints`) and writes sample files to `api-samples/`.
+
+### The Generator (`generate.py`)
 
 A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and outputs:
 
@@ -88,9 +134,20 @@ POST /api/s/{site}/stat/{resource}  (some support filtering via POST body)
 POST /api/s/{site}/cmd/{manager} {"cmd": "command-name", ...extra_params}
 ```
 
+### List Pattern (read-only, mirrors REST)
+```
+GET /api/s/{site}/list/{resource}
+```
+Returns same data as `rest/` but read-only. Useful for bulk reads without mutation risk.
+
 ### v2 API Pattern
 ```
 GET/POST/PUT/DELETE /v2/api/site/{site}/{resource}
+```
+
+### Guest Pattern
+```
+GET /guest/s/{site}/{resource}
 ```
 
 ## Key Resources and Their Schemas
@@ -139,7 +196,12 @@ This is the specific use case that motivated this project — configuring switch
 - **Confirmation gate**: All create/update/delete operations must require `confirm=true`. Return a preview of what would change when `confirm` is missing or false.
 - **Site awareness**: Default site to env var, but allow per-tool override.
 - **Error handling**: Parse the `meta.rc` and `meta.msg` fields. Return clear, actionable error messages.
-- **Docker controller setup**: The UniFi controller takes ~60-90s to start. The setup wizard needs to be completed via API before tests can run. Research the setup/wizard API endpoints.
+- **Docker controller setup**: The UniFi controller takes ~60-90s to start. The setup wizard is bypassed by seeding an admin directly into MongoDB (see `scripts/seed_admin.sh`). Key gotchas:
+  - Use `db.admin.insert()` not `insertOne()` (the latter silently fails on older mongo shells)
+  - Must also insert `privilege` records for each site
+  - The `/status` endpoint returns `"up": true` when ready (don't check `server_running` — it may not exist)
+  - Login may return 400 for a few seconds after seeding; poll until 200
+- **Adding new REST resources to the generator**: When the probe discovers new REST endpoints, they won't generate tools until added to `RESOURCE_NAMES` in `generator/naming.py`. The template (`server.py.j2`) silently skips REST resources not in `RESOURCE_NAMES` (there is no `{% else %}` fallback). Run `count_tools.py` to see which are skipped.
 
 ## Tech Stack
 
@@ -149,6 +211,107 @@ This is the specific use case that motivated this project — configuring switch
 - **pytest** + **testcontainers** (or docker-compose) for integration tests
 - **Jinja2** or AST-based code generation
 - **pyproject.toml** for packaging
+
+## LLM Probe (`llm-probe/`)
+
+Uses `claude -p` (Claude Code CLI) to reason about unconfirmed endpoints — trying different HTTP methods, bodies, and path variations. No Python dependencies beyond stdlib; just needs `claude` and `curl` on PATH.
+
+```bash
+# Dry run (show what would be probed):
+python llm-probe/llm_probe.py --dry-run
+
+# Probe all 400-status endpoints (highest value — they definitely exist):
+python llm-probe/llm_probe.py --host localhost --port 8443 \
+    --username admin --password testpassword123 \
+    --no-verify-ssl --only-category 400
+
+# Probe 404 endpoints:
+python llm-probe/llm_probe.py --only-category 404 ...
+
+# Limit for testing:
+python llm-probe/llm_probe.py --max-endpoints 5 ...
+```
+
+**Results (v10.0.162, 86 endpoints probed):**
+- **44 FOUND** — newly confirmed working endpoints
+- **28 NOT_FOUND** — don't exist on this version
+- **11 NEEDS_DEVICE** — exist but require adopted hardware
+- **3 UNCERTAIN** — ambiguous results
+
+Key discoveries:
+- All 28 `set/setting/*` endpoints confirmed as PUT-only (read via `get/setting/*`, write via `set/setting/*`)
+- `stat/session` needs POST with `{"type":"all","start":0,"end":9999999999}`
+- `upd/user` works via PUT with user `_id`
+- `group/user` is a batch endpoint: POST with `{"objects":[{"data":{...}}]}`
+- `websocket/events` at `/wss/s/{site}/events` accepts WebSocket upgrade
+- `rest/device` needs a device `_id` suffix (no bare GET)
+- `upd/device` exists and works with PUT/POST (needs adopted device)
+- 66 unverified commands still untested (need `--only-category cmd`)
+
+Output: `llm-probe/discoveries.json` (merged), `llm-probe/discoveries-400.json`, `llm-probe/discoveries-404.json`
+
+## TODO: Full Test Coverage with Device Simulation
+
+The current test harness runs against a bare controller (no adopted devices), which means 11+ endpoints that `NEEDS_DEVICE` can't be tested. Options to explore:
+
+1. **Mock device adoption via MongoDB**: Seed fake device documents into the controller's MongoDB. The UniFi container uses MongoDB internally — we can `docker exec` into it and insert device records (type=usw/uap/ugw, mac, model, adopted=true, etc.). If the controller's internal state accepts these, stat/device, rest/device, upd/device, list/devices, list/firmware, stat/gateway, cnt/sta, and list/wifichannels may all start returning data. This is the cheapest approach (no hardware needed) but may not work if the controller validates device heartbeats.
+
+2. **UniFi device simulator**: Build a minimal service that speaks the UniFi inform protocol (AES-encrypted JSON over HTTP to port 8080). A simulated AP/switch would:
+   - POST to `/inform` with device stats (model, MAC, firmware, uptime)
+   - Accept provisioning responses from the controller
+   - Show up in stat/device and be manageable via rest/device
+   This is the most realistic approach and would unblock all device-dependent endpoints. The inform protocol is documented by the community (see `unifi-inform-protocol` repos).
+
+3. **Buy a physical device**: A UniFi Flex Mini (~$30) or USW-Lite-8-PoE (~$110) would provide a real device for testing. This gives full end-to-end coverage including port_overrides (the original motivation), PoE control, LED management, and firmware commands. Downside: requires network setup, device is dedicated to testing.
+
+4. **Hybrid approach**: Use MongoDB seeding for basic presence (so list/stat endpoints return data), then use a device simulator for testing mutation endpoints (port overrides, locate/unlocate, config changes). Physical device only needed for final validation of the full flow.
+
+Priority order: Try option 1 first (free, fast), then option 2 if MongoDB seeding doesn't convince the controller. Option 3 is the nuclear option for full confidence.
+
+## Excluded Endpoints (LLM Probe Results)
+
+Endpoints tested by the LLM probe that were NOT_FOUND or UNCERTAIN on v10.0.162. These are excluded from `endpoint-inventory.json` and tool generation.
+
+### NOT_FOUND (28 endpoints)
+
+| Category | Endpoint | Reason |
+|----------|----------|--------|
+| global | self_profile | Does not exist; use `/api/self` instead |
+| global | auth_login | UniFi OS-only; standalone uses `/api/login` |
+| global | users_self | UniFi OS-only; standalone uses `/api/self` |
+| rest | apgroup | Superseded by `v2/api/site/{site}/apgroups` |
+| rest | dashboard | Use `stat/dashboard` instead |
+| list | apgroup | Use v2 apgroups endpoint instead |
+| list | backup | Use `cmd/backup list-backups` instead |
+| list | rogueap | Use `stat/rogueap` instead |
+| list | radiusaccount | Use `rest/radiusprofile` instead |
+| list | broadcastgroup | Resource type not available on v10.0.162 |
+| list | extension | Requires extensions/plugins not installed |
+| list | country | Not implemented in v10.0.162 |
+| list | settings | Typo — correct is `list/setting` (singular) |
+| list | mediafile | Resource type not recognized |
+| list | element | Resource type not available |
+| list | admin | Use `cmd/sitemgr get-admins` instead |
+| list | device | Use `stat/device` instead |
+| list | dashboard | Use `stat/dashboard` instead |
+| stat | syslog | Not implemented in v10.0.162 |
+| stat | speedtest | Use `stat/report/archive.speedtest` instead |
+| stat | ips_events | Typo — correct is `stat/ips/event` (singular) |
+| stat | sessions | Typo — correct is `stat/session` (singular) |
+| stat | sta_sessions | Not implemented in v10.0.162 |
+| stat | auths | Not implemented in v10.0.162 |
+| stat | allusers | Typo — correct is `stat/alluser` (singular) |
+| stat | user_sessions | Not implemented in v10.0.162 |
+| stat | status | Not implemented; `/status` is global only |
+| stat | stream | May be UniFi OS-specific or deprecated |
+
+### UNCERTAIN (3 endpoints)
+
+| Category | Endpoint | Reason |
+|----------|----------|--------|
+| global | auth_logout | Exists on route table but needs unknown params; may be UniFi OS only |
+| v2 | fingerprint_devices | Returns 400 consistently; may need fingerprinting feature enabled |
+| set | setting/auto_speedtest | GET works but PUT returns 500; feature may not be fully implemented |
 
 ## Stretch Goals
 
@@ -165,4 +328,21 @@ This is the specific use case that motivated this project — configuring switch
 5. Then build out the Docker test harness
 6. Run tests until green
 
-Docker is available via NixOS — if you need to add it, add `virtualisation.docker.enable = true;` to the NixOS config or use podman.
+### Updating the API surface
+
+```bash
+# Re-probe a live controller (automated):
+scripts/run_probe.sh
+
+# Then regenerate:
+uv run python generate.py
+
+# Verify counts match:
+uv run python count_tools.py
+```
+
+### Docker setup
+
+Docker must be enabled on NixOS: add `virtualisation.docker.enable = true;` to `/etc/nixos/configuration.nix` and rebuild. User must be in the `docker` group.
+
+If the docker socket path is wrong (e.g. trying podman), set `DOCKER_HOST=unix:///var/run/docker.sock`.

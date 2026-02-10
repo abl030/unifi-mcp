@@ -79,6 +79,20 @@ class TestCmdUnlocatedevice:
             assert body.get("meta", {}).get("rc") == "error"
 
 
+class TestCmdCheckfirmwareupdate:
+    """Test the 'check-firmware-update' command via devmgr."""
+
+    def test_check_firmware_update(self, authenticated_client):
+        """Execute check-firmware-update and verify response."""
+        payload = {"cmd": "check-firmware-update"}
+        try:
+            result = authenticated_client.api_post("cmd/devmgr", payload)
+            assert result is not None
+        except (RuntimeError, httpx.HTTPStatusError) as e:
+            # Commands may fail without real devices — that's expected
+            pytest.skip(f"Command not available in test environment: {e}")
+
+
 class TestCmdArchiveallalarms:
     """Test the 'archive-all-alarms' command via evtmgr."""
 

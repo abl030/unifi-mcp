@@ -1,0 +1,1 @@
+{"meta": {"rc": "ok"}, "data": [{"enabled": false, "registered": false, "connecting": false, "connected": false, "has_webrtc": true, "is_cloud_key": "REDACTED", "is_udm": false, "sso_login_enabled": false, "ubic_env": "prod", "cloud_env": "aws", "has_sso_auth": false}]}

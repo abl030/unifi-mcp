@@ -88,7 +88,7 @@ class TestServerSyntax:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
             and node.name.startswith("unifi_")
         ]
-        assert len(tool_funcs) == 137, (
-            f"Expected 137 tool functions, found {len(tool_funcs)}: "
+        assert len(tool_funcs) == 286, (
+            f"Expected 286 tool functions, found {len(tool_funcs)}: "
             f"missing or extra tools detected"
         )

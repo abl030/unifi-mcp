@@ -20,20 +20,29 @@ class TestStatStatalarms:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
 
-    def test_stat_alarms_fields(self, authenticated_client):
-        """Verify expected fields are present in stat_alarms data."""
+
+class TestStatAllusers:
+    """Tests for stat/alluser endpoint."""
+
+    def test_list_all_users(self, authenticated_client):
+        """Verify all_users endpoint returns valid data."""
         try:
-            data = authenticated_client.api_get("stat/alarm")
+            data = authenticated_client.api_get("stat/alluser")
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
-        if not data:
-            # No data in test env (no devices/clients/events); endpoint
-            # already validated by the list test above.
-            return
-        first = data[0]
-        expected_fields = ['_id', 'ap', 'ap_displayName', 'ap_model', 'ap_name']
-        for field in expected_fields:
-            assert field in first, f"Missing field '{field}' in stat_alarms record"
+        assert isinstance(data, list)
+
+
+class TestStatAnomalies:
+    """Tests for stat/anomalies endpoint."""
+
+    def test_list_anomalies(self, authenticated_client):
+        """Verify anomalies endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/anomalies")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
 
 
 class TestStatAuthorizations:
@@ -59,6 +68,21 @@ class TestStatCountrycodes:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
 
+    def test_country_codes_fields(self, authenticated_client):
+        """Verify expected fields are present in country_codes data."""
+        try:
+            data = authenticated_client.api_get("stat/ccode")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        if not data:
+            # No data in test env (no devices/clients/events); endpoint
+            # already validated by the list test above.
+            return
+        first = data[0]
+        expected_fields = ['code', 'key', 'name']
+        for field in expected_fields:
+            assert field in first, f"Missing field '{field}' in country_codes record"
+
 
 class TestStatCurrentchannels:
     """Tests for stat/current_channel endpoint."""
@@ -70,6 +94,48 @@ class TestStatCurrentchannels:
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
+
+    def test_current_channels_fields(self, authenticated_client):
+        """Verify expected fields are present in current_channels data."""
+        try:
+            data = authenticated_client.api_get("stat/current-channel")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        if not data:
+            # No data in test env (no devices/clients/events); endpoint
+            # already validated by the list test above.
+            return
+        first = data[0]
+        expected_fields = ['afc', 'channels_6e', 'channels_6e_160', 'channels_6e_320', 'channels_6e_40']
+        for field in expected_fields:
+            assert field in first, f"Missing field '{field}' in current_channels record"
+
+
+class TestStatDashboard:
+    """Tests for stat/dashboard endpoint."""
+
+    def test_list_dashboard(self, authenticated_client):
+        """Verify dashboard endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/dashboard")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+    def test_dashboard_fields(self, authenticated_client):
+        """Verify expected fields are present in dashboard data."""
+        try:
+            data = authenticated_client.api_get("stat/dashboard")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        if not data:
+            # No data in test env (no devices/clients/events); endpoint
+            # already validated by the list test above.
+            return
+        first = data[0]
+        expected_fields = ['time']
+        for field in expected_fields:
+            assert field in first, f"Missing field '{field}' in dashboard record"
 
 
 class TestStatDevices:
@@ -83,21 +149,6 @@ class TestStatDevices:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
 
-    def test_devices_fields(self, authenticated_client):
-        """Verify expected fields are present in devices data."""
-        try:
-            data = authenticated_client.api_get("stat/device")
-        except (httpx.HTTPStatusError, RuntimeError) as e:
-            pytest.skip(f"Endpoint not available in test env: {e}")
-        if not data:
-            # No data in test env (no devices/clients/events); endpoint
-            # already validated by the list test above.
-            return
-        first = data[0]
-        expected_fields = ['_id', '_uptime', 'adopt_ip', 'adopt_url', 'adoptable_when_upgraded']
-        for field in expected_fields:
-            assert field in first, f"Missing field '{field}' in devices record"
-
 
 class TestStatDevicesbasic:
     """Tests for stat/device_basic endpoint."""
@@ -106,6 +157,18 @@ class TestStatDevicesbasic:
         """Verify devices_basic endpoint returns valid data."""
         try:
             data = authenticated_client.api_get("stat/device-basic")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatDpistats:
+    """Tests for stat/dpi endpoint."""
+
+    def test_list_dpi_stats(self, authenticated_client):
+        """Verify dpi_stats endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/dpi")
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
@@ -134,20 +197,29 @@ class TestStatStatevents:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
 
-    def test_stat_events_fields(self, authenticated_client):
-        """Verify expected fields are present in stat_events data."""
+
+class TestStatGatewaystats:
+    """Tests for stat/gateway endpoint."""
+
+    def test_list_gateway_stats(self, authenticated_client):
+        """Verify gateway_stats endpoint returns valid data."""
         try:
-            data = authenticated_client.api_get("stat/event")
+            data = authenticated_client.api_get("stat/gateway")
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
-        if not data:
-            # No data in test env (no devices/clients/events); endpoint
-            # already validated by the list test above.
-            return
-        first = data[0]
-        expected_fields = ['_id', 'ap', 'ap_displayName', 'ap_model', 'ap_name']
-        for field in expected_fields:
-            assert field in first, f"Missing field '{field}' in stat_events record"
+        assert isinstance(data, list)
+
+
+class TestStatGuests:
+    """Tests for stat/guest endpoint."""
+
+    def test_list_guests(self, authenticated_client):
+        """Verify guests endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/guest")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
 
 
 class TestStatHealth:
@@ -177,6 +249,30 @@ class TestStatHealth:
             assert field in first, f"Missing field '{field}' in health record"
 
 
+class TestStatIpsevents:
+    """Tests for stat/ips_event endpoint."""
+
+    def test_list_ips_events(self, authenticated_client):
+        """Verify ips_events endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/ips/event", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatPayments:
+    """Tests for stat/payment endpoint."""
+
+    def test_list_payments(self, authenticated_client):
+        """Verify payments endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/payment")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
 class TestStatPortforwardstats:
     """Tests for stat/portforward endpoint."""
 
@@ -184,6 +280,18 @@ class TestStatPortforwardstats:
         """Verify port_forward_stats endpoint returns valid data."""
         try:
             data = authenticated_client.api_get("stat/portforward")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatRemoteuservpn:
+    """Tests for stat/remoteuservpn endpoint."""
+
+    def test_list_remote_user_vpn(self, authenticated_client):
+        """Verify remote_user_vpn endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/remoteuservpn")
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
@@ -201,6 +309,114 @@ class TestStatReport:
         assert isinstance(data, list)
 
 
+class TestStatReport5minap:
+    """Tests for stat/report_5min_ap endpoint."""
+
+    def test_list_report_5min_ap(self, authenticated_client):
+        """Verify report_5min_ap endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/5minutes.ap", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReport5mingateway:
+    """Tests for stat/report_5min_gw endpoint."""
+
+    def test_list_report_5min_gateway(self, authenticated_client):
+        """Verify report_5min_gateway endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/5minutes.gw", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatSpeedtestresults:
+    """Tests for stat/report_archive_speedtest endpoint."""
+
+    def test_list_speedtest_results(self, authenticated_client):
+        """Verify speedtest_results endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/archive.speedtest", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReportdailygateway:
+    """Tests for stat/report_daily_gw endpoint."""
+
+    def test_list_report_daily_gateway(self, authenticated_client):
+        """Verify report_daily_gateway endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/daily.gw", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReporthourlygateway:
+    """Tests for stat/report_hourly_gw endpoint."""
+
+    def test_list_report_hourly_gateway(self, authenticated_client):
+        """Verify report_hourly_gateway endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/hourly.gw", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReportmonthlyap:
+    """Tests for stat/report_monthly_ap endpoint."""
+
+    def test_list_report_monthly_ap(self, authenticated_client):
+        """Verify report_monthly_ap endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/monthly.ap", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReportmonthlygateway:
+    """Tests for stat/report_monthly_gw endpoint."""
+
+    def test_list_report_monthly_gateway(self, authenticated_client):
+        """Verify report_monthly_gateway endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/monthly.gw", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReportmonthlysite:
+    """Tests for stat/report_monthly_site endpoint."""
+
+    def test_list_report_monthly_site(self, authenticated_client):
+        """Verify report_monthly_site endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/monthly.site", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
+class TestStatReportmonthlyuser:
+    """Tests for stat/report_monthly_user endpoint."""
+
+    def test_list_report_monthly_user(self, authenticated_client):
+        """Verify report_monthly_user endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_post("stat/report/monthly.user", {})
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
 class TestStatRogueaps:
     """Tests for stat/rogueap endpoint."""
 
@@ -211,21 +427,6 @@ class TestStatRogueaps:
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
-
-    def test_rogue_aps_fields(self, authenticated_client):
-        """Verify expected fields are present in rogue_aps data."""
-        try:
-            data = authenticated_client.api_get("stat/rogueap")
-        except (httpx.HTTPStatusError, RuntimeError) as e:
-            pytest.skip(f"Endpoint not available in test env: {e}")
-        if not data:
-            # No data in test env (no devices/clients/events); endpoint
-            # already validated by the list test above.
-            return
-        first = data[0]
-        expected_fields = ['age', 'ap_mac', 'band', 'bssid', 'bw']
-        for field in expected_fields:
-            assert field in first, f"Missing field '{field}' in rogue_aps record"
 
 
 class TestStatRoutingstats:
@@ -238,6 +439,33 @@ class TestStatRoutingstats:
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
+
+
+class TestStatSdnstatus:
+    """Tests for stat/sdn endpoint."""
+
+    def test_list_sdn_status(self, authenticated_client):
+        """Verify sdn_status endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/sdn")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+    def test_sdn_status_fields(self, authenticated_client):
+        """Verify expected fields are present in sdn_status data."""
+        try:
+            data = authenticated_client.api_get("stat/sdn")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        if not data:
+            # No data in test env (no devices/clients/events); endpoint
+            # already validated by the list test above.
+            return
+        first = data[0]
+        expected_fields = ['cloud_env', 'connected', 'connecting', 'enabled', 'has_sso_auth']
+        for field in expected_fields:
+            assert field in first, f"Missing field '{field}' in sdn_status record"
 
 
 class TestStatSessions:
@@ -264,6 +492,18 @@ class TestStatSitedpi:
         assert isinstance(data, list)
 
 
+class TestStatSpectrumscans:
+    """Tests for stat/spectrum_scan endpoint."""
+
+    def test_list_spectrum_scans(self, authenticated_client):
+        """Verify spectrum_scans endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/spectrum-scan")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+
 class TestStatClients:
     """Tests for stat/sta endpoint."""
 
@@ -274,21 +514,6 @@ class TestStatClients:
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)
-
-    def test_clients_fields(self, authenticated_client):
-        """Verify expected fields are present in clients data."""
-        try:
-            data = authenticated_client.api_get("stat/sta")
-        except (httpx.HTTPStatusError, RuntimeError) as e:
-            pytest.skip(f"Endpoint not available in test env: {e}")
-        if not data:
-            # No data in test env (no devices/clients/events); endpoint
-            # already validated by the list test above.
-            return
-        first = data[0]
-        expected_fields = ['_id', '_is_guest_by_usw', '_last_seen_by_usw', '_uptime_by_usw', 'anomalies']
-        for field in expected_fields:
-            assert field in first, f"Missing field '{field}' in clients record"
 
 
 class TestStatClientdpi:
@@ -310,6 +535,33 @@ class TestStatSysinfo:
         """Verify sysinfo endpoint returns valid data."""
         try:
             data = authenticated_client.api_get("stat/sysinfo")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        assert isinstance(data, list)
+
+    def test_sysinfo_fields(self, authenticated_client):
+        """Verify expected fields are present in sysinfo data."""
+        try:
+            data = authenticated_client.api_get("stat/sysinfo")
+        except (httpx.HTTPStatusError, RuntimeError) as e:
+            pytest.skip(f"Endpoint not available in test env: {e}")
+        if not data:
+            # No data in test env (no devices/clients/events); endpoint
+            # already validated by the list test above.
+            return
+        first = data[0]
+        expected_fields = ['anonymous_controller_id', 'autobackup', 'build', 'data_retention_days', 'data_retention_time_in_hours_for_5minutes_scale']
+        for field in expected_fields:
+            assert field in first, f"Missing field '{field}' in sysinfo record"
+
+
+class TestStatVouchers:
+    """Tests for stat/voucher endpoint."""
+
+    def test_list_vouchers(self, authenticated_client):
+        """Verify vouchers endpoint returns valid data."""
+        try:
+            data = authenticated_client.api_get("stat/voucher")
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)

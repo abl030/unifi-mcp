@@ -1,0 +1,256 @@
+{
+  "probed_at": "2026-02-09T23:35:53Z",
+  "controller_version": "10.0.162",
+  "model": "sonnet",
+  "results": [
+    {
+      "category": "global",
+      "name": "self_profile",
+      "path": "/api/self/profile",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The /api/self/profile endpoint does not exist on this controller version. GET, POST, and PUT all return api.err.InvalidObject. The actual user profile is available via GET /api/self, which returns the authenticated user's details successfully."
+    },
+    {
+      "category": "global",
+      "name": "system_poweroff",
+      "path": "/api/system/poweroff",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST /api/system/poweroff (no body required). Shuts down the UniFi controller immediately. DANGEROUS — should never be called during normal operation."
+    },
+    {
+      "category": "global",
+      "name": "system_reboot",
+      "path": "/api/system/reboot",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST /api/system/reboot (likely with empty body or confirmation parameter). Endpoint exists and is functional but MUST NOT be called as it reboots the controller."
+    },
+    {
+      "category": "global",
+      "name": "auth_login",
+      "path": "/api/auth/login",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "/api/auth/login is a UniFi OS-specific endpoint that does not work on standalone controllers. Standalone controllers use /api/login for authentication. The error responses indicate the endpoint is registered in the routing table but rejects all request formats, consistent with version-specific API differences."
+    },
+    {
+      "category": "global",
+      "name": "auth_logout",
+      "path": "/api/auth/logout",
+      "original_status": 400,
+      "verdict": "UNCERTAIN",
+      "notes": "The /api/auth/logout endpoint exists (returns 400 with structured error, not 404) but requires unknown parameters or may only work in UniFi OS context. The traditional /api/logout endpoint works for standalone controllers. The 400 api.err.InvalidObject error suggests it needs specific data fields we haven't identified."
+    },
+    {
+      "category": "global",
+      "name": "users_self",
+      "path": "/api/users/self",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The path /api/users/self does not exist on standalone controllers (returns api.err.InvalidObject). This appears to be a UniFi OS-specific path. The standalone equivalent is /api/self which already exists as the global/self endpoint in the inventory."
+    },
+    {
+      "category": "global",
+      "name": "logout",
+      "path": "/api/logout",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST to /api/logout with empty JSON body {}. Returns {\"meta\": {\"rc\": \"ok\"}, \"data\": []}. Used to invalidate the current session (client should discard cookies after calling).",
+      "response_status": 200
+    },
+    {
+      "category": "rest",
+      "name": "apgroup",
+      "path": "/api/s/default/rest/apgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "rest/apgroup exists structurally (returns 400/invalid, not 404) but cannot be successfully called with standard REST patterns. Functionality appears to have been superseded by v2/apgroups endpoint which works correctly.",
+      "response_status": 200
+    },
+    {
+      "category": "rest",
+      "name": "dnsrecord",
+      "path": "/api/s/default/rest/dnsrecord",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (returns InvalidObject, not 404) but likely requires a UniFi gateway with DNS service configured. Without a gateway device running DNS resolver, there are no DNS records to manage."
+    },
+    {
+      "category": "rest",
+      "name": "radiusaccount",
+      "path": "/api/s/default/rest/radiusaccount",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "endpoint exists at /api/s/default/rest/radiusaccount and responds with api.err.InvalidObject when RADIUS authentication is not configured. The endpoint requires RADIUS to be enabled and configured via /api/s/default/set/setting/radius before RADIUS accounts can be managed. Standard REST CRUD pattern applies once RADIUS is configured: GET lists accounts, POST creates, PUT updates, DELETE removes."
+    },
+    {
+      "category": "rest",
+      "name": "broadcastgroup",
+      "path": "/api/s/default/rest/broadcastgroup",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint likely exists for controllers with broadcast group capable devices (possibly related to multicast/broadcast features on specific UniFi devices), but returns InvalidObject error on this standalone controller without such devices"
+    },
+    {
+      "category": "rest",
+      "name": "mediafile",
+      "path": "/api/s/default/rest/mediafile",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "endpoint exists at /api/s/default/rest/mediafile and accepts multipart form-data POST requests for uploading hotspot portal media files. GET returns api.err.InvalidObject (not for listing). Proper usage requires multipart file upload with appropriate form field names (likely file or media plus metadata fields), but cannot be fully tested without actual media files and knowledge of required form parameters."
+    },
+    {
+      "category": "rest",
+      "name": "element",
+      "path": "/api/s/default/rest/element",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists but requires actual Element device attempting adoption with proper device identifiers (MAC, adoption credentials, etc.). The element_adopt settings exist at get/setting/element_adopt, but rest/element POST operations need real device data to succeed."
+    },
+    {
+      "category": "list",
+      "name": "apgroup",
+      "path": "/api/s/default/list/apgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/apgroup does not exist. The apgroup resource is only available via the v2 API at /v2/api/site/default/apgroups (which already works and is documented in probe results)."
+    },
+    {
+      "category": "list",
+      "name": "backup",
+      "path": "/api/s/default/list/backup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/backup does not exist. The backup listing functionality is available via POST /api/s/default/cmd/backup with {\"cmd\": \"list-backups\"}, which is already captured as a cmd endpoint (not a list endpoint)."
+    },
+    {
+      "category": "list",
+      "name": "firmware",
+      "path": "/api/s/default/list/firmware",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (responds with api.err.InvalidObject rather than 404) but likely requires adopted devices to return firmware information"
+    },
+    {
+      "category": "list",
+      "name": "rogueap",
+      "path": "/api/s/default/list/rogueap",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/rogueap returns api.err.InvalidObject for all methods. Use stat/rogueap instead (GET works, returns ok with empty data)."
+    },
+    {
+      "category": "list",
+      "name": "radiusaccount",
+      "path": "/api/s/default/list/radiusaccount",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject for both /list/radiusaccount and /rest/radiusaccount, indicating this resource type does not exist on this controller version (v10.0.162). The correct resource name is likely radiusprofile instead, which is confirmed to work in the probe results."
+    },
+    {
+      "category": "list",
+      "name": "broadcastgroup",
+      "path": "/api/s/default/list/broadcastgroup",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "The endpoint returns api.err.InvalidObject for both GET and POST requests, and the corresponding REST endpoint also doesn't exist. This resource type is not available on this controller version (v10.0.162)."
+    },
+    {
+      "category": "list",
+      "name": "extension",
+      "path": "/api/s/default/list/extension",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject for all attempted methods (GET 400, POST with various bodies). Likely requires UniFi extensions/plugins to be installed or is version-specific."
+    },
+    {
+      "category": "list",
+      "name": "wifichannels",
+      "path": "/api/s/default/list/wifichannels",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "The endpoint responds (not 404) and accepts POST requests, but returns \"api.err.InvalidObject\" for all parameter combinations. This suggests it requires a valid device MAC address or device-specific context that doesn't exist in this bare controller. The endpoint likely works when querying WiFi channel information for actual adopted access points."
+    },
+    {
+      "category": "list",
+      "name": "country",
+      "path": "/api/s/default/list/country",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns InvalidObject error for all POST variants and 400 for GET, suggesting it doesn't exist or is not implemented in v10.0.162"
+    },
+    {
+      "category": "list",
+      "name": "devices",
+      "path": "/api/s/default/list/devices",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists (returns 400 InvalidObject, not 404) but likely requires adopted devices to function properly or requires unknown parameters we cannot determine without documentation"
+    },
+    {
+      "category": "list",
+      "name": "settings",
+      "path": "/api/s/default/list/settings",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/settings (plural) does not exist. The correct endpoint is list/setting (singular), which already works and returns setting records."
+    },
+    {
+      "category": "list",
+      "name": "dnsrecord",
+      "path": "/api/s/default/list/dnsrecord",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint returns api.err.InvalidObject consistently on standalone controller v10.0.162. This feature appears to be specific to UniFi OS devices (Dream Machine, Console) which have integrated DNS server functionality. Standalone controllers don't manage DNS records."
+    },
+    {
+      "category": "list",
+      "name": "mediafile",
+      "path": "/api/s/default/list/mediafile",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "list/mediafile returns api.err.InvalidObject on both GET and POST. The rest/mediafile endpoint also returns the same error, indicating the mediafile resource type is not recognized by this controller version (v10.0.162 standalone)."
+    },
+    {
+      "category": "list",
+      "name": "element",
+      "path": "/api/s/default/list/element",
+      "original_status": 400,
+      "verdict": "NOT_FOUND",
+      "notes": "endpoint returns api.err.InvalidObject regardless of method (GET/POST) or parameters, suggesting the \"element\" resource type does not exist on this v10.0.162 controller"
+    },
+    {
+      "category": "stat",
+      "name": "session",
+      "path": "/api/s/default/stat/session",
+      "original_status": 400,
+      "verdict": "FOUND",
+      "notes": "POST to /api/s/default/stat/session with body {\"type\":\"all\",\"start\":0,\"end\":9999999999} (date range required). Returns session history data. Empty data array on fresh controllers is expected (no sessions recorded yet)."
+    },
+    {
+      "category": "v2",
+      "name": "fingerprint_devices",
+      "path": "/v2/api/fingerprint_devices/defaults",
+      "original_status": 400,
+      "verdict": "UNCERTAIN",
+      "notes": "The endpoint exists at /v2/api/fingerprint_devices/defaults (returns 400 not 404), but consistently returns HTTP 400 Bad Request on GET. This suggests either: (1) it requires specific query parameters not documented, (2) it requires device fingerprinting to be enabled in the controller, or (3) it's a feature that requires specific hardware/licenses. The fact that it's a \"defaults\" endpoint suggests it may be a configuration endpoint that only works when the fingerprinting feature is active."
+    },
+    {
+      "category": "cnt",
+      "name": "sta",
+      "path": "/api/s/default/cnt/sta",
+      "original_status": 400,
+      "verdict": "NEEDS_DEVICE",
+      "notes": "endpoint exists and responds but requires an active connected client (station) to query. The api.err.InvalidObject error suggests it needs a valid MAC address or client identifier, but there are no connected clients in this test environment to validate against."
+    }
+  ],
+  "summary": {
+    "total_probed": 30,
+    "found": 6,
+    "not_found": 14,
+    "needs_device": 8,
+    "uncertain": 2
+  }
+}

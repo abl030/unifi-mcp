@@ -8,6 +8,54 @@ from __future__ import annotations
 import pytest
 
 
+class TestV2Apgroup:
+    """Tests for v2 ap_group endpoint."""
+
+    def test_list_ap_groups(self, authenticated_client):
+        """Verify listing ap_groups via v2 API returns valid data."""
+        data = authenticated_client.v2_get("v2/api/site/{site}/apgroups")
+        # v2 may return list directly or wrapped
+        assert data is not None
+        if isinstance(data, list):
+            pass  # Good, got a list
+        elif isinstance(data, dict):
+            pass  # Some v2 endpoints wrap in object
+        else:
+            pytest.fail(f"Unexpected response type: {type(data)}")
+
+
+class TestV2Activeclient:
+    """Tests for v2 active_client endpoint."""
+
+    def test_list_active_clients(self, authenticated_client):
+        """Verify listing active_clients via v2 API returns valid data."""
+        data = authenticated_client.v2_get("v2/api/site/{site}/clients/active")
+        # v2 may return list directly or wrapped
+        assert data is not None
+        if isinstance(data, list):
+            pass  # Good, got a list
+        elif isinstance(data, dict):
+            pass  # Some v2 endpoints wrap in object
+        else:
+            pytest.fail(f"Unexpected response type: {type(data)}")
+
+
+class TestV2Clienthistory:
+    """Tests for v2 client_history endpoint."""
+
+    def test_list_clients_history(self, authenticated_client):
+        """Verify listing clients_history via v2 API returns valid data."""
+        data = authenticated_client.v2_get("v2/api/site/{site}/clients/history")
+        # v2 may return list directly or wrapped
+        assert data is not None
+        if isinstance(data, list):
+            pass  # Good, got a list
+        elif isinstance(data, dict):
+            pass  # Some v2 endpoints wrap in object
+        else:
+            pytest.fail(f"Unexpected response type: {type(data)}")
+
+
 class TestV2Firewallpolicy:
     """Tests for v2 firewall_policy endpoint."""
 
@@ -24,12 +72,44 @@ class TestV2Firewallpolicy:
             pytest.fail(f"Unexpected response type: {type(data)}")
 
 
+class TestV2Firewallzone:
+    """Tests for v2 firewall_zone endpoint."""
+
+    def test_list_firewall_zones(self, authenticated_client):
+        """Verify listing firewall_zones via v2 API returns valid data."""
+        data = authenticated_client.v2_get("v2/api/site/{site}/firewall/zone")
+        # v2 may return list directly or wrapped
+        assert data is not None
+        if isinstance(data, list):
+            pass  # Good, got a list
+        elif isinstance(data, dict):
+            pass  # Some v2 endpoints wrap in object
+        else:
+            pytest.fail(f"Unexpected response type: {type(data)}")
+
+
 class TestV2Trafficrule:
     """Tests for v2 traffic_rule endpoint."""
 
     def test_list_traffic_rules(self, authenticated_client):
         """Verify listing traffic_rules via v2 API returns valid data."""
         data = authenticated_client.v2_get("v2/api/site/{site}/trafficrules")
+        # v2 may return list directly or wrapped
+        assert data is not None
+        if isinstance(data, list):
+            pass  # Good, got a list
+        elif isinstance(data, dict):
+            pass  # Some v2 endpoints wrap in object
+        else:
+            pytest.fail(f"Unexpected response type: {type(data)}")
+
+
+class TestV2Trafficroute:
+    """Tests for v2 traffic_route endpoint."""
+
+    def test_list_traffic_routes(self, authenticated_client):
+        """Verify listing traffic_routes via v2 API returns valid data."""
+        data = authenticated_client.v2_get("v2/api/site/{site}/trafficroutes")
         # v2 may return list directly or wrapped
         assert data is not None
         if isinstance(data, list):
