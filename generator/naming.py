@@ -541,10 +541,11 @@ REST_MODULES: dict[str, str] = {
     # wifi
     "wlanconf": "wifi", "wlangroup": "wifi", "channelplan": "wifi",
     # network
-    "networkconf": "network", "portconf": "network", "dnsrecord": "network",
-    # firewall
+    "networkconf": "network", "portconf": "network",
+    # firewall (gateway-dependent)
     "firewallrule": "firewall", "firewallgroup": "firewall", "portforward": "firewall",
     "routing": "firewall", "dynamicdns": "firewall", "dhcpoption": "firewall",
+    "dnsrecord": "firewall",
     # monitor
     "alarm": "monitor", "event": "monitor",
     # admin
