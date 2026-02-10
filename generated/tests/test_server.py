@@ -59,7 +59,7 @@ class TestServerSyntax:
         tree = ast.parse(source)
 
         names: dict[str, int] = {}
-        for node in ast.iter_child_nodes(tree):
+        for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name in names:
                     first_line = names[node.name]
@@ -84,7 +84,7 @@ class TestServerSyntax:
 
         tool_funcs = [
             node.name
-            for node in ast.iter_child_nodes(tree)
+            for node in ast.walk(tree)
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
             and node.name.startswith("unifi_")
         ]

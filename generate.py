@@ -126,7 +126,7 @@ def generate() -> None:
     server_code = server_template.render(**ctx)
     (OUTPUT_DIR / "server.py").write_text(server_code)
     # Count tool functions
-    tool_count = len(re.findall(r"^async def unifi_", server_code, re.MULTILINE))
+    tool_count = len(re.findall(r"^\s*async def unifi_", server_code, re.MULTILINE))
     print(f"  Generated {tool_count} tool functions")
 
     # --- Render conftest.py ---

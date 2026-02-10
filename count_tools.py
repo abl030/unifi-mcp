@@ -130,7 +130,7 @@ def count_actual_tools() -> int | None:
     if not server_path.exists():
         return None
     code = server_path.read_text()
-    return len(re.findall(r"^async def unifi_", code, re.MULTILINE))
+    return len(re.findall(r"^\s*async def unifi_", code, re.MULTILINE))
 
 
 def main():

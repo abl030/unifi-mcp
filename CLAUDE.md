@@ -92,7 +92,8 @@ A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and 
 - Uses **FastMCP** (same framework as the current hand-maintained server)
 - Single `UniFiClient` class handles auth, session management, cookie handling
 - Supports both standalone controllers and UniFi OS (with/without `/proxy/network` prefix)
-- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`
+- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`
+- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Set to `v1` on standalone controllers (v2 endpoints don't exist there), or `v2` for v2-only. Global tools and helpers are always registered regardless of this setting.
 - Graceful error handling with clear error messages in tool responses
 
 ### Docker Test Harness

@@ -28,6 +28,9 @@ UNIFI_USERNAME = os.environ.get("UNIFI_USERNAME", "admin")
 UNIFI_PASSWORD = os.environ.get("UNIFI_PASSWORD", "")
 UNIFI_SITE = os.environ.get("UNIFI_SITE", "default")
 UNIFI_VERIFY_SSL = os.environ.get("UNIFI_VERIFY_SSL", "false").lower() == "true"
+UNIFI_MODULES = set(
+    m.strip() for m in os.environ.get("UNIFI_MODULES", "v1,v2").split(",") if m.strip()
+)
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +241,8 @@ async def unifi_report_issue(
     )
 
 
+if "v1" in UNIFI_MODULES:
+{% filter indent(4, first=True) %}
 # ===========================================================================
 # REST Endpoint Tools
 # ===========================================================================
@@ -579,7 +584,10 @@ async def unifi_{{ tool.tool_name }}(
     return _format_response(result, "Executed {{ tool.command }}")
 
 {% endfor %}
+{% endfilter %}
 
+if "v2" in UNIFI_MODULES:
+{% filter indent(4, first=True) %}
 # ===========================================================================
 # v2 Endpoint Tools
 # ===========================================================================
@@ -703,6 +711,7 @@ async def unifi_delete_{{ tool.singular }}(
 
 {% endif %}
 {% endfor %}
+{% endfilter %}
 
 # ===========================================================================
 # Global Endpoint Tools

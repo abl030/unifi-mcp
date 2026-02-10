@@ -118,6 +118,19 @@ claude mcp add unifi -- \
 | `UNIFI_PASSWORD` | *(required)* | Admin password |
 | `UNIFI_SITE` | `default` | Site name |
 | `UNIFI_VERIFY_SSL` | `false` | Verify SSL certificates |
+| `UNIFI_MODULES` | `v1,v2` | Tool groups to register (see below) |
+
+### Module Toggle (`UNIFI_MODULES`)
+
+The v2 API endpoints (`/v2/api/...`) only exist on UniFi OS controllers (Dream Machine, Cloud Gateway). On standalone controllers they fail with misleading "connection failed" errors. Use `UNIFI_MODULES` to control which tool groups are registered:
+
+| Value | Tools | Use case |
+|-------|-------|----------|
+| `v1,v2` (default) | 284 | UniFi OS controllers (Dream Machine, Cloud Gateway) |
+| `v1` | 269 | Standalone controllers (no v2 endpoints) |
+| `v2` | 25 | v2 + global tools only |
+
+Global tools (`status`, `self`, `sites`, etc.) and helpers (`set_port_override`, `report_issue`) are always registered regardless of this setting. No regeneration needed — just set the env var.
 
 ## What You Get: 284 Tools
 
