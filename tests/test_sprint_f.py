@@ -215,35 +215,37 @@ class TestRedactSecrets:
 class TestPaginateAndFilter:
     def test_no_params(self):
         data = [{"a": 1}, {"a": 2}, {"a": 3}]
-        result = srv._paginate_and_filter(data, limit=0, offset=0, fields="")
+        result, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="")
         assert result == data
+        assert missing == []
 
     def test_limit(self):
         data = [{"a": 1}, {"a": 2}, {"a": 3}]
-        result = srv._paginate_and_filter(data, limit=2, offset=0, fields="")
+        result, _ = srv._paginate_and_filter(data, limit=2, offset=0, fields="")
         assert len(result) == 2
         assert result[0]["a"] == 1
 
     def test_offset(self):
         data = [{"a": 1}, {"a": 2}, {"a": 3}]
-        result = srv._paginate_and_filter(data, limit=0, offset=1, fields="")
+        result, _ = srv._paginate_and_filter(data, limit=0, offset=1, fields="")
         assert len(result) == 2
         assert result[0]["a"] == 2
 
     def test_limit_and_offset(self):
         data = [{"a": i} for i in range(10)]
-        result = srv._paginate_and_filter(data, limit=3, offset=2, fields="")
+        result, _ = srv._paginate_and_filter(data, limit=3, offset=2, fields="")
         assert len(result) == 3
         assert result[0]["a"] == 2
 
     def test_fields(self):
         data = [{"_id": "1", "name": "Test", "extra": "drop"}]
-        result = srv._paginate_and_filter(data, limit=0, offset=0, fields="name")
+        result, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="name")
         assert result == [{"_id": "1", "name": "Test"}]
+        assert missing == []
 
     def test_fields_always_includes_id(self):
         data = [{"_id": "1", "name": "Test", "type": "x"}]
-        result = srv._paginate_and_filter(data, limit=0, offset=0, fields="name")
+        result, _ = srv._paginate_and_filter(data, limit=0, offset=0, fields="name")
         assert "_id" in result[0]
 
     def test_all_combined(self):
@@ -251,10 +253,34 @@ class TestPaginateAndFilter:
             {"_id": str(i), "name": f"item{i}", "extra": "x"}
             for i in range(10)
         ]
-        result = srv._paginate_and_filter(data, limit=2, offset=3, fields="name")
+        result, _ = srv._paginate_and_filter(data, limit=2, offset=3, fields="name")
         assert len(result) == 2
         assert result[0] == {"_id": "3", "name": "item3"}
         assert result[1] == {"_id": "4", "name": "item4"}
+
+    def test_missing_fields_detected(self):
+        """Requesting a field that doesn't exist returns it in missing list."""
+        data = [{"_id": "1", "name": "Test", "ip": "10.0.0.1"}]
+        result, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="name,network,vlan")
+        assert result == [{"_id": "1", "name": "Test"}]
+        assert "network" in missing
+        assert "vlan" in missing
+        assert "name" not in missing
+
+    def test_missing_fields_empty_when_all_exist(self):
+        data = [{"_id": "1", "name": "Test", "ip": "10.0.0.1"}]
+        result, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="name,ip")
+        assert missing == []
+
+    def test_missing_fields_in_format_response(self):
+        """_format_response includes missing_fields when provided."""
+        result = srv._format_response([{"a": 1}], "test", missing_fields=["network", "vlan"])
+        assert result["missing_fields"] == ["network", "vlan"]
+
+    def test_no_missing_fields_key_when_empty(self):
+        """_format_response omits missing_fields when list is empty."""
+        result = srv._format_response([{"a": 1}], "test", missing_fields=[])
+        assert "missing_fields" not in result
 
 
 # ===========================================================================

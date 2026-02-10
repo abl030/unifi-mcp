@@ -1,5 +1,9 @@
 # UniFi MCP Server Generator
 
+## Rules
+
+- **Never close GitHub issues without asking the user first.** Issues represent real friction points even when the code is "working as designed." Always discuss before closing.
+
 ## Goal
 
 Build a **self-contained, auto-generated MCP server** for the UniFi Network Controller API. The server and its test suite are both generated from the API specification — not hand-maintained. When Ubiquiti updates their API, you bump a Docker image tag and re-run the generator.

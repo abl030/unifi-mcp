@@ -201,7 +201,11 @@ def _redact_secrets(obj: Any) -> Any:
 # Helper: format response
 # ---------------------------------------------------------------------------
 
-def _format_response(data: Any, summary: str | None = None) -> dict:
+def _format_response(
+    data: Any,
+    summary: str | None = None,
+    missing_fields: list[str] | None = None,
+) -> dict:
     """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
         data = _redact_secrets(data)
@@ -213,6 +217,8 @@ def _format_response(data: Any, summary: str | None = None) -> dict:
         result["data"] = data
     elif data is not None:
         result["data"] = data
+    if missing_fields:
+        result["missing_fields"] = missing_fields
     return result
 
 
@@ -220,20 +226,34 @@ def _format_response(data: Any, summary: str | None = None) -> dict:
 # Helper: pagination and field selection
 # ---------------------------------------------------------------------------
 
-def _paginate_and_filter(data: list, limit: int, offset: int, fields: str) -> list:
-    """Apply offset, limit, and field selection to a list of records."""
+def _paginate_and_filter(
+    data: list, limit: int, offset: int, fields: str
+) -> tuple[list, list[str]]:
+    """Apply offset, limit, and field selection to a list of records.
+
+    Returns (filtered_data, missing_fields) where missing_fields lists any
+    requested field names that don't exist in the data.
+    """
     if offset:
         data = data[offset:]
     if limit:
         data = data[:limit]
+    missing: list[str] = []
     if fields:
         field_set = {f.strip() for f in fields.split(",")}
         field_set.add("_id")  # always include _id for reference
+        # Detect fields that don't exist in any record
+        if data:
+            available: set[str] = set()
+            for item in data:
+                if isinstance(item, dict):
+                    available.update(item.keys())
+            missing = sorted(field_set - available - {"_id"})
         data = [
             {k: v for k, v in item.items() if k in field_set}
             for item in data if isinstance(item, dict)
         ]
-    return data
+    return data, missing
 
 
 _MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
@@ -323,8 +343,8 @@ async def unifi_list_settings(
     client = await _get_client()
     data = await client.request("GET", "rest/setting", site=site or None)
     total = len(data)
-    data = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} setting categories")
+    data, missing = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} setting categories", missing_fields=missing)
 
 
 @mcp.tool()
@@ -400,8 +420,8 @@ async def unifi_list_{{ tool.plural }}(
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
     total = len(data)
-    data = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.plural }}")
+    data, missing = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
 
 {% elif tool.is_crud %}
 
@@ -431,8 +451,8 @@ async def unifi_list_{{ tool.plural }}(
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
     total = len(data)
-    data = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.plural }}")
+    data, missing = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
 
 
 @mcp.tool()
@@ -586,8 +606,8 @@ async def unifi_list_report(
     path = f"stat/report/{interval}.{report_type}"
     data = await client.request("POST", path, json_data={}, site=site or None)
     total = len(data)
-    data = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} report records")
+    data, missing = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} report records", missing_fields=missing)
 
 {% else %}
 
@@ -623,8 +643,8 @@ async def unifi_list_{{ tool.display_name }}(
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
 {% endif %}
     total = len(data)
-    data = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.display_name }} records")
+    data, missing = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.display_name }} records", missing_fields=missing)
 
 {% endif %}
 {% endmacro %}
@@ -735,8 +755,8 @@ async def unifi_list_{{ tool.plural }}(
     data = await client.request("GET", "/{{ tool.path }}".replace("{site}", effective_site))
     if isinstance(data, list):
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} {{ tool.plural }}")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
     return _format_response(data)
 
 {% endif %}

@@ -201,7 +201,11 @@ def _redact_secrets(obj: Any) -> Any:
 # Helper: format response
 # ---------------------------------------------------------------------------
 
-def _format_response(data: Any, summary: str | None = None) -> dict:
+def _format_response(
+    data: Any,
+    summary: str | None = None,
+    missing_fields: list[str] | None = None,
+) -> dict:
     """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
         data = _redact_secrets(data)
@@ -213,6 +217,8 @@ def _format_response(data: Any, summary: str | None = None) -> dict:
         result["data"] = data
     elif data is not None:
         result["data"] = data
+    if missing_fields:
+        result["missing_fields"] = missing_fields
     return result
 
 
@@ -220,20 +226,34 @@ def _format_response(data: Any, summary: str | None = None) -> dict:
 # Helper: pagination and field selection
 # ---------------------------------------------------------------------------
 
-def _paginate_and_filter(data: list, limit: int, offset: int, fields: str) -> list:
-    """Apply offset, limit, and field selection to a list of records."""
+def _paginate_and_filter(
+    data: list, limit: int, offset: int, fields: str
+) -> tuple[list, list[str]]:
+    """Apply offset, limit, and field selection to a list of records.
+
+    Returns (filtered_data, missing_fields) where missing_fields lists any
+    requested field names that don't exist in the data.
+    """
     if offset:
         data = data[offset:]
     if limit:
         data = data[:limit]
+    missing: list[str] = []
     if fields:
         field_set = {f.strip() for f in fields.split(",")}
         field_set.add("_id")  # always include _id for reference
+        # Detect fields that don't exist in any record
+        if data:
+            available: set[str] = set()
+            for item in data:
+                if isinstance(item, dict):
+                    available.update(item.keys())
+            missing = sorted(field_set - available - {"_id"})
         data = [
             {k: v for k, v in item.items() if k in field_set}
             for item in data if isinstance(item, dict)
         ]
-    return data
+    return data, missing
 
 
 _MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
@@ -326,8 +346,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/device", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} device_configs")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} device_configs", missing_fields=missing)
 
 
 
@@ -355,8 +375,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/element", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} elements")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} elements", missing_fields=missing)
 
 
 
@@ -384,8 +404,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/virtualdevice", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} virtual_devices")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} virtual_devices", missing_fields=missing)
 
 
 
@@ -411,8 +431,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/device", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} devices records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} devices records", missing_fields=missing)
 
 
 
@@ -436,8 +456,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/device-basic", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} devices_basic records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} devices_basic records", missing_fields=missing)
 
 
 
@@ -1488,8 +1508,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/user", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} users")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} users", missing_fields=missing)
 
 
     @mcp.tool()
@@ -1587,8 +1607,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/alluser", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} all_users records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} all_users records", missing_fields=missing)
 
 
 
@@ -1612,8 +1632,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/guest", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} guests records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} guests records", missing_fields=missing)
 
 
 
@@ -1639,8 +1659,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/session", json_data={'type': 'all', 'start': 0, 'end': 9999999999}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} sessions records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} sessions records", missing_fields=missing)
 
 
 
@@ -1664,8 +1684,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/sta", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} clients records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} clients records", missing_fields=missing)
 
 
 
@@ -1942,8 +1962,8 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/clients/active".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} active_clients")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} active_clients", missing_fields=missing)
         return _format_response(data)
 
 
@@ -1972,8 +1992,8 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/clients/history".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} clients_history")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} clients_history", missing_fields=missing)
         return _format_response(data)
 
 
@@ -2007,8 +2027,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/channelplan", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} channel_plans")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} channel_plans", missing_fields=missing)
 
 
 
@@ -2034,8 +2054,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/wlanconf", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} wlans")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} wlans", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2162,8 +2182,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/wlangroup", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} wlan_groups")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} wlan_groups", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2286,8 +2306,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/ccode", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} country_codes records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} country_codes records", missing_fields=missing)
 
 
 
@@ -2313,8 +2333,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/current-channel", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} current_channels records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} current_channels records", missing_fields=missing)
 
 
 
@@ -2338,8 +2358,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/spectrum-scan", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} spectrum_scans records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} spectrum_scans records", missing_fields=missing)
 
 
 
@@ -2371,8 +2391,8 @@ if "wifi" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/apgroups".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} ap_groups")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} ap_groups", missing_fields=missing)
         return _format_response(data)
 
 
@@ -2404,8 +2424,8 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/dnsrecord", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dns_records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dns_records", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2528,8 +2548,8 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/networkconf", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} networks")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} networks", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2656,8 +2676,8 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/portconf", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} port_profiles")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} port_profiles", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2787,8 +2807,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/dhcpoption", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dhcp_options")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dhcp_options", missing_fields=missing)
 
 
     @mcp.tool()
@@ -2910,8 +2930,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/dynamicdns", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dynamic_dns_entries")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dynamic_dns_entries", missing_fields=missing)
 
 
     @mcp.tool()
@@ -3032,8 +3052,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/firewallgroup", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} firewall_groups")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} firewall_groups", missing_fields=missing)
 
 
     @mcp.tool()
@@ -3158,8 +3178,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/firewallrule", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} firewall_rules")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} firewall_rules", missing_fields=missing)
 
 
     @mcp.tool()
@@ -3284,8 +3304,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/portforward", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} port_forwards")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} port_forwards", missing_fields=missing)
 
 
     @mcp.tool()
@@ -3410,8 +3430,8 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/routing", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} routes")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} routes", missing_fields=missing)
 
 
     @mcp.tool()
@@ -3536,8 +3556,8 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/firewall-policies".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} firewall_policies")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} firewall_policies", missing_fields=missing)
         return _format_response(data)
 
 
@@ -3651,8 +3671,8 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/firewall/zone".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} firewall_zones")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} firewall_zones", missing_fields=missing)
         return _format_response(data)
 
 
@@ -3713,8 +3733,8 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/trafficrules".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} traffic_rules")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} traffic_rules", missing_fields=missing)
         return _format_response(data)
 
 
@@ -3828,8 +3848,8 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         data = await client.request("GET", "/v2/api/site/{site}/trafficroutes".replace("{site}", effective_site))
         if isinstance(data, list):
             total = len(data)
-            data = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} traffic_routes")
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} traffic_routes", missing_fields=missing)
         return _format_response(data)
 
 
@@ -3895,8 +3915,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/alarm", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} alarms")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} alarms", missing_fields=missing)
 
 
 
@@ -3924,8 +3944,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/event", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} events")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} events", missing_fields=missing)
 
 
 
@@ -3949,8 +3969,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/alarm", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} stat_alarms records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} stat_alarms records", missing_fields=missing)
 
 
 
@@ -3976,8 +3996,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/anomalies", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} anomalies records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} anomalies records", missing_fields=missing)
 
 
 
@@ -4001,8 +4021,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/authorization", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} authorizations records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} authorizations records", missing_fields=missing)
 
 
 
@@ -4028,8 +4048,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/dashboard", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dashboard records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dashboard records", missing_fields=missing)
 
 
 
@@ -4053,8 +4073,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/dpi", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dpi_stats records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dpi_stats records", missing_fields=missing)
 
 
 
@@ -4078,8 +4098,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/dynamicdns", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dynamic_dns_stats records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dynamic_dns_stats records", missing_fields=missing)
 
 
 
@@ -4103,8 +4123,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/event", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} stat_events records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} stat_events records", missing_fields=missing)
 
 
 
@@ -4130,8 +4150,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/gateway", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} gateway_stats records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} gateway_stats records", missing_fields=missing)
 
 
 
@@ -4157,8 +4177,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/health", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} health records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} health records", missing_fields=missing)
 
 
 
@@ -4184,8 +4204,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/ips/event", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} ips_events records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} ips_events records", missing_fields=missing)
 
 
 
@@ -4209,8 +4229,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/portforward", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} port_forward_stats records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} port_forward_stats records", missing_fields=missing)
 
 
 
@@ -4236,8 +4256,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/remoteuservpn", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} remote_user_vpn records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} remote_user_vpn records", missing_fields=missing)
 
 
 
@@ -4268,8 +4288,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         path = f"stat/report/{interval}.{report_type}"
         data = await client.request("POST", path, json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report records", missing_fields=missing)
 
 
 
@@ -4293,8 +4313,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/5minutes.ap", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_5min_ap records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_5min_ap records", missing_fields=missing)
 
 
 
@@ -4320,8 +4340,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/5minutes.gw", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_5min_gateway records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_5min_gateway records", missing_fields=missing)
 
 
 
@@ -4347,8 +4367,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/archive.speedtest", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} speedtest_results records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} speedtest_results records", missing_fields=missing)
 
 
 
@@ -4372,8 +4392,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/daily.gw", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_daily_gateway records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_daily_gateway records", missing_fields=missing)
 
 
 
@@ -4397,8 +4417,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/hourly.gw", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_hourly_gateway records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_hourly_gateway records", missing_fields=missing)
 
 
 
@@ -4422,8 +4442,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/monthly.ap", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_monthly_ap records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_monthly_ap records", missing_fields=missing)
 
 
 
@@ -4447,8 +4467,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/monthly.gw", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_monthly_gateway records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_monthly_gateway records", missing_fields=missing)
 
 
 
@@ -4472,8 +4492,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/monthly.site", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_monthly_site records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_monthly_site records", missing_fields=missing)
 
 
 
@@ -4497,8 +4517,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("POST", "stat/report/monthly.user", json_data={}, site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} report_monthly_user records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report_monthly_user records", missing_fields=missing)
 
 
 
@@ -4522,8 +4542,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/rogueap", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} rogue_aps records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} rogue_aps records", missing_fields=missing)
 
 
 
@@ -4547,8 +4567,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/routing", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} routing_stats records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} routing_stats records", missing_fields=missing)
 
 
 
@@ -4574,8 +4594,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/sdn", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} sdn_status records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} sdn_status records", missing_fields=missing)
 
 
 
@@ -4599,8 +4619,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/sitedpi", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} site_dpi records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} site_dpi records", missing_fields=missing)
 
 
 
@@ -4624,8 +4644,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/stadpi", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} client_dpi records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} client_dpi records", missing_fields=missing)
 
 
 
@@ -4651,8 +4671,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/sysinfo", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} sysinfo records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} sysinfo records", missing_fields=missing)
 
 
 
@@ -4801,8 +4821,8 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/account", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} accounts")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} accounts", missing_fields=missing)
 
 
     @mcp.tool()
@@ -4923,8 +4943,8 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/setting", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} setting categories")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} setting categories", missing_fields=missing)
 
 
     @mcp.tool()
@@ -4996,8 +5016,8 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/tag", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} tags")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} tags", missing_fields=missing)
 
 
     @mcp.tool()
@@ -5120,8 +5140,8 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/usergroup", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} user_groups")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} user_groups", missing_fields=missing)
 
 
     @mcp.tool()
@@ -5960,8 +5980,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/hotspot2conf", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} hotspot2_configs")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} hotspot2_configs", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6082,8 +6102,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/hotspotop", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} hotspot_operators")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} hotspot_operators", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6204,8 +6224,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/hotspotpackage", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} hotspot_packages")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} hotspot_packages", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6327,8 +6347,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/radiusaccount", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} radius_accounts")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} radius_accounts", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6451,8 +6471,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/radiusprofile", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} radius_profiles")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} radius_profiles", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6577,8 +6597,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/payment", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} payments records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} payments records", missing_fields=missing)
 
 
 
@@ -6602,8 +6622,8 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "stat/voucher", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} vouchers records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} vouchers records", missing_fields=missing)
 
 
 
@@ -6812,8 +6832,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/broadcastgroup", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} broadcast_groups")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} broadcast_groups", missing_fields=missing)
 
 
     @mcp.tool()
@@ -6934,8 +6954,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/dpiapp", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dpi_apps")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dpi_apps", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7058,8 +7078,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/dpigroup", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} dpi_groups")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} dpi_groups", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7182,8 +7202,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/heatmap", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} heatmaps")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} heatmaps", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7305,8 +7325,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/heatmappoint", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} heatmap_points")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} heatmap_points", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7428,8 +7448,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/map", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} maps")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} maps", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7550,8 +7570,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/mediafile", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} media_files")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} media_files", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7674,8 +7694,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/rogueknown", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} known_rogue_aps")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} known_rogue_aps", missing_fields=missing)
 
 
 
@@ -7701,8 +7721,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/scheduletask", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} schedule_tasks")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} schedule_tasks", missing_fields=missing)
 
 
     @mcp.tool()
@@ -7826,8 +7846,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         client = await _get_client()
         data = await client.request("GET", "rest/spatialrecord", site=site or None)
         total = len(data)
-        data = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} spatial_records")
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} spatial_records", missing_fields=missing)
 
 
     @mcp.tool()
