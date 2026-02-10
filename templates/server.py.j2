@@ -359,6 +359,7 @@ async def unifi_update_{{ tool.singular }}(
     return _format_response(result, "Updated {{ tool.singular }}")
 
 
+{% if not tool.no_rest_delete %}
 @mcp.tool()
 async def unifi_delete_{{ tool.singular }}(
     id: str,
@@ -381,6 +382,7 @@ async def unifi_delete_{{ tool.singular }}(
     result = await client.request("DELETE", "{{ tool.path }}/{id}".format(id=id), site=site or None)
     return _format_response(result, "Deleted {{ tool.singular }}")
 
+{% endif %}
 {% endif %}
 {% endfor %}
 

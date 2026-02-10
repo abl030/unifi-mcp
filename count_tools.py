@@ -15,7 +15,7 @@ ROOT = Path(__file__).parent
 INVENTORY_PATH = ROOT / "endpoint-inventory.json"
 
 # Import the authoritative sets from the generator so we stay in sync.
-from generator.naming import CRUD_REST, READ_ONLY_REST
+from generator.naming import CRUD_REST, NO_REST_DELETE, READ_ONLY_REST
 
 
 def count_from_spec() -> dict:
@@ -61,7 +61,7 @@ def count_from_spec() -> dict:
         elif is_readonly:
             tools = 1
         elif is_crud:
-            tools = 5
+            tools = 4 if name in NO_REST_DELETE else 5
         else:
             # Not in RESOURCE_NAMES → template skips it, no tools generated
             rest_skipped.append(name)
@@ -154,7 +154,7 @@ def main():
     t = counts["tools"]
     print(f"  REST tools:          {t['rest']}")
     for name, n in sorted(counts["rest_detail"].items()):
-        label = "CRUD" if n == 5 else ("settings" if n == 3 else "read-only")
+        label = "CRUD" if n == 5 else ("CRUD-no-delete" if n == 4 else ("settings" if n == 3 else "read-only"))
         print(f"    {name:25s} → {n} tools ({label})")
     if counts["rest_skipped"]:
         print(f"  REST skipped:        {len(counts['rest_skipped'])} (no RESOURCE_NAMES entry)")

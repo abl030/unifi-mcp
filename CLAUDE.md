@@ -29,8 +29,8 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 286 total
-- **155 REST** tools (29 CRUD × 5 + settings × 3 + 5 read-only × 1)
+### Generated Tools: 285 total
+- **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
 - **68 Cmd** tools (1 per command across 9 managers)
 - **15 v2** tools (7 resources, tools per HTTP method)
@@ -392,11 +392,11 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (286/286) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (285/285) | DONE |
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). Full details in `bank-tester/RESEARCH.md`.
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprint A+B: 39 remaining failures (92.1% adjusted success rate). Full details in `bank-tester/RESEARCH.md`.
 
 **RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
 
@@ -421,49 +421,29 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | hotspotpackage fields | — | Reclassified: API_LIMITATION (needs payment gateway) |
 | dhcpoption fields | — | Reclassified: API_LIMITATION (needs DHCP gateway) |
 
+#### Sprint B: Opus Diagnosis + Generator Fixes — DONE
+
+**Result**: Opus diagnosed all 52 remaining failures. 13 resolved (11 confirmed working, 2 generator-fixed), 6 reclassified to DOCKER_IMAGE. 3 generator docstring improvements applied. Docker startup race fixed. Tool count: 286 → 285 (removed `delete_user`).
+
+| Fix | Change |
+|-----|--------|
+| `delete_user` tool removed | NO_REST_DELETE set; workflow hint → use `forget_client` |
+| `create_firewall_policy` docstring | V2_CREATE_HINTS: action, ipVersion, source, destination, schedule |
+| `update_traffic_route` docstring | V2_CREATE_HINTS: targetDevices, networkId, matchingTarget |
+| Docker startup race | Added `/api/self` readiness poll after login in `run-bank-test.sh` |
+
+**Reclassified (11 → WORKS):** block_client, unblock_client, authorize_guest, unauthorize_guest, create_user, grant_super_admin, list_firewall_policies, self, sites, stat_sites, stat_admin
+
+**Remaining: 39 failures** (23 hardware, 6 Docker image, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial)
+
 ### Next Sprints
 
-#### Sprint B: Opus Diagnosis of Remaining Failures (51 non-generator failures)
+#### Sprint C: Sonnet Verification of Sprint B Fixes
 
-**Goal**: Write a hand-crafted test task covering all remaining first-attempt failures (hardware-dependent, API limitation, test-env, test-config). Run with Opus. Opus diagnoses each failure and recommends whether to fix via Docker test image enhancement, generator change, or accept as unfixable.
+Verify Sprint B changes with Sonnet: global endpoints (startup race fix), client commands (reclassified to WORKS), create_user, spatial_record CRUD, and confirm `delete_user` no longer exists.
 
-**Step 1: Write Opus diagnosis test**
+#### Sprint D: Docker Image Enhancements (6 failures)
 
-Create `bank-tester/tasks/opus-diagnose-remaining.md` — a single task targeting all 51 remaining failures, organized by category. For each call, include the error from the Sonnet run and ask Opus to:
-1. Attempt the call
-2. Try alternative approaches (different params, different endpoint)
-3. Diagnose root cause
-4. Recommend fix category: `DOCKER_IMAGE` (MongoDB seeding, config), `GENERATOR` (missed in Sprint A), `UNFIXABLE` (API limitation)
-
-Failures to include:
-
-**Hardware-dependent (31):**
-- Device commands (adopt, restart, provision, power_cycle, locate, upgrade, migrate, spectrum_scan, move, delete, rename) — 14 from task 27
-- Client commands (block, unblock, kick, reconnect, authorize_guest, unauthorize_guest) — 6 from task 23
-- `set_port_override`, `list_gateway_stats`, `create_firewall_policy`, `generate_backup`, `generate_backup_site`, `hotspot_authorize_guest`, `extend_guest_validity`, `set_site_leds`, `update_traffic_route`, `create_user` (stale MAC)
-
-**API limitation (9):**
-- `set_site_name`, `delete_site` (x3), `grant_super_admin`, `revoke_super_admin`, `revoke_voucher`
-- `create_hotspot_package` (needs payment gateway — probed all field combos, always InvalidHotspotPackageDuration)
-- `create_dhcp_option` (needs DHCP gateway device — probed, code validation passes but create always api.err.Invalid)
-
-**Test environment (5):**
-- `unifi_self`, `sites`, `stat_sites`, `stat_admin` (startup race) + `invite_admin` (SMTP)
-
-**Test config (3):**
-- `assign_existing_admin`, `delete_admin`, `delete_user`
-
-**Adversarial expected (3):**
-- Task 30 error quality tests (expected behavior)
-
-**Step 2: Run with Opus**
-
-```bash
-MODEL=opus bash bank-tester/run-bank-test.sh opus-diagnose
-```
-
-**Step 3: Act on Opus findings**
-
-- `DOCKER_IMAGE` fixes → enhance `docker-compose.test.yml` or `run-bank-test.sh` (MongoDB seeding, config)
-- `GENERATOR` fixes → another generator fix cycle + Sonnet verification
-- `UNFIXABLE` → document in RESEARCH.md as known limitations
+Investigate and fix the 6 DOCKER_IMAGE failures:
+- `set_site_name` / `delete_site`: MongoDB privilege or auth context enhancement
+- `generate_backup` / `generate_backup_site`: Backup manager initialization

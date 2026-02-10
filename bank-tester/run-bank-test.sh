@@ -178,6 +178,34 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
+# --- Wait for API to be fully ready (avoid startup race) ---
+log "Waiting for API to fully initialize..."
+for i in $(seq 1 15); do
+    SELF_CHECK=$(curl -sk -o /dev/null -w "%{http_code}" \
+        -b /tmp/unifi_test_cookies.txt \
+        "https://127.0.0.1:${HTTPS_PORT}/api/self" 2>/dev/null || echo "000")
+    # First do a login to get cookies
+    if [[ $i -eq 1 ]]; then
+        curl -sk -c /tmp/unifi_test_cookies.txt -o /dev/null \
+            -X POST "https://127.0.0.1:${HTTPS_PORT}/api/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" 2>/dev/null || true
+    fi
+    SELF_CHECK=$(curl -sk -o /dev/null -w "%{http_code}" \
+        -b /tmp/unifi_test_cookies.txt \
+        "https://127.0.0.1:${HTTPS_PORT}/api/self" 2>/dev/null || echo "000")
+    if [[ "$SELF_CHECK" == "200" ]]; then
+        log "API fully ready (/api/self returns 200)"
+        rm -f /tmp/unifi_test_cookies.txt
+        break
+    fi
+    if [[ $i -eq 15 ]]; then
+        log "WARNING: /api/self still not returning 200 after 30s, proceeding anyway"
+        rm -f /tmp/unifi_test_cookies.txt
+    fi
+    sleep 2
+done
+
 # --- Build live MCP config ---
 LIVE_MCP_CONFIG="${RESULTS_DIR}/mcp-config-live.json"
 sed -e "s|FASTMCP_PATH_PLACEHOLDER|${FASTMCP_PATH}|g" \

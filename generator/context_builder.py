@@ -10,6 +10,7 @@ from generator.naming import (
     DEVICE_DEPENDENT_COMMANDS,
     FULL_OBJECT_UPDATE_REST,
     HARDWARE_DEPENDENT_REST,
+    NO_REST_DELETE,
     V2_CREATE_HINTS,
     ID_CROSS_REFS,
     MINIMAL_CREATE_PAYLOADS,
@@ -118,6 +119,7 @@ def build_context(inventory: APIInventory) -> dict:
             "create_payload": MINIMAL_CREATE_PAYLOADS.get(name, {}),
             "required_create_fields": REQUIRED_CREATE_FIELDS.get(name, ""),
             "full_object_update": name in FULL_OBJECT_UPDATE_REST,
+            "no_rest_delete": name in NO_REST_DELETE,
             "workflow_hint": WORKFLOW_HINTS.get(name, ""),
         }
         ctx["rest_tools"].append(tool)
@@ -199,7 +201,9 @@ def build_context(inventory: APIInventory) -> dict:
     # Summary counts
     ctx["tool_count"] = (
         sum(
-            (5 if t["is_crud"] else 3 if t["is_setting"] else 1)
+            (4 if t["is_crud"] and t.get("no_rest_delete") else
+             5 if t["is_crud"] else
+             3 if t["is_setting"] else 1)
             for t in ctx["rest_tools"]
         )
         + len(ctx["stat_tools"])

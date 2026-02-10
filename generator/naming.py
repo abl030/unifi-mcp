@@ -410,6 +410,12 @@ FULL_OBJECT_UPDATE_REST: set[str] = {
     "scheduletask",
 }
 
+# REST resources that don't support DELETE via the REST API.
+# The delete tool is skipped for these resources.
+NO_REST_DELETE: set[str] = {
+    "user",  # Users are removed via forget-sta (unifi_forget_client), not REST DELETE
+}
+
 # v2 resource create hints: extra docstring info for resources without samples
 V2_CREATE_HINTS: dict[str, str] = {
     "traffic_rules": (
@@ -417,6 +423,18 @@ V2_CREATE_HINTS: dict[str, str] = {
         "matching_target (str: 'INTERNET'|'LOCAL_NETWORK'), "
         "target_devices (list of {type: 'ALL_CLIENTS'|'CLIENT'|'NETWORK', client_mac/network_id}), "
         "network_id (str, _id from unifi_list_networks)"
+    ),
+    "firewall_policies": (
+        "Required: action (str), ipVersion (str: 'V4'|'V6'), "
+        "source (obj with zoneId from unifi_list_firewall_zones), "
+        "destination (obj with zoneId from unifi_list_firewall_zones), "
+        "schedule (obj with mode, e.g. {'mode': 'ALWAYS'}). "
+        "Note: Requires firewall zones which are created when a gateway device is adopted."
+    ),
+    "trafficroutes": (
+        "Required: targetDevices (list, non-empty device refs), "
+        "networkId (str, _id from unifi_list_networks), "
+        "matchingTarget (str: 'INTERNET'|'LOCAL_NETWORK')"
     ),
 }
 
@@ -488,4 +506,5 @@ WORKFLOW_HINTS: dict[str, str] = {
     "wlanconf": "Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.",
     "radiusprofile": "Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.",
     "usergroup": "Tip: Assign users to this group by setting usergroup_id when creating or updating users.",
+    "user": "Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.",
 }
