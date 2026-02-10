@@ -262,6 +262,97 @@ def build_context(inventory: APIInventory) -> dict:
     ctx["v2_by_module"] = dict(v2_by_module)
     ctx["module_order"] = MODULE_ORDER
 
+    # --- Build tool index for search_tools ---
+    tool_index: list[dict] = []
+
+    def _kw(*parts: str) -> str:
+        """Build a lowercase keyword string from parts, splitting on underscores."""
+        tokens: set[str] = set()
+        for p in parts:
+            tokens.update(p.lower().replace("-", "_").split("_"))
+            tokens.add(p.lower().replace("-", "_"))
+        tokens.discard("")
+        return " ".join(sorted(tokens))
+
+    # REST tools
+    for t in ctx["rest_tools"]:
+        singular, plural = t["singular"], t["plural"]
+        mod = t["module"]
+        resource = t["resource"]
+        # Include writable field names OR known_fields (whichever is populated)
+        writable_names = [f["name"] for f in (t.get("writable_fields") or [])][:10]
+        extra_kw = writable_names or [f for f in (t.get("known_fields") or [])[:10]]
+        base_parts = [resource, singular, plural, mod, "rest"]
+        if t["is_setting"]:
+            tool_index.append({"name": "unifi_list_settings", "description": f"List all site settings", "module": mod, "keywords": _kw("list", "settings", "setting", mod, resource, *extra_kw)})
+            tool_index.append({"name": "unifi_get_setting", "description": f"Get a specific site setting by key", "module": mod, "keywords": _kw("get", "setting", mod, resource, *extra_kw)})
+            tool_index.append({"name": "unifi_update_setting", "description": f"Update a site setting", "module": mod, "keywords": _kw("update", "setting", mod, resource, *extra_kw)})
+        elif t["is_readonly"]:
+            tool_index.append({"name": f"unifi_list_{plural}", "description": f"List all {plural.replace('_', ' ')}", "module": mod, "keywords": _kw("list", *base_parts, *extra_kw)})
+        elif t["is_crud"]:
+            tool_index.append({"name": f"unifi_list_{plural}", "description": f"List all {plural.replace('_', ' ')}", "module": mod, "keywords": _kw("list", *base_parts, *extra_kw)})
+            tool_index.append({"name": f"unifi_get_{singular}", "description": f"Get a single {singular.replace('_', ' ')} by ID", "module": mod, "keywords": _kw("get", *base_parts, *extra_kw)})
+            tool_index.append({"name": f"unifi_create_{singular}", "description": f"Create a new {singular.replace('_', ' ')}", "module": mod, "keywords": _kw("create", *base_parts, *extra_kw)})
+            tool_index.append({"name": f"unifi_update_{singular}", "description": f"Update an existing {singular.replace('_', ' ')}", "module": mod, "keywords": _kw("update", *base_parts, *extra_kw)})
+            if not t.get("no_rest_delete"):
+                tool_index.append({"name": f"unifi_delete_{singular}", "description": f"Delete a {singular.replace('_', ' ')}", "module": mod, "keywords": _kw("delete", *base_parts, *extra_kw)})
+
+    # Stat tools
+    for t in ctx["stat_tools"]:
+        display = t["display_name"]
+        mod = t["module"]
+        resource = t["resource"]
+        note = t.get("note") or ""
+        extra_kw = [f for f in (t.get("known_fields") or [])[:10]]
+        if resource == "report":
+            name = "unifi_list_report"
+        else:
+            name = f"unifi_list_{display}"
+        desc = f"List {display.replace('_', ' ')}"
+        if note:
+            desc += f" ({note})"
+        tool_index.append({"name": name, "description": desc, "module": mod, "keywords": _kw("list", "stat", display, resource, mod, *extra_kw)})
+
+    # Cmd tools
+    for t in ctx["cmd_tools"]:
+        tool_name = t["tool_name"]
+        manager = t["manager"]
+        command = t["command"]
+        mod = t["module"]
+        desc = f"{command.replace('-', ' ').title()} ({manager})"
+        tool_index.append({"name": f"unifi_{tool_name}", "description": desc, "module": mod, "keywords": _kw(tool_name, manager, command, mod, "cmd")})
+
+    # v2 tools
+    for t in ctx["v2_tools"]:
+        singular, plural = t["singular"], t["plural"]
+        mod = t["module"]
+        resource = t["resource"]
+        writable_names_v2 = [f["name"] for f in (t.get("writable_fields") or [])][:10]
+        extra_kw = writable_names_v2 or [f for f in (t.get("known_fields") or [])[:10]]
+        base_parts = [resource, singular, plural, mod, "v2"]
+        methods = t["methods"]
+        if "GET" in methods:
+            tool_index.append({"name": f"unifi_list_{plural}", "description": f"List all {plural.replace('_', ' ')} (v2 API)", "module": mod, "keywords": _kw("list", *base_parts, *extra_kw)})
+        if "POST" in methods:
+            tool_index.append({"name": f"unifi_create_{singular}", "description": f"Create a new {singular.replace('_', ' ')} (v2 API)", "module": mod, "keywords": _kw("create", *base_parts, *extra_kw)})
+        if "PUT" in methods:
+            tool_index.append({"name": f"unifi_update_{singular}", "description": f"Update a {singular.replace('_', ' ')} (v2 API)", "module": mod, "keywords": _kw("update", *base_parts, *extra_kw)})
+        if "DELETE" in methods:
+            tool_index.append({"name": f"unifi_delete_{singular}", "description": f"Delete a {singular.replace('_', ' ')} (v2 API)", "module": mod, "keywords": _kw("delete", *base_parts, *extra_kw)})
+
+    # Global tools
+    for t in ctx["global_tools"]:
+        name = t["name"]
+        tool_index.append({"name": f"unifi_{name}", "description": f"Global: {name.replace('_', ' ')}", "module": "global", "keywords": _kw(name, "global")})
+
+    # Always-on helpers
+    tool_index.append({"name": "unifi_set_port_override", "description": "Configure switch port profiles and VLAN assignments", "module": "device", "keywords": _kw("set", "port", "override", "switch", "vlan", "poe", "device", "profile")})
+    tool_index.append({"name": "unifi_report_issue", "description": "Compose a gh issue create command for unexpected errors", "module": "global", "keywords": _kw("report", "issue", "error", "bug", "github")})
+    tool_index.append({"name": "unifi_get_overview", "description": "Network overview in a single call: health, devices, networks, WLANs, clients, alarms", "module": "global", "keywords": _kw("overview", "summary", "health", "status", "network", "device", "client", "wlan", "alarm")})
+    tool_index.append({"name": "unifi_search_tools", "description": "Search for UniFi MCP tools by keyword", "module": "global", "keywords": _kw("search", "tools", "find", "discover", "help", "list")})
+
+    ctx["tool_index"] = tool_index
+
     # Summary counts
     ctx["tool_count"] = (
         sum(
@@ -280,6 +371,7 @@ def build_context(inventory: APIInventory) -> dict:
         + 1  # port override helper
         + 1  # report issue helper
         + 1  # network overview tool
+        + 1  # search tools helper
     )
 
     return ctx

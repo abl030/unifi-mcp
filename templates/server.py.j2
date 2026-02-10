@@ -16,7 +16,15 @@ from typing import Any
 import httpx
 from fastmcp import FastMCP
 
-mcp = FastMCP("UniFi Network Controller")
+mcp = FastMCP(
+    "UniFi Network Controller",
+    instructions=(
+        "This server has {{ tool_count }} tools. "
+        "Call unifi_search_tools first to find relevant tools by keyword "
+        "(e.g. 'vlan', 'firewall rule', 'backup') instead of scanning all tool signatures. "
+        "If a tool returns an unexpected error, call unifi_report_issue to report it."
+    ),
+)
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -1139,6 +1147,34 @@ async def unifi_get_overview(site: str = "") -> dict:
         ]) if isinstance(alarms, list) else 0,
     }
     return _format_response(overview, "Network overview")
+
+
+# ===========================================================================
+# Tool Search (always-on, read-only)
+# ===========================================================================
+
+_TOOL_INDEX = {{ tool_index | tojson }}
+
+
+@mcp.tool()
+async def unifi_search_tools(query: str) -> dict:
+    """Search for UniFi MCP tools by keyword.
+
+    Returns matching tool names with descriptions. Use this to discover which
+    tools are available for a task instead of scanning all tool signatures.
+
+    Examples: "vlan", "firewall", "client wifi", "switch port", "backup"
+
+    Args:
+        query: Search terms (e.g. "wifi clients", "firewall rules", "port").
+              Multiple words require all to match (AND logic).
+    """
+    terms = query.lower().split()
+    if not terms:
+        return _format_response([], "No search terms provided")
+    matches = [entry for entry in _TOOL_INDEX if all(t in entry["keywords"] for t in terms)]
+    results = [{"tool": m["name"], "description": m["description"], "module": m["module"]} for m in matches]
+    return _format_response(results, f"Tools matching '{query}'")
 
 
 # ---------------------------------------------------------------------------

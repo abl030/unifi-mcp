@@ -101,8 +101,9 @@ def count_from_spec() -> dict:
     port_override = 1  # port override helper
     report_issue = 1  # error reporting helper
     overview = 1  # network overview composite tool
+    search_tools = 1  # tool discovery helper
 
-    total_tools = rest_tools + stat_tools + cmd_tools + v2_tools + global_tools + port_override + report_issue + overview
+    total_tools = rest_tools + stat_tools + cmd_tools + v2_tools + global_tools + port_override + report_issue + overview + search_tools
 
     return {
         "endpoints": {
@@ -126,6 +127,7 @@ def count_from_spec() -> dict:
             "port_override": port_override,
             "report_issue": report_issue,
             "overview": overview,
+            "search_tools": search_tools,
             "total": total_tools,
         },
         "rest_detail": rest_detail,
@@ -206,6 +208,9 @@ def count_readonly_breakdown() -> dict[str, int]:
     ro += 1
 
     # Overview: read-only
+    ro += 1
+
+    # Search tools: read-only
     ro += 1
 
     return {"readonly": ro, "mutating": mut}
@@ -331,6 +336,7 @@ def main():
     print(f"  Port override:       {t['port_override']}")
     print(f"  Report issue:        {t['report_issue']}")
     print(f"  Overview:            {t['overview']}")
+    print(f"  Search tools:        {t['search_tools']}")
     print(f"  TOTAL tools:         {t['total']}")
 
     # Module breakdown
@@ -339,7 +345,7 @@ def main():
     print("=" * 60)
     print("MODULE BREAKDOWN")
     print("=" * 60)
-    always_on = t["global"] + t["report_issue"] + t["overview"]
+    always_on = t["global"] + t["report_issue"] + t["overview"] + t["search_tools"]
     print(f"  {'Module':<12s} {'v1':>5s} {'v2':>5s} {'Total':>7s}  (with always-on: +{always_on})")
     print(f"  {'-'*12:s} {'-'*5:s} {'-'*5:s} {'-'*7:s}")
     total_v1 = 0

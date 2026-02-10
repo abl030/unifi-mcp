@@ -1,6 +1,6 @@
 # UniFi MCP Server
 
-An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **285 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
+An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **286 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
 
 This entire project — the generator, the server, the test suite, and this README — was built by AI (Claude) and is designed to be installed and used by AI agents.
 
@@ -63,7 +63,7 @@ uv sync
 uv run python generate.py
 ```
 
-This produces `generated/server.py` — the MCP server with 285 tools.
+This produces `generated/server.py` — the MCP server with 286 tools.
 
 ### Configure Your MCP Client
 
@@ -130,7 +130,7 @@ Control which tool groups are registered at runtime. Use fine-grained modules to
 
 | Value | Tools | Use case |
 |-------|-------|----------|
-| `v1,v2` (default) | 285 | All tools (UniFi OS controllers) |
+| `v1,v2` (default) | 286 | All tools (UniFi OS controllers) |
 | `v1` | 270 | All v1 tools (standalone controllers, no v2 endpoints) |
 | `v2` | 25 | v2 + global tools only |
 
@@ -148,12 +148,12 @@ Control which tool groups are registered at runtime. Use fine-grained modules to
 | `hotspot` | 32 | Hotspot ops/packages, Hotspot2, RADIUS, vouchers, guest commands |
 | `advanced` | 46 | Maps, heatmaps, spatial, DPI config, media, schedules, broadcast |
 
-Tool counts above include both v1 and v2 tools for each module. Global tools (10: `status`, `self`, `sites`, etc. + `report_issue` + `get_overview`) are always registered regardless of this setting.
+Tool counts above include both v1 and v2 tools for each module. Global tools (11: `status`, `self`, `sites`, etc. + `report_issue` + `get_overview` + `search_tools`) are always registered regardless of this setting.
 
 **Example**: A standalone controller managing switches and APs:
 
 ```bash
-UNIFI_MODULES=device,client,wifi,network,monitor  # 124 tools instead of 285
+UNIFI_MODULES=device,client,wifi,network,monitor  # 124 tools instead of 286
 ```
 
 No regeneration needed — just set the env var.
@@ -164,8 +164,8 @@ Set `UNIFI_READ_ONLY=true` to strip all mutating tools at registration time. Onl
 
 | Config | Tools | Use case |
 |--------|-------|----------|
-| `UNIFI_READ_ONLY=false` (default) | 285 | Full access |
-| `UNIFI_READ_ONLY=true` | 124 | Monitoring only — zero mutation risk |
+| `UNIFI_READ_ONLY=false` (default) | 286 | Full access |
+| `UNIFI_READ_ONLY=true` | 125 | Monitoring only — zero mutation risk |
 | `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` | 51 | Focused monitoring |
 
 Composes with `UNIFI_MODULES` — both filters apply independently. Read-only mode is enforced at tool registration time, not runtime: mutating tools don't exist in the MCP tool list, so the LLM cannot call them even if instructed to.
@@ -362,6 +362,7 @@ Composes with `UNIFI_MODULES` — both filters apply independently. Read-only mo
 | `unifi_system_poweroff` / `system_reboot` | Controller power management (dangerous) |
 | `unifi_get_overview` | Network overview in a single call: health, devices, networks, WLANs, clients, alarms |
 | `unifi_set_port_override` | Configure switch port profiles (the tool that started this project) |
+| `unifi_search_tools` | Search for tools by keyword (e.g. "vlan", "firewall rule", "backup") — use this first |
 | `unifi_report_issue` | Compose a `gh issue create` command for unexpected errors |
 
 ### Safety: Confirmation Gate
@@ -442,7 +443,7 @@ generator/
   naming.py                 # Tool names, command mappings, test payloads
   context_builder.py        # Assemble Jinja2 template context
 templates/
-  server.py.j2              # FastMCP server template (285 tools)
+  server.py.j2              # FastMCP server template (286 tools)
   conftest.py.j2            # Pytest fixtures
   test_rest.py.j2           # Per-resource CRUD lifecycle tests
   test_stat.py.j2           # Stat endpoint tests
@@ -470,7 +471,7 @@ The generated `server.py` includes:
 
 ## API Discovery Pipeline
 
-The 285 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
+The 286 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
 
 ### Stage 1: Automated Probe (`probe.py`)
 
@@ -532,11 +533,12 @@ TOOL COUNTS (computed from spec)
   Port override:       1
   Report issue:        1
   Overview:            1
-  TOTAL tools:         285
+  Search tools:        1
+  TOTAL tools:         286
 
 VERIFICATION
-  Computed from spec:  285
-  Actual in server.py: 285
+  Computed from spec:  286
+  Actual in server.py: 286
   ✓ MATCH
 ```
 
@@ -583,7 +585,7 @@ The UniFi controller has no setup wizard API. The test harness seeds an admin us
 
 ## QA Coverage
 
-All 285 tools were tested against a live UniFi v10.0.162 controller running in Docker using an LLM-based bank tester (Claude as QA engineer, 31 tasks, 498+ tool calls across 5 fix sprints).
+All 286 tools were tested against a live UniFi v10.0.162 controller running in Docker using an LLM-based bank tester (Claude as QA engineer, 31 tasks, 498+ tool calls across 5 fix sprints).
 
 **"Worked first try"** is the key QA metric. Every tool was verified to succeed on its first invocation with correct parameters — no retries, no parameter guessing, no error-and-retry loops. This matters because MCP tools that fail on first attempt waste tokens, context window, and user time as the LLM has to diagnose the error and retry. A tool that works first try means the docstring, parameter types, and enum values are all correct enough that an LLM can call it successfully without prior experience.
 
@@ -599,7 +601,8 @@ All 285 tools were tested against a live UniFi v10.0.162 controller running in D
 | Port override | 1 | Tested (needs device for success) |
 | Report issue | 1 | Error reporting helper (no API call) |
 | Overview | 1 | Tested (composite: health + devices + networks + WLANs + clients + alarms) |
-| **Total** | **285** | **100% invocation coverage** |
+| Search tools | 1 | Meta tool for keyword-based tool discovery (no API call) |
+| **Total** | **286** | **100% invocation coverage** |
 
 ### Skipped Commands (not generated)
 

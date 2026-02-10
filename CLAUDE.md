@@ -34,7 +34,7 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 285 total
+### Generated Tools: 286 total
 - **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
 - **66 Cmd** tools (66 of 68 commands; `set-site-name` and `delete-admin` skipped)
@@ -43,6 +43,7 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 Port override** helper tool
 - **1 Report issue** helper tool (error reporting via `gh issue create`)
 - **1 Overview** composite tool (network summary in a single call)
+- **1 Search tools** meta tool (keyword-based tool discovery)
 
 ## Architecture
 
@@ -99,8 +100,8 @@ A single script that reads `spec/endpoint-inventory.json` + `spec/api-samples/*.
 - Single `UniFiClient` class handles auth, session management, cookie handling
 - Supports both standalone controllers and UniFi OS (with/without `/proxy/network` prefix)
 - Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`, `UNIFI_READ_ONLY`, `UNIFI_REDACT_SECRETS`
-- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 124 tools. Always-on tools (8 global + report_issue + overview) are always registered.
-- `UNIFI_READ_ONLY=true` strips all mutating tools at registration time (default: `false`). Only list/get/stat tools and non-mutation commands remain (285 → 124 tools). Composes with `UNIFI_MODULES`. Example: `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` → 51 tools.
+- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 124 tools. Always-on tools (8 global + report_issue + overview + search_tools) are always registered.
+- `UNIFI_READ_ONLY=true` strips all mutating tools at registration time (default: `false`). Only list/get/stat tools and non-mutation commands remain (286 → 125 tools). Composes with `UNIFI_MODULES`. Example: `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` → 51 tools.
 - `UNIFI_REDACT_SECRETS=true` (default) replaces sensitive fields (`x_passphrase`, `x_password`, etc.) with `<redacted>` in all tool responses. Set to `false` for raw values.
 - Graceful error handling with clear error messages in tool responses
 
