@@ -398,6 +398,8 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 
 **First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). Breakdown: 31 hardware-dependent, 21 generator-fixable, 7 API limitation, 5 test-env, 3 test-config, 3 adversarial. Full details in `bank-tester/RESEARCH.md`.
 
+**RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
+
 ### Next Sprints
 
 #### Sprint A: Fix Generator + Sonnet Verification (21 generator-fixable failures → 0)

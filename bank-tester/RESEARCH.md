@@ -1,4 +1,6 @@
-# Bank Tester Research — First-Attempt Failure Analysis
+# Bank Tester Research — Open First-Attempt Failures
+
+**This is a living document. When a failure is fixed and verified, remove it immediately.**
 
 **Date**: 2026-02-10
 **Controller**: UniFi v10.0.162 (jacobalberty/unifi:latest, bare Docker, no adopted devices)
