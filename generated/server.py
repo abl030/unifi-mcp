@@ -420,7 +420,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Note: also POST with macs filter
 
-        Known fields: _uptime, adopt_ip, adopt_url, adoptable_when_upgraded, adopted, adopted_at, adopted_by_client, adoption_completed, anomalies, anon_id, antenna_table, architecture, atf_enabled, bandsteering_mode, ble_caps, board_rev, bytes, bytes-d, bytes-r, cfgversion
+        Known fields: _uptime, adopt_ip, adopt_url, adoptable_when_upgraded, adopted, adopted_at, adopted_by_client, adoption_completed, anomalies, anon_id, antenna_table, architecture, atf_enabled, bandsteering_mode, ble_caps, board_rev, bytes, bytes-d, bytes-r, cfgversion, config_network, connect_request_ip, connect_request_port, connected_at, connection_network_id, connection_network_name, country_code, countrycode_table, credential_caps, default, detailed_states, device_id, dhcp_server_table, disabled, disconnected_at, discovered_via, displayable_version, dot1x_portctrl_enabled, downlink_lldp_macs, downlink_table, element_peer_mac, ethernet_table, external_id, fixed_ap_available, flowctrl_enabled, fw2_caps, fw3_caps, fw_caps, gateway_mac, guest-num_sta, guest-wlan-num_sta, guest_kicks, guest_token, has_eth1, has_fan, has_speaker, has_temperature, hash_id, heightInMeters, hide_ch_width, hw_caps, inform_ip, inform_url, internet, ip, ipv6, is_access_point, isolated, jumboframe_enabled, kernel_version, known_cfgversion, last_connection_network_id, last_connection_network_name, last_seen, last_uplink, led_override, led_override_color, led_override_color_brightness, link_aggregation_groups, lldp_table, locating, mac, manufacturer_id, map_id, mesh_sta_vap_enabled, meshv3_peer_mac, mgmt_network_id, min_inform_interval_seconds, model, model_in_eol, model_in_lts, model_incompatible, name, next_interval, num_sta, outdoor_mode_override, overheating, port_overrides, port_table, power_source_ctrl_enabled, prev_non_busy_state, provisioned_at, quick_scan_state, quickscan_scanning, radio_table, radio_table_stats, reboot_duration, required_version, rollupgrade, rx_bytes, rx_bytes-d, safe_for_autoupgrade, satisfaction, scan_radio_table, scanning, serial, service_mac, setup_id, shortname, site_id, slimcfg_caps, snmp_contact, snmp_location, spectrum_scanning, ssh_session_table, start_connected_millis, start_disconnected_millis, startup_timestamp, stat, state, stp_priority, stp_version, support_wifi6e, supported_afc_regions, supports_fingerprint_ml, switch_caps, sys_error_caps, sys_stats, sysid, syslog_key, system-stats, total_max_effective_power, total_max_power, total_used_power, two_phase_adopt, tx_bytes, tx_bytes-d, type, unsupported, unsupported_reason, upgradable, upgrade_duration, uplink, uplink_depth, uplink_table, uptime, user-num_sta, user-wlan-num_sta, vap_table, version, vwireEnabled, vwire_table, vwire_vap_table, wifi_caps, wifi_caps2, wlangroup_id_na, wlangroup_id_ng, x, x_aes_gcm, x_authkey, x_fingerprint, x_has_ssh_hostkey, x_ssh_hostkey_fingerprint, x_vwirekey, y
 
         Args:
             site: Site name (default: from env).
@@ -1685,7 +1685,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List clients statistics.
 
-        Known fields: _is_guest_by_uap, _is_guest_by_usw, _last_seen_by_uap, _last_seen_by_usw, _uptime_by_uap, _uptime_by_usw, anomalies, anon_client_id, ap_mac, assoc_time, authorized, bssid, bytes-r, ccq, channel, channelWidth, channel_width, detailed_states, dhcpend_time, disconnect_timestamp
+        Known fields: _is_guest_by_uap, _is_guest_by_usw, _last_seen_by_uap, _last_seen_by_usw, _uptime_by_uap, _uptime_by_usw, anomalies, anon_client_id, ap_mac, assoc_time, authorized, bssid, bytes-r, ccq, channel, channelWidth, channel_width, detailed_states, dhcpend_time, disconnect_timestamp, eagerly_discovered, essid, first_seen, hostname, hostname_source, idletime, ip, is_11r, is_guest, is_mlo, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, latest_assoc_time, mac, network, network_id, network_members_group_ids, noise, nss, oui, powersave_enabled, qos_policy_applied, radio, radio_name, radio_proto, roam_count, rssi, rx_bytes, rx_bytes-r, rx_packets, rx_rate, satisfaction, satisfaction_avg, satisfaction_now, satisfaction_real, satisfaction_reason, signal, site_id, sw_depth, sw_mac, sw_port, tx_bytes, tx_bytes-r, tx_mcs, tx_packets, tx_power, tx_rate, tx_retries, tx_retry_burst_count, uptime, user_group_id_computed, user_id, usergroup_id, wifi_tx_attempts, wifi_tx_dropped, wifi_tx_retries_percentage, wired-rx_bytes, wired-rx_bytes-r, wired-rx_packets, wired-tx_bytes, wired-tx_bytes-r, wired-tx_packets, wired_rate_mbps, wlanconf_id
 
         Args:
             site: Site name (default: from env).
@@ -1963,7 +1963,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
     ) -> dict:
         """List all active_clients (v2 API).
 
-        Known fields: anomalies, ap_mac, assoc_time, authorized, blocked, bssid, ccq, channel, channel_width, detailed_states, dhcpend_time, display_name, essid, fingerprint, first_seen, hostname, id, idletime, ip, is_allowed_in_visual_programming
+        Known fields: anomalies, ap_mac, assoc_time, authorized, blocked, bssid, ccq, channel, channel_width, detailed_states, dhcpend_time, display_name, essid, fingerprint, first_seen, hostname, id, idletime, ip, is_allowed_in_visual_programming, is_guest, is_mlo, is_wired, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, latest_assoc_time, local_dns_record_enabled, mac, mimo, network_id, network_members_group_ids, network_name, noise, noted, oui, powersave_enabled, radio, radio_name, radio_proto, rate_imbalance, roam_count, rssi, rx_bytes, rx_bytes-r, rx_packets, rx_rate, signal, site_id, status, sw_port, tags, tx_bytes, tx_bytes-r, tx_mcs_index, tx_packets, tx_rate, type, unifi_device, uplink_mac, uptime, use_fixedip, user_id, usergroup_id, virtual_network_override_enabled, wifi_experience_average, wifi_experience_score, wifi_tx_attempts, wifi_tx_retries_percentage, wired_rate_mbps, wlanconf_id
 
         Args:
             site: Site name (default: from env).
@@ -1995,7 +1995,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
     ) -> dict:
         """List all clients_history (v2 API).
 
-        Known fields: blocked, channel, display_name, fingerprint, first_seen, hostname, id, is_allowed_in_visual_programming, is_guest, is_mlo, is_wired, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, local_dns_record_enabled
+        Known fields: blocked, channel, display_name, fingerprint, first_seen, hostname, id, is_allowed_in_visual_programming, is_guest, is_mlo, is_wired, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, local_dns_record_enabled, mac, network_members_group_ids, noted, oui, site_id, status, sw_port, tags, type, unifi_device, uplink_mac, use_fixedip, user_id, usergroup_id, virtual_network_override_enabled, wired_rate_mbps, wlanconf_id
 
         Args:
             site: Site name (default: from env).
@@ -2061,7 +2061,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all wlans.
 
-        Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
+        Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation, mac_filter_enabled, mac_filter_list, mac_filter_policy, mcastenhance_enabled, mdns_proxy_custom, mdns_proxy_mode, minrate_na_advertising_rates, minrate_na_data_rate_kbps, minrate_na_enabled, minrate_ng_advertising_rates, minrate_ng_data_rate_kbps, minrate_ng_enabled, minrate_setting_preference, mlo_enabled, name, networkconf_id, no2ghz_oui, optimize_iot_wifi_connectivity, passphrase_autogenerated, pmf_mode, private_preshared_keys, private_preshared_keys_enabled, proxy_arp, radius_das_enabled, radius_mac_auth_enabled, radius_macacl_empty_password, radius_macacl_format, sae_groups, sae_psk, schedule, schedule_with_duration, security, setting_preference, site_id, uapsd_enabled, usergroup_id, wep_idx, wlan_band, wlan_bands, wpa3_enhanced_192, wpa3_fast_roaming, wpa3_support, wpa3_transition, wpa_enc, wpa_mode, x_iapp_key, x_passphrase
 
         Args:
             site: Site name (default: from env).
@@ -2106,7 +2106,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Wlan configuration.
-                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
+                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation, mac_filter_enabled, mac_filter_list, mac_filter_policy, mcastenhance_enabled, mdns_proxy_custom, mdns_proxy_mode, minrate_na_advertising_rates, minrate_na_data_rate_kbps, minrate_na_enabled, minrate_ng_advertising_rates, minrate_ng_data_rate_kbps, minrate_ng_enabled, minrate_setting_preference, mlo_enabled, name, networkconf_id, no2ghz_oui, optimize_iot_wifi_connectivity, passphrase_autogenerated, pmf_mode, private_preshared_keys, private_preshared_keys_enabled, proxy_arp, radius_das_enabled, radius_mac_auth_enabled, radius_macacl_empty_password, radius_macacl_format, sae_groups, sae_psk, schedule, schedule_with_duration, security, setting_preference, site_id, uapsd_enabled, usergroup_id, wep_idx, wlan_band, wlan_bands, wpa3_enhanced_192, wpa3_fast_roaming, wpa3_support, wpa3_transition, wpa_enc, wpa_mode, x_iapp_key, x_passphrase
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2136,7 +2136,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the wlan to update.
                 data: Fields to update.
-                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
+                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation, mac_filter_enabled, mac_filter_list, mac_filter_policy, mcastenhance_enabled, mdns_proxy_custom, mdns_proxy_mode, minrate_na_advertising_rates, minrate_na_data_rate_kbps, minrate_na_enabled, minrate_ng_advertising_rates, minrate_ng_data_rate_kbps, minrate_ng_enabled, minrate_setting_preference, mlo_enabled, name, networkconf_id, no2ghz_oui, optimize_iot_wifi_connectivity, passphrase_autogenerated, pmf_mode, private_preshared_keys, private_preshared_keys_enabled, proxy_arp, radius_das_enabled, radius_mac_auth_enabled, radius_macacl_empty_password, radius_macacl_format, sae_groups, sae_psk, schedule, schedule_with_duration, security, setting_preference, site_id, uapsd_enabled, usergroup_id, wep_idx, wlan_band, wlan_bands, wpa3_enhanced_192, wpa3_fast_roaming, wpa3_support, wpa3_transition, wpa_enc, wpa_mode, x_iapp_key, x_passphrase
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2687,7 +2687,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all port_profiles.
 
-        Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
+        Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate, stormctrl_ucast_enabled, stormctrl_ucast_rate, stp_port_mode, tagged_vlan_mgmt, voice_networkconf_id
 
         Args:
             site: Site name (default: from env).
@@ -2732,7 +2732,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Port_profile configuration.
-                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
+                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate, stormctrl_ucast_enabled, stormctrl_ucast_rate, stp_port_mode, tagged_vlan_mgmt, voice_networkconf_id
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2762,7 +2762,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the port_profile to update.
                 data: Fields to update.
-                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
+                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate, stormctrl_ucast_enabled, stormctrl_ucast_rate, stp_port_mode, tagged_vlan_mgmt, voice_networkconf_id
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -3961,7 +3961,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Returns events from the UniFi controller.
 
-        Known fields: ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id, subsystem, sw, sw_displayName
+        Known fields: ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id, subsystem, sw, sw_displayName, sw_model, sw_name, time, user, version_from, version_to
 
         Args:
             site: Site name (default: from env).
@@ -4146,7 +4146,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List stat_events statistics.
 
-        Known fields: admin, ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, ip, is_admin, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id
+        Known fields: admin, ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, ip, is_admin, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id, subsystem, sw, sw_displayName, sw_model, sw_name, time, user, version_from, version_to
 
         Args:
             site: Site name (default: from env).
@@ -4567,7 +4567,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List rogue_aps statistics.
 
-        Known fields: age, ap_mac, band, bssid, bw, center_freq, channel, essid, freq, is_adhoc, is_rogue, is_ubnt, last_seen, noise, oui, radio, radio_name, report_time, rssi, rssi_age
+        Known fields: age, ap_mac, band, bssid, bw, center_freq, channel, essid, freq, is_adhoc, is_rogue, is_ubnt, last_seen, noise, oui, radio, radio_name, report_time, rssi, rssi_age, security, signal, site_id
 
         Args:
             site: Site name (default: from env).
