@@ -5,7 +5,7 @@
 **Date**: 2026-02-10
 **Controller**: UniFi v10.0.162 (jacobalberty/unifi:latest, bare Docker, no adopted devices)
 **Model**: Sonnet (claude -p), Opus for diagnosis
-**Total tools**: 285
+**Total tools**: 284
 
 ## Combined Results (All Runs)
 
@@ -33,9 +33,9 @@
 | First-attempt failures (original) | 70 |
 | **Fixed in Sprint A** | **18** |
 | **Fixed/reclassified in Sprint B** | **13** |
-| **Remaining first-attempt failures** | **39** |
+| **Remaining first-attempt failures** | **38** |
 | Hardware-dependent failures | 23 |
-| Standalone controller limitations | 6 |
+| Standalone controller limitations | 5 |
 | API limitation failures | 4 |
 | Test environment failures | 1 |
 | Test config failures | 2 |
@@ -114,18 +114,17 @@ These require adopted devices or connected clients. Not fixable without device s
 | 22 | 17 | `unifi_update_traffic_route` | HTTP 400 | No routes exist, needs gateway (docstring improved in Sprint B) |
 | 23 | 21 | `unifi_set_site_leds` | api.err.NotFound | Needs LED-capable devices |
 
-### Category: STANDALONE_LIMITATION (6 failures)
+### Category: STANDALONE_LIMITATION (5 failures)
 
 These are standalone controller limitations — not fixable via Docker seeding or generator changes. Investigated in Sprint D.
 
 | # | Task | Tool | Error | Notes |
 |---|------|------|-------|-------|
-| 1 | 21 | `unifi_set_site_name` | api.err.NotFound | `set-site-name` command doesn't exist on v10.0.162 standalone; use `update-site` instead |
-| 2 | 21 | `unifi_delete_site` | api.err.IdInvalid | Parameter format unclear |
-| 3 | 21 | `unifi_delete_site` | 403 Forbidden / NoPermission | Standalone controller doesn't support site deletion even with super admin |
-| 4 | 21 | `unifi_delete_site` | api.err.IdInvalid | (retry with different format) |
-| 5 | 24 | `unifi_generate_backup` | api.err.NotFound | `generate-backup` command doesn't exist in cmd/backup on v10.0.162 standalone |
-| 6 | 24 | `unifi_generate_backup_site` | api.err.NotFound | Same — backup generation may be UniFi OS only |
+| 1 | 21 | `unifi_delete_site` | api.err.IdInvalid | Parameter format unclear |
+| 2 | 21 | `unifi_delete_site` | 403 Forbidden / NoPermission | Standalone controller doesn't support site deletion even with super admin |
+| 3 | 21 | `unifi_delete_site` | api.err.IdInvalid | (retry with different format) |
+| 4 | 24 | `unifi_generate_backup` | api.err.NotFound | `generate-backup` command doesn't exist in cmd/backup on v10.0.162 standalone |
+| 5 | 24 | `unifi_generate_backup_site` | api.err.NotFound | Same — backup generation may be UniFi OS only |
 
 ### Category: API_LIMITATION (4 failures)
 
@@ -203,7 +202,7 @@ All 6 DOCKER_IMAGE failures investigated manually against a live Docker controll
 
 | Tool | Finding |
 |------|---------|
-| `set_site_name` | `set-site-name` command doesn't exist on v10.0.162. `update-site` is the working alternative. |
+| `set_site_name` | `set-site-name` command doesn't exist on v10.0.162. Tool removed (SKIP_COMMANDS). Use `update-site` instead. |
 | `delete_site` (x3) | Returns NoPermission/403 even with `is_super: true` + owner role. Standalone limitation. |
 | `generate_backup` | `generate-backup` command doesn't exist in `cmd/backup`. Only `list-backups` works. |
 | `generate_backup_site` | Same as generate_backup. Backup generation may be UniFi OS only. |
@@ -224,7 +223,7 @@ Also fixed: MongoDB seed script privilege records used `.toString()` (returns `O
 | `self/sites/stat_sites/stat_admin` | TEST_ENV | WORKS | Startup race fixed by Docker readiness poll |
 | `delete_user` | TEST_CONFIG | FIXED | Tool removed; use `forget_client` instead |
 | `create_spatial_record` | GENERATOR_FIXABLE | VERIFIED | Opus confirmed: works with name + devices + description |
-| `set_site_name` | API_LIMITATION | STANDALONE_LIMITATION | Command doesn't exist on v10.0.162 standalone; use `update-site` |
+| `set_site_name` | API_LIMITATION | REMOVED | Tool removed (SKIP_COMMANDS); command doesn't exist on v10.0.162 standalone |
 | `delete_site` (x3) | API_LIMITATION | STANDALONE_LIMITATION | Standalone controller doesn't support site deletion |
 | `generate_backup` | HARDWARE_DEPENDENT | STANDALONE_LIMITATION | Command doesn't exist in cmd/backup on standalone |
 | `generate_backup_site` | HARDWARE_DEPENDENT | STANDALONE_LIMITATION | Same as generate_backup |

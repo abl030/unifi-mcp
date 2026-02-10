@@ -15,7 +15,7 @@ ROOT = Path(__file__).parent
 INVENTORY_PATH = ROOT / "endpoint-inventory.json"
 
 # Import the authoritative sets from the generator so we stay in sync.
-from generator.naming import CRUD_REST, NO_REST_DELETE, READ_ONLY_REST
+from generator.naming import CRUD_REST, NO_REST_DELETE, READ_ONLY_REST, SKIP_COMMANDS
 
 
 def count_from_spec() -> dict:
@@ -71,7 +71,12 @@ def count_from_spec() -> dict:
 
     stat_tools = stat_count  # 1 tool per stat endpoint
 
-    cmd_tools = cmd_count  # 1 tool per command
+    cmd_skipped = sum(
+        1 for mgr, ep in cmd.items()
+        for c in ep.get("commands", [])
+        if (mgr, c) in SKIP_COMMANDS
+    )
+    cmd_tools = cmd_count - cmd_skipped  # 1 tool per command, minus skipped
 
     v2_tools = 0
     v2_detail = {}

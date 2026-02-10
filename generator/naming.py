@@ -410,6 +410,12 @@ FULL_OBJECT_UPDATE_REST: set[str] = {
     "scheduletask",
 }
 
+# Commands to skip entirely (don't generate tools).
+# These commands don't exist on standalone controllers or are vestigial.
+SKIP_COMMANDS: set[tuple[str, str]] = {
+    ("sitemgr", "set-site-name"),  # Doesn't exist on v10.0.162 standalone; use update-site instead
+}
+
 # REST resources that don't support DELETE via the REST API.
 # The delete tool is skipped for these resources.
 NO_REST_DELETE: set[str] = {

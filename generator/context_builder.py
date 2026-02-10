@@ -19,6 +19,7 @@ from generator.naming import (
     REQUIRED_CREATE_FIELDS,
     RESOURCE_NAMES,
     SAFE_TEST_COMMANDS,
+    SKIP_COMMANDS,
     STAT_NAMES,
     STAT_OVERRIDES,
     UNTESTABLE_GLOBALS,
@@ -151,6 +152,8 @@ def build_context(inventory: APIInventory) -> dict:
     for mgr_name, ep in sorted(inventory.cmd_endpoints.items()):
         for cmd in ep.commands:
             key = (mgr_name, cmd)
+            if key in SKIP_COMMANDS:
+                continue
             tool_name = COMMAND_TOOL_NAMES.get(key, f"{cmd.replace('-', '_')}_{mgr_name}")
             params = COMMAND_PARAMS.get(key, {})
             is_mutation = key in MUTATION_COMMANDS

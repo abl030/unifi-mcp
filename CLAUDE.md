@@ -29,10 +29,10 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 285 total
+### Generated Tools: 284 total
 - **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
-- **68 Cmd** tools (1 per command across 9 managers)
+- **67 Cmd** tools (67 of 68 commands; `set-site-name` skipped — doesn't exist on standalone)
 - **15 v2** tools (7 resources, tools per HTTP method)
 - **8 Global** tools (1 per global endpoint)
 - **1 Port override** helper tool
@@ -347,7 +347,7 @@ Docker must be enabled on NixOS: add `virtualisation.docker.enable = true;` to `
 
 If the docker socket path is wrong (e.g. trying podman), set `DOCKER_HOST=unix:///var/run/docker.sock`.
 
-## Bank Tester — LLM QA for 286 Tools
+## Bank Tester — LLM QA for 284 Tools
 
 **STATUS: This section is a living tracker. Update it as phases complete.**
 
@@ -392,11 +392,11 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (285/285) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (284/284) | DONE |
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprints A-D: 39 remaining failures — all unfixable (23 hardware-dependent, 6 standalone controller limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial expected). Full details in `bank-tester/RESEARCH.md`.
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprints A-D: 38 remaining failures — all unfixable (23 hardware-dependent, 5 standalone controller limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial expected). Full details in `bank-tester/RESEARCH.md`.
 
 **RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
 
@@ -423,7 +423,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 
 #### Sprint B: Opus Diagnosis + Generator Fixes — DONE
 
-**Result**: Opus diagnosed all 52 remaining failures. 13 resolved (11 confirmed working, 2 generator-fixed), 6 reclassified to DOCKER_IMAGE. 3 generator docstring improvements applied. Docker startup race fixed. Tool count: 286 → 285 (removed `delete_user`).
+**Result**: Opus diagnosed all 52 remaining failures. 13 resolved (11 confirmed working, 2 generator-fixed), 6 reclassified to DOCKER_IMAGE. 3 generator docstring improvements applied. Docker startup race fixed. Tool count: 286 → 284 (removed `delete_user`, `set_site_name`).
 
 | Fix | Change |
 |-----|--------|
@@ -434,7 +434,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 
 **Reclassified (11 → WORKS):** block_client, unblock_client, authorize_guest, unauthorize_guest, create_user, grant_super_admin, list_firewall_policies, self, sites, stat_sites, stat_admin
 
-**Remaining: 39 failures** (23 hardware, 6 standalone limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial)
+**Remaining: 38 failures** (23 hardware, 5 standalone limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial)
 
 #### Sprint C: Sonnet Verification of Sprint B Fixes — DONE
 
@@ -446,7 +446,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 
 | Tool | Finding |
 |------|---------|
-| `set_site_name` | Command doesn't exist on v10.0.162 standalone; use `update-site` |
+| `set_site_name` | Command doesn't exist on v10.0.162 standalone; **tool removed** (SKIP_COMMANDS) |
 | `delete_site` (x3) | NoPermission even with `is_super: true`; standalone limitation |
 | `generate_backup` / `generate_backup_site` | Commands don't exist in `cmd/backup`; may be UniFi OS only |
 
