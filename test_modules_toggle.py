@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Runtime toggle tests for fine-grained UNIFI_MODULES.
 
-Spawns subprocesses with different UNIFI_MODULES values and asserts
-exact tool counts via FastMCP's tool registry.
+All expected values are derived from endpoint-inventory.json + generator/naming.py.
+Nothing is hardcoded — when the API surface changes, these tests auto-adapt.
 
 Run: uv run --extra test python -m pytest test_modules_toggle.py -v
 """
@@ -13,244 +13,266 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
-# The helper script we run in subprocesses — it imports the server module
-# and dumps tool info as JSON.
+from count_tools import count_from_spec, count_module_breakdown
+from generator.naming import (
+    CMD_MODULES,
+    COMMAND_TOOL_NAMES,
+    CRUD_REST,
+    MODULE_ORDER,
+    NO_REST_DELETE,
+    READ_ONLY_REST,
+    RESOURCE_NAMES,
+    REST_MODULES,
+    SKIP_COMMANDS,
+    STAT_MODULES,
+    STAT_NAMES,
+    V2_MODULES,
+    V2_RESOURCE_NAMES,
+)
+
+# ---------------------------------------------------------------------------
+# Derive ALL expected values from spec + naming data (zero hardcoded numbers)
+# ---------------------------------------------------------------------------
+
+_COUNTS = count_from_spec()
+_MODULES = count_module_breakdown(_COUNTS)
+_ALWAYS_ON = _COUNTS["tools"]["global"] + _COUNTS["tools"]["report_issue"]
+_TOTAL = _COUNTS["tools"]["total"]
+_V1_TOTAL = sum(_MODULES[m]["v1"] for m in MODULE_ORDER) + _ALWAYS_ON
+_V2_TOTAL = sum(_MODULES[m]["v2"] for m in MODULE_ORDER) + _ALWAYS_ON
+
+# Per-module expected tool count when loaded alone (v1 + v2 + always-on)
+_MODULE_EXPECTED = {
+    mod: _MODULES[mod]["v1"] + _MODULES[mod]["v2"] + _ALWAYS_ON
+    for mod in MODULE_ORDER
+}
+
+
+def _derive_always_on_tools() -> set[str]:
+    """Derive always-on tool names from the inventory."""
+    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    return {f"unifi_{name}" for name in raw["global_endpoints"]} | {"unifi_report_issue"}
+
+
+def _derive_module_tools() -> dict[str, set[str]]:
+    """Derive expected tool names per module from spec + naming data."""
+    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    tools: dict[str, set[str]] = {m: set() for m in MODULE_ORDER}
+
+    # REST tools
+    for name in raw.get("rest_endpoints", {}):
+        if name not in RESOURCE_NAMES:
+            continue
+        mod = REST_MODULES.get(name, "advanced")
+        singular, plural = RESOURCE_NAMES[name]
+        if name == "setting":
+            tools[mod].update([
+                "unifi_list_settings", "unifi_get_setting", "unifi_update_setting",
+            ])
+        elif name in READ_ONLY_REST:
+            tools[mod].add(f"unifi_list_{plural}")
+        elif name in CRUD_REST:
+            tools[mod].update([
+                f"unifi_list_{plural}", f"unifi_get_{singular}",
+                f"unifi_create_{singular}", f"unifi_update_{singular}",
+            ])
+            if name not in NO_REST_DELETE:
+                tools[mod].add(f"unifi_delete_{singular}")
+
+    # Stat tools
+    for name in raw.get("stat_endpoints", {}):
+        mod = STAT_MODULES.get(name, "monitor")
+        display = STAT_NAMES.get(name, name)
+        if name == "report":
+            tools[mod].add("unifi_list_report")
+        else:
+            tools[mod].add(f"unifi_list_{display}")
+
+    # Cmd tools
+    for mgr, ep in raw.get("cmd_endpoints", {}).items():
+        for cmd in ep.get("commands", []):
+            key = (mgr, cmd)
+            if key in SKIP_COMMANDS:
+                continue
+            mod = CMD_MODULES.get(key, "admin")
+            tool_name = COMMAND_TOOL_NAMES.get(key, f"{cmd.replace('-', '_')}_{mgr}")
+            tools[mod].add(f"unifi_{tool_name}")
+
+    # V2 tools
+    for name, ep in raw.get("v2_endpoints", {}).items():
+        mod = V2_MODULES.get(name, "advanced")
+        singular, plural = V2_RESOURCE_NAMES.get(name, (name, name + "s"))
+        methods = ep.get("methods", ["GET"])
+        if "GET" in methods:
+            tools[mod].add(f"unifi_list_{plural}")
+        if "POST" in methods:
+            tools[mod].add(f"unifi_create_{singular}")
+        if "PUT" in methods:
+            tools[mod].add(f"unifi_update_{singular}")
+        if "DELETE" in methods:
+            tools[mod].add(f"unifi_delete_{singular}")
+
+    # Port override helper → device
+    tools["device"].add("unifi_set_port_override")
+
+    return tools
+
+
+_ALWAYS_ON_TOOLS = _derive_always_on_tools()
+_MODULE_TOOLS = _derive_module_tools()
+
+# Classify which modules have v2 tools (for dual-guard tests)
+_V2_MODULE_TOOLS: dict[str, set[str]] = {}
+for _mod in MODULE_ORDER:
+    _v2_names = set()
+    _raw = json.loads(Path("endpoint-inventory.json").read_text())
+    for _name, _ep in _raw.get("v2_endpoints", {}).items():
+        if V2_MODULES.get(_name) == _mod:
+            _s, _p = V2_RESOURCE_NAMES.get(_name, (_name, _name + "s"))
+            _methods = _ep.get("methods", ["GET"])
+            if "GET" in _methods:
+                _v2_names.add(f"unifi_list_{_p}")
+            if "POST" in _methods:
+                _v2_names.add(f"unifi_create_{_s}")
+            if "PUT" in _methods:
+                _v2_names.add(f"unifi_update_{_s}")
+            if "DELETE" in _methods:
+                _v2_names.add(f"unifi_delete_{_s}")
+    if _v2_names:
+        _V2_MODULE_TOOLS[_mod] = _v2_names
+
+
+# ---------------------------------------------------------------------------
+# Subprocess helper
+# ---------------------------------------------------------------------------
+
 _HELPER = """\
 import os, sys, json
 os.environ["UNIFI_MODULES"] = sys.argv[1]
-# Must set env BEFORE importing server (module-level code reads it)
 sys.path.insert(0, "generated")
-import importlib
 import server as srv
 tools = srv.mcp._tool_manager._tools
 names = sorted(tools.keys())
 print(json.dumps({"count": len(names), "names": names}))
 """
 
-ALWAYS_ON_TOOLS = {
-    "unifi_status", "unifi_self", "unifi_sites", "unifi_stat_sites",
-    "unifi_stat_admin", "unifi_logout", "unifi_system_poweroff",
-    "unifi_system_reboot", "unifi_report_issue",
-}
-ALWAYS_ON_COUNT = len(ALWAYS_ON_TOOLS)  # 9
 
-
-def _run_with_modules(modules_str: str) -> dict:
-    """Run helper script with given UNIFI_MODULES value, return tool info."""
+def _run(modules_str: str) -> dict:
+    """Run helper with given UNIFI_MODULES, return {"count": N, "names": [...]}."""
     env = os.environ.copy()
-    # Clear any existing UNIFI_MODULES to let the helper set it
     env.pop("UNIFI_MODULES", None)
     result = subprocess.run(
         [sys.executable, "-c", _HELPER, modules_str],
         capture_output=True, text=True, env=env,
         cwd=os.path.dirname(os.path.abspath(__file__)),
     )
-    assert result.returncode == 0, f"Helper failed with UNIFI_MODULES={modules_str!r}:\n{result.stderr}"
+    assert result.returncode == 0, f"Failed with UNIFI_MODULES={modules_str!r}:\n{result.stderr}"
     return json.loads(result.stdout)
 
 
-# --- Spot-check tools per module ---
-
-DEVICE_TOOLS = {"unifi_restart_device", "unifi_adopt_device", "unifi_locate_device",
-                "unifi_set_port_override", "unifi_list_device_configs"}
-CLIENT_TOOLS = {"unifi_block_client", "unifi_forget_client", "unifi_list_users",
-                "unifi_list_clients"}
-WIFI_TOOLS = {"unifi_list_wlans", "unifi_list_wlan_groups", "unifi_list_channel_plans"}
-NETWORK_TOOLS = {"unifi_list_networks", "unifi_list_port_profiles", "unifi_list_dns_records"}
-FIREWALL_TOOLS = {"unifi_list_firewall_rules", "unifi_list_port_forwards", "unifi_list_routes"}
-MONITOR_TOOLS = {"unifi_list_health", "unifi_list_sysinfo", "unifi_list_dashboard",
-                 "unifi_archive_all_alarms"}
-ADMIN_TOOLS = {"unifi_list_settings", "unifi_add_site", "unifi_get_admins",
-               "unifi_list_user_groups"}
-HOTSPOT_TOOLS = {"unifi_list_hotspot_operators", "unifi_create_voucher",
-                 "unifi_list_vouchers"}
-ADVANCED_TOOLS = {"unifi_list_maps", "unifi_list_heatmaps", "unifi_list_dpi_apps",
-                  "unifi_list_schedule_tasks"}
-
-# v2 tools by sub-module
-V2_CLIENT_TOOLS = {"unifi_list_active_clients", "unifi_list_clients_history"}
-V2_WIFI_TOOLS = {"unifi_list_ap_groups"}
-V2_FIREWALL_TOOLS = {"unifi_list_firewall_policies", "unifi_list_traffic_rules",
-                     "unifi_list_traffic_routes", "unifi_list_firewall_zones"}
+# ===========================================================================
+# Tests
+# ===========================================================================
 
 
 class TestModuleCounts:
-    """Test exact tool counts for each UNIFI_MODULES configuration."""
+    """Verify tool counts match spec-derived expectations."""
 
     def test_default_v1_v2(self):
-        """Default: v1,v2 → 284 tools (backward compat)."""
-        info = _run_with_modules("v1,v2")
-        assert info["count"] == 284
+        assert _run("v1,v2")["count"] == _TOTAL
 
     def test_v1_shortcut(self):
-        """v1 expands to all 9 sub-modules → 269 tools (no v2)."""
-        info = _run_with_modules("v1")
-        assert info["count"] == 269
+        assert _run("v1")["count"] == _V1_TOTAL
 
     def test_v2_shortcut(self):
-        """v2 tools + always-on only → 24 tools."""
-        info = _run_with_modules("v2")
-        assert info["count"] == 24
+        assert _run("v2")["count"] == _V2_TOTAL
 
     def test_empty(self):
-        """Empty string → only always-on tools."""
-        info = _run_with_modules("")
-        assert info["count"] == ALWAYS_ON_COUNT
+        assert _run("")["count"] == _ALWAYS_ON
 
-    def test_whitespace_handling(self):
-        """Whitespace around module names is stripped."""
-        info = _run_with_modules(" v1 , v2 ")
-        assert info["count"] == 284
+    def test_whitespace(self):
+        assert _run(" v1 , v2 ")["count"] == _TOTAL
 
-    def test_device(self):
-        info = _run_with_modules("device")
-        assert info["count"] == 33 + ALWAYS_ON_COUNT  # 42
+    @pytest.mark.parametrize("mod", MODULE_ORDER)
+    def test_single_module(self, mod):
+        info = _run(mod)
+        assert info["count"] == _MODULE_EXPECTED[mod], (
+            f"{mod}: expected {_MODULE_EXPECTED[mod]}, got {info['count']}"
+        )
 
-    def test_client(self):
-        info = _run_with_modules("client")
-        assert info["count"] == 15 + 2 + ALWAYS_ON_COUNT  # 26
+    def test_all_individual_equals_total(self):
+        assert _run(",".join(MODULE_ORDER))["count"] == _TOTAL
 
-    def test_wifi(self):
-        info = _run_with_modules("wifi")
-        assert info["count"] == 14 + 1 + ALWAYS_ON_COUNT  # 24
+    def test_multi_module_combo(self):
+        """Arbitrary combo: sum of per-module v1+v2 + always-on."""
+        combo = ["device", "client", "wifi", "network", "monitor"]
+        expected = sum(_MODULES[m]["v1"] + _MODULES[m]["v2"] for m in combo) + _ALWAYS_ON
+        assert _run(",".join(combo))["count"] == expected
 
-    def test_network(self):
-        info = _run_with_modules("network")
-        assert info["count"] == 15 + ALWAYS_ON_COUNT  # 24
-
-    def test_firewall(self):
-        info = _run_with_modules("firewall")
-        assert info["count"] == 30 + 12 + ALWAYS_ON_COUNT  # 51
-
-    def test_monitor(self):
-        info = _run_with_modules("monitor")
-        assert info["count"] == 34 + ALWAYS_ON_COUNT  # 43
-
-    def test_admin(self):
-        info = _run_with_modules("admin")
-        assert info["count"] == 41 + ALWAYS_ON_COUNT  # 50
-
-    def test_hotspot(self):
-        info = _run_with_modules("hotspot")
-        assert info["count"] == 32 + ALWAYS_ON_COUNT  # 41
-
-    def test_advanced(self):
-        info = _run_with_modules("advanced")
-        assert info["count"] == 46 + ALWAYS_ON_COUNT  # 55
-
-    def test_user_combo(self):
-        """User's target config: device,client,wifi,network,monitor → 123 tools."""
-        info = _run_with_modules("device,client,wifi,network,monitor")
-        assert info["count"] == 123
-
-    def test_v2_plus_device(self):
-        """v2 + device → all v2 (15) + device v1 (33) + always-on (9) = 57."""
-        info = _run_with_modules("v2,device")
-        assert info["count"] == 57
-
-    def test_all_individual_modules(self):
-        """All 9 modules listed individually = same as v1,v2 → 284."""
-        info = _run_with_modules("device,client,wifi,network,firewall,monitor,admin,hotspot,advanced")
-        assert info["count"] == 284
+    def test_v2_plus_single_module(self):
+        """v2 flag + one sub-module: all v2 + that module's v1 + always-on."""
+        mod = "device"
+        expected = _V2_TOTAL + _MODULES[mod]["v1"]
+        assert _run(f"v2,{mod}")["count"] == expected
 
 
 class TestModuleToolPresence:
-    """Test that specific tools are present/absent based on module selection."""
+    """Verify correct tools present/absent per module configuration."""
 
-    def test_always_on_present_everywhere(self):
+    def test_always_on_everywhere(self):
         """Always-on tools present in every configuration."""
-        for modules in ["", "device", "v1", "v2", "client,wifi"]:
-            info = _run_with_modules(modules)
-            names = set(info["names"])
-            missing = ALWAYS_ON_TOOLS - names
-            assert not missing, f"UNIFI_MODULES={modules!r}: missing always-on tools: {missing}"
+        for modules in ["", "v1", "v2", MODULE_ORDER[0]]:
+            names = set(_run(modules)["names"])
+            missing = _ALWAYS_ON_TOOLS - names
+            assert not missing, f"UNIFI_MODULES={modules!r}: missing always-on: {missing}"
 
-    def test_device_tools_present(self):
-        info = _run_with_modules("device")
-        names = set(info["names"])
-        missing = DEVICE_TOOLS - names
-        assert not missing, f"Missing device tools: {missing}"
+    @pytest.mark.parametrize("mod", MODULE_ORDER)
+    def test_module_tools_present(self, mod):
+        """Each module's derived tools are present when that module is loaded."""
+        names = set(_run(mod)["names"])
+        expected = _MODULE_TOOLS[mod]
+        missing = expected - names
+        assert not missing, f"Module {mod!r}: missing tools: {missing}"
 
-    def test_device_excludes_other_modules(self):
-        info = _run_with_modules("device")
-        names = set(info["names"])
-        for check_tools, label in [
-            (NETWORK_TOOLS, "network"), (FIREWALL_TOOLS, "firewall"),
-            (ADMIN_TOOLS, "admin"), (HOTSPOT_TOOLS, "hotspot"),
-        ]:
-            overlap = check_tools & names
-            assert not overlap, f"Device module should not include {label} tools: {overlap}"
+    @pytest.mark.parametrize("mod", MODULE_ORDER)
+    def test_module_excludes_others(self, mod):
+        """Tools from other modules should NOT appear when only one module is loaded."""
+        names = set(_run(mod)["names"])
+        # Remove always-on and this module's tools
+        unexpected = names - _ALWAYS_ON_TOOLS - _MODULE_TOOLS[mod]
+        # v2 tools for this module are also expected (dual-guard)
+        unexpected -= _V2_MODULE_TOOLS.get(mod, set())
+        assert not unexpected, (
+            f"Module {mod!r}: unexpected tools from other modules: {unexpected}"
+        )
 
-    def test_no_duplicate_tools(self):
+    def test_no_duplicates(self):
         """No tool registered more than once in any configuration."""
-        for modules in ["v1,v2", "device,client", "v2,firewall", "client"]:
-            info = _run_with_modules(modules)
-            names = info["names"]
+        for modules in ["v1,v2", "device,client", "v2,firewall"]:
+            names = _run(modules)["names"]
             assert len(names) == len(set(names)), (
-                f"UNIFI_MODULES={modules!r}: duplicate tools found"
+                f"UNIFI_MODULES={modules!r}: duplicate tools"
             )
 
-    def test_v2_dual_guard_client(self):
-        """v2 client tools available via 'client' module."""
-        info = _run_with_modules("client")
-        names = set(info["names"])
-        missing = V2_CLIENT_TOOLS - names
-        assert not missing, f"Missing v2 client tools via 'client' module: {missing}"
+    @pytest.mark.parametrize("mod", sorted(_V2_MODULE_TOOLS.keys()))
+    def test_v2_dual_guard_via_module(self, mod):
+        """v2 tools available when their parent sub-module is loaded."""
+        names = set(_run(mod)["names"])
+        missing = _V2_MODULE_TOOLS[mod] - names
+        assert not missing, f"v2 tools missing via {mod!r} module: {missing}"
 
-    def test_v2_dual_guard_v2_flag(self):
-        """v2 client tools available via 'v2' flag."""
-        info = _run_with_modules("v2")
-        names = set(info["names"])
-        missing = V2_CLIENT_TOOLS - names
-        assert not missing, f"Missing v2 client tools via 'v2' flag: {missing}"
+    @pytest.mark.parametrize("mod", sorted(_V2_MODULE_TOOLS.keys()))
+    def test_v2_dual_guard_via_v2_flag(self, mod):
+        """v2 tools available when 'v2' flag is set."""
+        names = set(_run("v2")["names"])
+        missing = _V2_MODULE_TOOLS[mod] - names
+        assert not missing, f"v2 {mod} tools missing via 'v2' flag: {missing}"
 
-    def test_v2_client_excluded_from_device(self):
-        """v2 client tools NOT available via 'device' module alone."""
-        info = _run_with_modules("device")
-        names = set(info["names"])
-        overlap = V2_CLIENT_TOOLS & names
-        assert not overlap, f"v2 client tools should not be in device module: {overlap}"
-
-    def test_v2_firewall_dual_guard(self):
-        """v2 firewall tools available via 'firewall' module."""
-        info = _run_with_modules("firewall")
-        names = set(info["names"])
-        missing = V2_FIREWALL_TOOLS - names
-        assert not missing, f"Missing v2 firewall tools: {missing}"
-
-    def test_v2_wifi_dual_guard(self):
-        """v2 wifi tools available via 'wifi' module."""
-        info = _run_with_modules("wifi")
-        names = set(info["names"])
-        missing = V2_WIFI_TOOLS - names
-        assert not missing, f"Missing v2 wifi tools: {missing}"
-
-    def test_port_override_in_device(self):
-        """Port override helper is in device module, not always-on."""
-        device_info = _run_with_modules("device")
-        assert "unifi_set_port_override" in device_info["names"]
-
-        empty_info = _run_with_modules("")
-        assert "unifi_set_port_override" not in empty_info["names"]
-
-    def test_spot_checks_per_module(self):
-        """Verify representative tools exist in each module."""
-        checks = [
-            ("device", DEVICE_TOOLS),
-            ("client", CLIENT_TOOLS),
-            ("wifi", WIFI_TOOLS),
-            ("network", NETWORK_TOOLS),
-            ("firewall", FIREWALL_TOOLS),
-            ("monitor", MONITOR_TOOLS),
-            ("admin", ADMIN_TOOLS),
-            ("hotspot", HOTSPOT_TOOLS),
-            ("advanced", ADVANCED_TOOLS),
-        ]
-        for mod, expected_tools in checks:
-            info = _run_with_modules(mod)
-            names = set(info["names"])
-            missing = expected_tools - names
-            assert not missing, f"Module {mod!r}: missing expected tools: {missing}"
+    def test_port_override_in_device_only(self):
+        """Port override is in device module, not always-on."""
+        assert "unifi_set_port_override" in _run("device")["names"]
+        assert "unifi_set_port_override" not in _run("")["names"]
