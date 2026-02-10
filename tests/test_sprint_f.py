@@ -49,8 +49,10 @@ import server as srv  # noqa: E402
 # ---------------------------------------------------------------------------
 
 
-def parse(result: str) -> dict:
-    """Parse a tool result string as JSON. Fails the test if not valid JSON."""
+def parse(result) -> dict:
+    """Extract structured dict from a tool result. Accepts dict (direct) or str (JSON)."""
+    if isinstance(result, dict):
+        return result
     try:
         return json.loads(result)
     except (json.JSONDecodeError, TypeError) as e:

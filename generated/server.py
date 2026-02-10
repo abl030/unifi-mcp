@@ -201,8 +201,8 @@ def _redact_secrets(obj: Any) -> Any:
 # Helper: format response
 # ---------------------------------------------------------------------------
 
-def _format_response(data: Any, summary: str | None = None) -> str:
-    """Format API response data as structured JSON for tool output."""
+def _format_response(data: Any, summary: str | None = None) -> dict:
+    """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
         data = _redact_secrets(data)
     result: dict[str, Any] = {}
@@ -213,7 +213,7 @@ def _format_response(data: Any, summary: str | None = None) -> str:
         result["data"] = data
     elif data is not None:
         result["data"] = data
-    return json.dumps(result, indent=2, default=str)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ async def unifi_report_issue(
     error_message: str,
     parameters_used: dict[str, Any],
     notes: str = "",
-) -> str:
+) -> dict:
     """Report an unexpected UniFi MCP tool error by composing a GitHub issue command.
 
     This tool does NOT make any HTTP calls. It returns a ready-to-paste
@@ -310,7 +310,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all device_configs.
 
         Returns device_configs from the UniFi controller.
@@ -339,7 +339,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all elements.
 
         Returns elements from the UniFi controller.
@@ -368,7 +368,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all virtual_devices.
 
         Returns virtual_devices from the UniFi controller.
@@ -395,7 +395,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List devices statistics.
 
         Note: also POST with macs filter
@@ -422,7 +422,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List devices_basic statistics.
 
         Args:
@@ -448,7 +448,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'adopt' via devmgr.
 
             Args:
@@ -483,7 +483,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'restart' via devmgr.
 
             Args:
@@ -518,7 +518,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'force-provision' via devmgr.
 
             Args:
@@ -554,7 +554,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             port_idx: int,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'power-cycle' via devmgr.
 
             Args:
@@ -592,7 +592,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_run_speedtest(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'speedtest' via devmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -616,7 +616,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     @mcp.tool()
     async def unifi_get_speedtest_status(
         site: str = "",
-    ) -> str:
+    ) -> dict:
         """Execute 'speedtest-status' via devmgr.
 
             site: Site name override (default: from env).
@@ -637,7 +637,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'set-locate' via devmgr.
 
             Args:
@@ -672,7 +672,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'unset-locate' via devmgr.
 
             Args:
@@ -707,7 +707,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'upgrade' via devmgr.
 
             Args:
@@ -743,7 +743,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             url: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'upgrade-external' via devmgr.
 
             Args:
@@ -783,7 +783,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             inform_url: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'migrate' via devmgr.
 
             Args:
@@ -822,7 +822,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'cancel-migrate' via devmgr.
 
             Args:
@@ -857,7 +857,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'spectrum-scan' via devmgr.
 
             Args:
@@ -893,7 +893,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             name: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'rename' via devmgr.
 
             Args:
@@ -933,7 +933,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             led_override: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'led-override' via devmgr.
 
             Args:
@@ -972,7 +972,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'disable-ap' via devmgr.
 
             Args:
@@ -1006,7 +1006,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_upgrade_all_devices(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'upgrade-all-devices' via devmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -1036,7 +1036,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             key: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'advanced-adopt' via devmgr.
 
             Args:
@@ -1078,7 +1078,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_restart_http_portal(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'restart-http-portal' via devmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -1106,7 +1106,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'enable' via devmgr.
 
             Args:
@@ -1141,7 +1141,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'disable' via devmgr.
 
             Args:
@@ -1177,7 +1177,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             port_idx: int,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'cable-test' via devmgr.
 
             Args:
@@ -1217,7 +1217,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             inform_url: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'set-inform' via devmgr.
 
             Args:
@@ -1257,7 +1257,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             target_site: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'move-device' via sitemgr.
 
             Args:
@@ -1296,7 +1296,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'delete-device' via sitemgr.
 
             Args:
@@ -1330,7 +1330,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_reboot_cloudkey(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'reboot-cloudkey' via system.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -1358,7 +1358,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'element-adoption' via system.
 
             Args:
@@ -1402,7 +1402,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             poe_mode: str = "",
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Set port override on a device (switch port configuration).
 
             This updates a specific port on a UniFi switch device.
@@ -1474,7 +1474,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all users.
 
         Args:
@@ -1493,7 +1493,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_user(id: str, site: str = "") -> str:
+    async def unifi_get_user(id: str, site: str = "") -> dict:
         """Get a single user by ID.
 
         Args:
@@ -1515,7 +1515,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new user.
 
             Args:
@@ -1543,7 +1543,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing user.
 
             Args:
@@ -1573,7 +1573,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all_users statistics.
 
         Args:
@@ -1598,7 +1598,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List guests statistics.
 
         Args:
@@ -1623,7 +1623,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List sessions statistics.
 
         Note: requires POST with {"type":"all","start":0,"end":9999999999}
@@ -1650,7 +1650,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List clients statistics.
 
         Args:
@@ -1676,7 +1676,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'block-sta' via stamgr.
 
             Args:
@@ -1711,7 +1711,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'unblock-sta' via stamgr.
 
             Args:
@@ -1746,7 +1746,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'kick-sta' via stamgr.
 
             Args:
@@ -1781,7 +1781,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             macs: list,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'forget-sta' via stamgr.
 
             Args:
@@ -1813,7 +1813,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'unauthorize-guest' via stamgr.
 
             Args:
@@ -1849,7 +1849,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             minutes: int,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'authorize-guest' via stamgr.
 
             Args:
@@ -1888,7 +1888,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'reconnect-sta' via stamgr.
 
             Args:
@@ -1926,7 +1926,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all active_clients (v2 API).
 
         Args:
@@ -1956,7 +1956,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all clients_history (v2 API).
 
         Args:
@@ -1991,7 +1991,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all channel_plans.
 
         Returns channel_plans from the UniFi controller.
@@ -2020,7 +2020,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all wlans.
 
         Args:
@@ -2039,7 +2039,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_wlan(id: str, site: str = "") -> str:
+    async def unifi_get_wlan(id: str, site: str = "") -> dict:
         """Get a single wlan by ID.
 
         Args:
@@ -2061,7 +2061,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new wlan.
 
             Args:
@@ -2089,7 +2089,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing wlan.
 
             Args:
@@ -2117,7 +2117,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a wlan.
 
             Args:
@@ -2146,7 +2146,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all wlan_groups.
 
         Key fields: name (str)
@@ -2167,7 +2167,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_wlan_group(id: str, site: str = "") -> str:
+    async def unifi_get_wlan_group(id: str, site: str = "") -> dict:
         """Get a single wlan_group by ID.
 
         Args:
@@ -2189,7 +2189,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new wlan_group.
 
             Args:
@@ -2216,7 +2216,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing wlan_group.
 
             Args:
@@ -2243,7 +2243,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a wlan_group.
 
             Args:
@@ -2270,7 +2270,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List country_codes statistics.
 
         Key fields: code, key, name
@@ -2297,7 +2297,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List current_channels statistics.
 
         Key fields: afc, channels_6e, channels_6e_160, channels_6e_320, channels_6e_40
@@ -2324,7 +2324,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List spectrum_scans statistics.
 
         Args:
@@ -2353,7 +2353,7 @@ if "wifi" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all ap_groups (v2 API).
 
         Key fields: device_macs (list), for_wlanconf (bool), name (str)
@@ -2390,7 +2390,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all dns_records.
 
         Args:
@@ -2409,7 +2409,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_dns_record(id: str, site: str = "") -> str:
+    async def unifi_get_dns_record(id: str, site: str = "") -> dict:
         """Get a single dns_record by ID.
 
         Args:
@@ -2431,7 +2431,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new dns_record.
 
             Args:
@@ -2457,7 +2457,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing dns_record.
 
             Args:
@@ -2483,7 +2483,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a dns_record.
 
             Args:
@@ -2512,7 +2512,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all networks.
 
         Key fields: ipv6_interface_type (str: "none"), ipv6_ra_priority (str: "high"), ipv6_setting_preference (str: "auto"), networkgroup (str: "LAN"), purpose (str: "corporate"), auto_scale_enabled (bool), dhcpd_enabled (bool), dhcpd_start (str)
@@ -2533,7 +2533,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_network(id: str, site: str = "") -> str:
+    async def unifi_get_network(id: str, site: str = "") -> dict:
         """Get a single network by ID.
 
         Args:
@@ -2555,7 +2555,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new network.
 
             Args:
@@ -2584,7 +2584,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing network.
 
             Args:
@@ -2613,7 +2613,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a network.
 
             Args:
@@ -2642,7 +2642,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all port_profiles.
 
         Args:
@@ -2661,7 +2661,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_port_profile(id: str, site: str = "") -> str:
+    async def unifi_get_port_profile(id: str, site: str = "") -> dict:
         """Get a single port_profile by ID.
 
         Args:
@@ -2683,7 +2683,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new port_profile.
 
             Args:
@@ -2711,7 +2711,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing port_profile.
 
             Args:
@@ -2739,7 +2739,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a port_profile.
 
             Args:
@@ -2773,7 +2773,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all dhcp_options.
 
         Args:
@@ -2792,7 +2792,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_dhcp_option(id: str, site: str = "") -> str:
+    async def unifi_get_dhcp_option(id: str, site: str = "") -> dict:
         """Get a single dhcp_option by ID.
 
         Args:
@@ -2814,7 +2814,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new dhcp_option.
 
             Args:
@@ -2841,7 +2841,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing dhcp_option.
 
             Args:
@@ -2867,7 +2867,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a dhcp_option.
 
             Args:
@@ -2896,7 +2896,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all dynamic_dns_entries.
 
         Args:
@@ -2915,7 +2915,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_dynamic_dns(id: str, site: str = "") -> str:
+    async def unifi_get_dynamic_dns(id: str, site: str = "") -> dict:
         """Get a single dynamic_dns by ID.
 
         Args:
@@ -2937,7 +2937,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new dynamic_dns.
 
             Args:
@@ -2963,7 +2963,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing dynamic_dns.
 
             Args:
@@ -2989,7 +2989,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a dynamic_dns.
 
             Args:
@@ -3018,7 +3018,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all firewall_groups.
 
         Args:
@@ -3037,7 +3037,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_firewall_group(id: str, site: str = "") -> str:
+    async def unifi_get_firewall_group(id: str, site: str = "") -> dict:
         """Get a single firewall_group by ID.
 
         Args:
@@ -3059,7 +3059,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new firewall_group.
 
             Args:
@@ -3087,7 +3087,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing firewall_group.
 
             Args:
@@ -3115,7 +3115,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a firewall_group.
 
             Args:
@@ -3144,7 +3144,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all firewall_rules.
 
         Args:
@@ -3163,7 +3163,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_firewall_rule(id: str, site: str = "") -> str:
+    async def unifi_get_firewall_rule(id: str, site: str = "") -> dict:
         """Get a single firewall_rule by ID.
 
         Args:
@@ -3185,7 +3185,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new firewall_rule.
 
             Args:
@@ -3213,7 +3213,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing firewall_rule.
 
             Args:
@@ -3241,7 +3241,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a firewall_rule.
 
             Args:
@@ -3270,7 +3270,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all port_forwards.
 
         Args:
@@ -3289,7 +3289,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_port_forward(id: str, site: str = "") -> str:
+    async def unifi_get_port_forward(id: str, site: str = "") -> dict:
         """Get a single port_forward by ID.
 
         Args:
@@ -3311,7 +3311,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new port_forward.
 
             Args:
@@ -3339,7 +3339,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing port_forward.
 
             Args:
@@ -3367,7 +3367,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a port_forward.
 
             Args:
@@ -3396,7 +3396,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all routes.
 
         Args:
@@ -3415,7 +3415,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_route(id: str, site: str = "") -> str:
+    async def unifi_get_route(id: str, site: str = "") -> dict:
         """Get a single route by ID.
 
         Args:
@@ -3437,7 +3437,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new route.
 
             Args:
@@ -3463,7 +3463,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing route.
 
             Args:
@@ -3489,7 +3489,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a route.
 
             Args:
@@ -3520,7 +3520,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all firewall_policies (v2 API).
 
         Args:
@@ -3548,7 +3548,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new firewall_policy (v2 API).
 
             Args:
@@ -3576,7 +3576,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update a firewall_policy (v2 API).
 
             Args:
@@ -3605,7 +3605,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a firewall_policy (v2 API).
 
             Args:
@@ -3635,7 +3635,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all firewall_zones (v2 API).
 
         Args:
@@ -3664,7 +3664,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update a firewall_zone (v2 API).
 
             Args:
@@ -3697,7 +3697,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all traffic_rules (v2 API).
 
         Args:
@@ -3725,7 +3725,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new traffic_rule (v2 API).
 
             Args:
@@ -3753,7 +3753,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update a traffic_rule (v2 API).
 
             Args:
@@ -3782,7 +3782,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a traffic_rule (v2 API).
 
             Args:
@@ -3812,7 +3812,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all traffic_routes (v2 API).
 
         Args:
@@ -3841,7 +3841,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update a traffic_route (v2 API).
 
             Args:
@@ -3879,7 +3879,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all alarms.
 
         Returns alarms from the UniFi controller.
@@ -3908,7 +3908,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all events.
 
         Returns events from the UniFi controller.
@@ -3935,7 +3935,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List stat_alarms statistics.
 
         Args:
@@ -3960,7 +3960,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List anomalies statistics.
 
         Note: site anomalies (unpoller). Supports ?scale=hourly&end=<timestamp>
@@ -3987,7 +3987,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List authorizations statistics.
 
         Args:
@@ -4012,7 +4012,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List dashboard statistics.
 
         Key fields: time
@@ -4039,7 +4039,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List dpi_stats statistics.
 
         Args:
@@ -4064,7 +4064,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List dynamic_dns_stats statistics.
 
         Args:
@@ -4089,7 +4089,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List stat_events statistics.
 
         Args:
@@ -4114,7 +4114,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List gateway_stats statistics.
 
         Note: needs adopted USG/UDM gateway
@@ -4141,7 +4141,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List health statistics.
 
         Key fields: status, subsystem
@@ -4168,7 +4168,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List ips_events statistics.
 
         Note: IDS/IPS events — singular form (unpoller APIEventPathIDS)
@@ -4195,7 +4195,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List port_forward_stats statistics.
 
         Args:
@@ -4220,7 +4220,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List remote_user_vpn statistics.
 
         Note: remote user VPN stats
@@ -4249,7 +4249,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """Get statistical reports.
 
         Args:
@@ -4279,7 +4279,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_5min_ap statistics.
 
         Args:
@@ -4304,7 +4304,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_5min_gateway statistics.
 
         Note: 5-minute gateway stats
@@ -4331,7 +4331,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List speedtest_results statistics.
 
         Note: archived speedtest results with start/end timestamps (Art-of-WiFi)
@@ -4358,7 +4358,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_daily_gateway statistics.
 
         Args:
@@ -4383,7 +4383,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_hourly_gateway statistics.
 
         Args:
@@ -4408,7 +4408,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_monthly_ap statistics.
 
         Args:
@@ -4433,7 +4433,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_monthly_gateway statistics.
 
         Args:
@@ -4458,7 +4458,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_monthly_site statistics.
 
         Args:
@@ -4483,7 +4483,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List report_monthly_user statistics.
 
         Args:
@@ -4508,7 +4508,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List rogue_aps statistics.
 
         Args:
@@ -4533,7 +4533,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List routing_stats statistics.
 
         Args:
@@ -4558,7 +4558,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List sdn_status statistics.
 
         Key fields: cloud_env, connected, connecting, enabled, has_sso_auth
@@ -4585,7 +4585,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List site_dpi statistics.
 
         Args:
@@ -4610,7 +4610,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List client_dpi statistics.
 
         Args:
@@ -4635,7 +4635,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List sysinfo statistics.
 
         Key fields: anonymous_controller_id, autobackup, build, data_retention_days, data_retention_time_in_hours_for_5minutes_scale
@@ -4663,7 +4663,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             _id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'archive' via alarm.
 
             Args:
@@ -4694,7 +4694,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_archive_all_alarms(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'archive-all-alarms' via evtmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -4722,7 +4722,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             _id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'archive-alarm' via evtmgr.
 
             Args:
@@ -4753,7 +4753,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_clear_dpi(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'reset-dpi' via stat.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -4787,7 +4787,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all accounts.
 
         Args:
@@ -4806,7 +4806,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_account(id: str, site: str = "") -> str:
+    async def unifi_get_account(id: str, site: str = "") -> dict:
         """Get a single account by ID.
 
         Args:
@@ -4828,7 +4828,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new account.
 
             Args:
@@ -4854,7 +4854,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing account.
 
             Args:
@@ -4880,7 +4880,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a account.
 
             Args:
@@ -4909,7 +4909,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all site settings. Returns all setting categories.
 
         Args:
@@ -4928,7 +4928,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_setting(key: str, site: str = "") -> str:
+    async def unifi_get_setting(key: str, site: str = "") -> dict:
         """Get a specific site setting by key (e.g. 'super_identity', 'snmp').
 
         Args:
@@ -4952,7 +4952,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update a site setting by key.
 
             Args:
@@ -4982,7 +4982,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all tags.
 
         Args:
@@ -5001,7 +5001,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_tag(id: str, site: str = "") -> str:
+    async def unifi_get_tag(id: str, site: str = "") -> dict:
         """Get a single tag by ID.
 
         Args:
@@ -5023,7 +5023,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new tag.
 
             Args:
@@ -5049,7 +5049,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing tag.
 
             Args:
@@ -5075,7 +5075,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a tag.
 
             Args:
@@ -5104,7 +5104,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all user_groups.
 
         Key fields: name (str), qos_rate_max_down (int), qos_rate_max_up (int)
@@ -5125,7 +5125,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_user_group(id: str, site: str = "") -> str:
+    async def unifi_get_user_group(id: str, site: str = "") -> dict:
         """Get a single user_group by ID.
 
         Args:
@@ -5147,7 +5147,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new user_group.
 
             Args:
@@ -5176,7 +5176,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing user_group.
 
             Args:
@@ -5205,7 +5205,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a user_group.
 
             Args:
@@ -5229,7 +5229,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     @mcp.tool()
     async def unifi_list_backups(
         site: str = "",
-    ) -> str:
+    ) -> dict:
         """Execute 'list-backups' via backup.
 
             site: Site name override (default: from env).
@@ -5250,7 +5250,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             filename: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'delete-backup' via backup.
 
             Args:
@@ -5281,7 +5281,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_generate_backup(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'generate-backup' via backup.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -5308,7 +5308,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_generate_backup_site(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'generate-backup-site' via backup.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -5335,7 +5335,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_rolling_upgrade(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'rolling-upgrade' via devmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -5362,7 +5362,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_cancel_rolling_upgrade(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'cancel-rolling-upgrade' via devmgr.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -5386,7 +5386,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     @mcp.tool()
     async def unifi_check_firmware_update(
         site: str = "",
-    ) -> str:
+    ) -> dict:
         """Execute 'check-firmware-update' via devmgr.
 
             site: Site name override (default: from env).
@@ -5407,7 +5407,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'set-rollupgrade' via devmgr.
 
             Args:
@@ -5442,7 +5442,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             mac: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'unset-rollupgrade' via devmgr.
 
             Args:
@@ -5477,7 +5477,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             desc: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'add-site' via sitemgr.
 
             Args:
@@ -5509,7 +5509,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             target_site: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'delete-site' via sitemgr.
 
             Args:
@@ -5541,7 +5541,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             desc: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'update-site' via sitemgr.
 
             Args:
@@ -5569,7 +5569,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     @mcp.tool()
     async def unifi_get_admins(
         site: str = "",
-    ) -> str:
+    ) -> dict:
         """Execute 'get-admins' via sitemgr.
 
             site: Site name override (default: from env).
@@ -5590,7 +5590,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             led_enabled: bool,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'site-leds' via sitemgr.
 
             Args:
@@ -5624,7 +5624,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             role: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'invite-admin' via sitemgr.
 
             Args:
@@ -5665,7 +5665,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             role: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'assign-existing-admin' via sitemgr.
 
             Args:
@@ -5702,7 +5702,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             role: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'update-admin' via sitemgr.
 
             Args:
@@ -5738,7 +5738,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             admin: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'revoke-admin' via sitemgr.
 
             Args:
@@ -5770,7 +5770,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             admin: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'grant-super-admin' via sitemgr.
 
             Args:
@@ -5805,7 +5805,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             role: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'create-admin' via sitemgr.
 
             Args:
@@ -5849,7 +5849,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             admin: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'revoke-super-admin' via sitemgr.
 
             Args:
@@ -5880,7 +5880,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         async def unifi_create_backup(
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'backup' via system.
 
                 confirm: Must be True to execute. Returns preview if False.
@@ -5908,7 +5908,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             filename: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'download-backup' via system.
 
             Args:
@@ -5946,7 +5946,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all hotspot2_configs.
 
         Args:
@@ -5965,7 +5965,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_hotspot2_config(id: str, site: str = "") -> str:
+    async def unifi_get_hotspot2_config(id: str, site: str = "") -> dict:
         """Get a single hotspot2_config by ID.
 
         Args:
@@ -5987,7 +5987,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new hotspot2_config.
 
             Args:
@@ -6013,7 +6013,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing hotspot2_config.
 
             Args:
@@ -6039,7 +6039,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a hotspot2_config.
 
             Args:
@@ -6068,7 +6068,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all hotspot_operators.
 
         Args:
@@ -6087,7 +6087,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_hotspot_operator(id: str, site: str = "") -> str:
+    async def unifi_get_hotspot_operator(id: str, site: str = "") -> dict:
         """Get a single hotspot_operator by ID.
 
         Args:
@@ -6109,7 +6109,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new hotspot_operator.
 
             Args:
@@ -6135,7 +6135,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing hotspot_operator.
 
             Args:
@@ -6161,7 +6161,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a hotspot_operator.
 
             Args:
@@ -6190,7 +6190,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all hotspot_packages.
 
         Args:
@@ -6209,7 +6209,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_hotspot_package(id: str, site: str = "") -> str:
+    async def unifi_get_hotspot_package(id: str, site: str = "") -> dict:
         """Get a single hotspot_package by ID.
 
         Args:
@@ -6231,7 +6231,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new hotspot_package.
 
             Args:
@@ -6258,7 +6258,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing hotspot_package.
 
             Args:
@@ -6284,7 +6284,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a hotspot_package.
 
             Args:
@@ -6313,7 +6313,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all radius_accounts.
 
         Args:
@@ -6332,7 +6332,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_radius_account(id: str, site: str = "") -> str:
+    async def unifi_get_radius_account(id: str, site: str = "") -> dict:
         """Get a single radius_account by ID.
 
         Args:
@@ -6354,7 +6354,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new radius_account.
 
             Args:
@@ -6380,7 +6380,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing radius_account.
 
             Args:
@@ -6406,7 +6406,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a radius_account.
 
             Args:
@@ -6435,7 +6435,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all radius_profiles.
 
         Key fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
@@ -6456,7 +6456,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_radius_profile(id: str, site: str = "") -> str:
+    async def unifi_get_radius_profile(id: str, site: str = "") -> dict:
         """Get a single radius_profile by ID.
 
         Args:
@@ -6478,7 +6478,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new radius_profile.
 
             Args:
@@ -6507,7 +6507,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing radius_profile.
 
             Args:
@@ -6536,7 +6536,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a radius_profile.
 
             Args:
@@ -6563,7 +6563,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List payments statistics.
 
         Args:
@@ -6588,7 +6588,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List vouchers statistics.
 
         Args:
@@ -6615,7 +6615,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             minutes: int,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'authorize-guest' via hotspot.
 
             Args:
@@ -6656,7 +6656,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             quota: int,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'create-voucher' via hotspot.
 
             Args:
@@ -6696,7 +6696,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             _id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'revoke-voucher' via hotspot.
 
             Args:
@@ -6728,7 +6728,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             _id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'extend-guest-validity' via hotspot.
 
             Args:
@@ -6760,7 +6760,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             _id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Execute 'delete-voucher' via hotspot.
 
             Args:
@@ -6798,7 +6798,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all broadcast_groups.
 
         Args:
@@ -6817,7 +6817,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_broadcast_group(id: str, site: str = "") -> str:
+    async def unifi_get_broadcast_group(id: str, site: str = "") -> dict:
         """Get a single broadcast_group by ID.
 
         Args:
@@ -6839,7 +6839,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new broadcast_group.
 
             Args:
@@ -6865,7 +6865,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing broadcast_group.
 
             Args:
@@ -6891,7 +6891,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a broadcast_group.
 
             Args:
@@ -6920,7 +6920,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all dpi_apps.
 
         Args:
@@ -6939,7 +6939,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_dpi_app(id: str, site: str = "") -> str:
+    async def unifi_get_dpi_app(id: str, site: str = "") -> dict:
         """Get a single dpi_app by ID.
 
         Args:
@@ -6961,7 +6961,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new dpi_app.
 
             Args:
@@ -6987,7 +6987,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing dpi_app.
 
             Args:
@@ -7013,7 +7013,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a dpi_app.
 
             Args:
@@ -7042,7 +7042,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all dpi_groups.
 
         Key fields: name (str)
@@ -7063,7 +7063,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_dpi_group(id: str, site: str = "") -> str:
+    async def unifi_get_dpi_group(id: str, site: str = "") -> dict:
         """Get a single dpi_group by ID.
 
         Args:
@@ -7085,7 +7085,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new dpi_group.
 
             Args:
@@ -7112,7 +7112,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing dpi_group.
 
             Args:
@@ -7139,7 +7139,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a dpi_group.
 
             Args:
@@ -7168,7 +7168,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all heatmaps.
 
         Args:
@@ -7187,7 +7187,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_heatmap(id: str, site: str = "") -> str:
+    async def unifi_get_heatmap(id: str, site: str = "") -> dict:
         """Get a single heatmap by ID.
 
         Args:
@@ -7209,7 +7209,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new heatmap.
 
             Args:
@@ -7236,7 +7236,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing heatmap.
 
             Args:
@@ -7262,7 +7262,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a heatmap.
 
             Args:
@@ -7291,7 +7291,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all heatmap_points.
 
         Args:
@@ -7310,7 +7310,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_heatmap_point(id: str, site: str = "") -> str:
+    async def unifi_get_heatmap_point(id: str, site: str = "") -> dict:
         """Get a single heatmap_point by ID.
 
         Args:
@@ -7332,7 +7332,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new heatmap_point.
 
             Args:
@@ -7359,7 +7359,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing heatmap_point.
 
             Args:
@@ -7385,7 +7385,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a heatmap_point.
 
             Args:
@@ -7414,7 +7414,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all maps.
 
         Args:
@@ -7433,7 +7433,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_map(id: str, site: str = "") -> str:
+    async def unifi_get_map(id: str, site: str = "") -> dict:
         """Get a single map by ID.
 
         Args:
@@ -7455,7 +7455,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new map.
 
             Args:
@@ -7481,7 +7481,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing map.
 
             Args:
@@ -7507,7 +7507,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a map.
 
             Args:
@@ -7536,7 +7536,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all media_files.
 
         Args:
@@ -7555,7 +7555,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_media_file(id: str, site: str = "") -> str:
+    async def unifi_get_media_file(id: str, site: str = "") -> dict:
         """Get a single media_file by ID.
 
         Args:
@@ -7577,7 +7577,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new media_file.
 
             Args:
@@ -7603,7 +7603,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing media_file.
 
             Args:
@@ -7629,7 +7629,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a media_file.
 
             Args:
@@ -7658,7 +7658,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all known_rogue_aps.
 
         Returns known_rogue_aps from the UniFi controller.
@@ -7687,7 +7687,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all schedule_tasks.
 
         Args:
@@ -7706,7 +7706,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_schedule_task(id: str, site: str = "") -> str:
+    async def unifi_get_schedule_task(id: str, site: str = "") -> dict:
         """Get a single schedule_task by ID.
 
         Args:
@@ -7728,7 +7728,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new schedule_task.
 
             Args:
@@ -7754,7 +7754,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing schedule_task.
 
             Args:
@@ -7783,7 +7783,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a schedule_task.
 
             Args:
@@ -7812,7 +7812,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         limit: int = 0,
         offset: int = 0,
         fields: str = "",
-    ) -> str:
+    ) -> dict:
         """List all spatial_records.
 
         Args:
@@ -7831,7 +7831,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 
     @mcp.tool()
-    async def unifi_get_spatial_record(id: str, site: str = "") -> str:
+    async def unifi_get_spatial_record(id: str, site: str = "") -> dict:
         """Get a single spatial_record by ID.
 
         Args:
@@ -7853,7 +7853,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Create a new spatial_record.
 
             Args:
@@ -7880,7 +7880,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             data: dict,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Update an existing spatial_record.
 
             Args:
@@ -7906,7 +7906,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             id: str,
             confirm: bool = False,
             site: str = "",
-        ) -> str:
+        ) -> dict:
             """Delete a spatial_record.
 
             Args:
@@ -7933,7 +7933,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
 if not UNIFI_READ_ONLY:
     @mcp.tool()
-    async def unifi_logout() -> str:
+    async def unifi_logout() -> dict:
         """Logout.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -7943,7 +7943,7 @@ if not UNIFI_READ_ONLY:
         return _format_response(data)
 
 @mcp.tool()
-async def unifi_self() -> str:
+async def unifi_self() -> dict:
     """Self.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -7954,7 +7954,7 @@ async def unifi_self() -> str:
 
 
 @mcp.tool()
-async def unifi_sites() -> str:
+async def unifi_sites() -> dict:
     """Sites.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -7965,7 +7965,7 @@ async def unifi_sites() -> str:
 
 
 @mcp.tool()
-async def unifi_stat_admin() -> str:
+async def unifi_stat_admin() -> dict:
     """Stat Admin.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -7976,7 +7976,7 @@ async def unifi_stat_admin() -> str:
 
 
 @mcp.tool()
-async def unifi_stat_sites() -> str:
+async def unifi_stat_sites() -> dict:
     """Stat Sites.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -7987,7 +7987,7 @@ async def unifi_stat_sites() -> str:
 
 
 @mcp.tool()
-async def unifi_status() -> str:
+async def unifi_status() -> dict:
     """Status.
 
     No authentication required.
@@ -8008,7 +8008,7 @@ async def unifi_status() -> str:
 
 if not UNIFI_READ_ONLY:
     @mcp.tool()
-    async def unifi_system_poweroff() -> str:
+    async def unifi_system_poweroff() -> dict:
         """System Poweroff.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -8019,7 +8019,7 @@ if not UNIFI_READ_ONLY:
 
 if not UNIFI_READ_ONLY:
     @mcp.tool()
-    async def unifi_system_reboot() -> str:
+    async def unifi_system_reboot() -> dict:
         """System Reboot.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
@@ -8034,7 +8034,7 @@ if not UNIFI_READ_ONLY:
 
 
 @mcp.tool()
-async def unifi_get_overview(site: str = "") -> str:
+async def unifi_get_overview(site: str = "") -> dict:
     """Get a concise network overview in a single call.
 
     Returns controller version, health status, device/network/WLAN summaries,

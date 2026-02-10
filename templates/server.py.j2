@@ -201,8 +201,8 @@ def _redact_secrets(obj: Any) -> Any:
 # Helper: format response
 # ---------------------------------------------------------------------------
 
-def _format_response(data: Any, summary: str | None = None) -> str:
-    """Format API response data as structured JSON for tool output."""
+def _format_response(data: Any, summary: str | None = None) -> dict:
+    """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
         data = _redact_secrets(data)
     result: dict[str, Any] = {}
@@ -213,7 +213,7 @@ def _format_response(data: Any, summary: str | None = None) -> str:
         result["data"] = data
     elif data is not None:
         result["data"] = data
-    return json.dumps(result, indent=2, default=str)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ async def unifi_report_issue(
     error_message: str,
     parameters_used: dict[str, Any],
     notes: str = "",
-) -> str:
+) -> dict:
     """Report an unexpected UniFi MCP tool error by composing a GitHub issue command.
 
     This tool does NOT make any HTTP calls. It returns a ready-to-paste
@@ -309,7 +309,7 @@ async def unifi_list_settings(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """List all site settings. Returns all setting categories.
 
     Args:
@@ -328,7 +328,7 @@ async def unifi_list_settings(
 
 
 @mcp.tool()
-async def unifi_get_setting(key: str, site: str = "") -> str:
+async def unifi_get_setting(key: str, site: str = "") -> dict:
     """Get a specific site setting by key (e.g. 'super_identity', 'snmp').
 
     Args:
@@ -353,7 +353,7 @@ async def unifi_update_setting(
     data: dict,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Update a site setting by key.
 
     Args:
@@ -384,7 +384,7 @@ async def unifi_list_{{ tool.plural }}(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """List all {{ tool.plural }}.
 
     Returns {{ tool.plural }} from the UniFi controller.
@@ -413,7 +413,7 @@ async def unifi_list_{{ tool.plural }}(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """List all {{ tool.plural }}.
 {% if tool.writable_fields %}
 
@@ -436,7 +436,7 @@ async def unifi_list_{{ tool.plural }}(
 
 
 @mcp.tool()
-async def unifi_get_{{ tool.singular }}(id: str, site: str = "") -> str:
+async def unifi_get_{{ tool.singular }}(id: str, site: str = "") -> dict:
     """Get a single {{ tool.singular }} by ID.
 
     Args:
@@ -459,7 +459,7 @@ async def unifi_create_{{ tool.singular }}(
     data: dict,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Create a new {{ tool.singular }}.
 
     Args:
@@ -494,7 +494,7 @@ async def unifi_update_{{ tool.singular }}(
     data: dict,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Update an existing {{ tool.singular }}.
 
     Args:
@@ -533,7 +533,7 @@ async def unifi_delete_{{ tool.singular }}(
     id: str,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Delete a {{ tool.singular }}.
 
     Args:
@@ -567,7 +567,7 @@ async def unifi_list_report(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """Get statistical reports.
 
     Args:
@@ -597,7 +597,7 @@ async def unifi_list_{{ tool.display_name }}(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """List {{ tool.display_name }} statistics.
 {% if tool.note %}
 
@@ -643,7 +643,7 @@ async def unifi_{{ tool.tool_name }}(
     confirm: bool = False,
 {% endif %}
     site: str = "",
-) -> str:
+) -> dict:
     """Execute '{{ tool.command }}' via {{ tool.manager }}.
 
 {% for pname, ptype in tool.params.items() %}
@@ -715,7 +715,7 @@ async def unifi_list_{{ tool.plural }}(
     limit: int = 0,
     offset: int = 0,
     fields: str = "",
-) -> str:
+) -> dict:
     """List all {{ tool.plural }} (v2 API).
 {% if tool.writable_fields %}
 
@@ -751,7 +751,7 @@ async def unifi_create_{{ tool.singular }}(
     data: dict,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Create a new {{ tool.singular }} (v2 API).
 
     Args:
@@ -785,7 +785,7 @@ async def unifi_update_{{ tool.singular }}(
     data: dict,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Update a {{ tool.singular }} (v2 API).
 
     Args:
@@ -819,7 +819,7 @@ async def unifi_delete_{{ tool.singular }}(
     id: str,
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Delete a {{ tool.singular }} (v2 API).
 
     Args:
@@ -884,7 +884,7 @@ async def unifi_set_port_override(
     poe_mode: str = "",
     confirm: bool = False,
     site: str = "",
-) -> str:
+) -> dict:
     """Set port override on a device (switch port configuration).
 
     This updates a specific port on a UniFi switch device.
@@ -966,7 +966,7 @@ if "{{ mod }}" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
 if not UNIFI_READ_ONLY:
 {% filter indent(4, first=True) %}
 @mcp.tool()
-async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
+async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> dict:
     """{{ tool.name | replace('_', ' ') | title }}.
 {% if not tool.auth %}
 
@@ -994,7 +994,7 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 {% else %}
 
 @mcp.tool()
-async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
+async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> dict:
     """{{ tool.name | replace('_', ' ') | title }}.
 {% if not tool.auth %}
 
@@ -1028,7 +1028,7 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 
 
 @mcp.tool()
-async def unifi_get_overview(site: str = "") -> str:
+async def unifi_get_overview(site: str = "") -> dict:
     """Get a concise network overview in a single call.
 
     Returns controller version, health status, device/network/WLAN summaries,
