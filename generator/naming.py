@@ -162,7 +162,7 @@ COMMAND_TOOL_NAMES: dict[tuple[str, str], str] = {
     ("system", "element-adoption"): "element_adoption",
     ("system", "download-backup"): "download_backup",
     # stat
-    ("stat", "clear-dpi"): "clear_dpi",
+    ("stat", "reset-dpi"): "clear_dpi",
     # hotspot
     ("hotspot", "authorize-guest"): "hotspot_authorize_guest",
     ("hotspot", "create-voucher"): "create_voucher",
@@ -244,7 +244,7 @@ COMMAND_PARAMS: dict[tuple[str, str], dict[str, str]] = {
     ("system", "element-adoption"): {"mac": "str"},
     ("system", "download-backup"): {"filename": "str"},
     # stat
-    ("stat", "clear-dpi"): {},
+    ("stat", "reset-dpi"): {},
     # hotspot
     ("hotspot", "authorize-guest"): {"mac": "str", "minutes": "int"},
     ("hotspot", "create-voucher"): {"expire": "int", "n": "int", "quota": "int"},
@@ -288,7 +288,7 @@ V2_RESOURCE_NAMES: dict[str, tuple[str, str]] = {
 # Stat endpoints that need method/body overrides for tests
 # session requires POST with params — GET returns 400 InvalidArgs
 STAT_OVERRIDES: dict[str, dict] = {
-    "session": {"method": "POST", "body": {"mac": "00:00:00:00:00:00"}},
+    "session": {"method": "POST", "body": {"type": "all", "start": 0, "end": 9999999999}},
 }
 
 # Commands that are safe but need a real device (return error without one)
@@ -402,6 +402,49 @@ MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
         "name": "test_account_{unique}",
         "x_password": "testpassword",
     },
+}
+
+# REST resources where PUT requires the full object, not just changed fields.
+# The update tool docstrings will warn about this.
+FULL_OBJECT_UPDATE_REST: set[str] = {
+    "scheduletask",
+}
+
+# v2 resource create hints: extra docstring info for resources without samples
+V2_CREATE_HINTS: dict[str, str] = {
+    "traffic_rules": (
+        "Required: action (str: 'BLOCK'|'ALLOW'), enabled (bool), "
+        "matching_target (str: 'INTERNET'|'LOCAL_NETWORK'), "
+        "target_devices (list of {type: 'ALL_CLIENTS'|'CLIENT'|'NETWORK', client_mac/network_id}), "
+        "network_id (str, _id from unifi_list_networks)"
+    ),
+}
+
+# Required field hints for resources with empty api-samples.
+# Used in create tool docstrings when schema inference has no data.
+REQUIRED_CREATE_FIELDS: dict[str, str] = {
+    "hotspotpackage": (
+        "Required: name (str), amount (int, price in cents, 0=free), "
+        "currency (str, e.g. 'USD'), hours (int, access duration in hours), "
+        "bytes (int, bandwidth limit, 0=unlimited). "
+        "Note: Requires hotspot portal + payment gateway configured on the controller."
+    ),
+    "dhcpoption": (
+        "Required: name (str), code (int, DHCP option number 7-254 excluding "
+        "reserved: 15,42,43,44,51,66,67,252), value (str). "
+        "Note: May require a DHCP-enabled network with gateway device."
+    ),
+    "heatmap": (
+        "Required: name (str), map_id (str, _id from unifi_list_maps)"
+    ),
+    "heatmappoint": (
+        "Required: heatmap_id (str, _id from unifi_list_heatmaps), "
+        "x (float, 0.0–1.0), y (float, 0.0–1.0)"
+    ),
+    "spatialrecord": (
+        "Required: name (str), devices (list, device references e.g. []), "
+        "description (str, e.g. 'Room label')"
+    ),
 }
 
 # REST resources that are read-only (no create/update/delete)

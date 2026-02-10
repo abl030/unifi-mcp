@@ -474,7 +474,7 @@ class TestStatSessions:
     def test_list_sessions(self, authenticated_client):
         """Verify sessions endpoint returns valid data."""
         try:
-            data = authenticated_client.api_post("stat/session", {'mac': '00:00:00:00:00:00'})
+            data = authenticated_client.api_post("stat/session", {'type': 'all', 'start': 0, 'end': 9999999999})
         except (httpx.HTTPStatusError, RuntimeError) as e:
             pytest.skip(f"Endpoint not available in test env: {e}")
         assert isinstance(data, list)

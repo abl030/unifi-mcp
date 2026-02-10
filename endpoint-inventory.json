@@ -1045,7 +1045,7 @@
     "stat": {
       "path": "cmd/stat",
       "commands": [
-        "clear-dpi"
+        "reset-dpi"
       ]
     },
     "hotspot": {

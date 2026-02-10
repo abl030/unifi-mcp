@@ -396,71 +396,40 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). Breakdown: 31 hardware-dependent, 21 generator-fixable, 7 API limitation, 5 test-env, 3 test-config, 3 adversarial. Full details in `bank-tester/RESEARCH.md`.
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). Full details in `bank-tester/RESEARCH.md`.
 
 **RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
 
+### Completed Sprints
+
+#### Sprint A: Fix Generator + Sonnet Verification — DONE
+
+**Result**: 18 of 21 generator-fixable failures fixed and verified. 2 reclassified to API_LIMITATION (hotspotpackage needs payment gateway, dhcpoption needs DHCP gateway device). 1 fixed post-verification (spatialrecord needs `devices: []` + `description`).
+
+| Fix | Failures Fixed | Change |
+|-----|---------------|--------|
+| update_setting endpoint | 6 | `PUT set/setting/{key}` instead of `PUT rest/setting/{id}` |
+| list_sessions POST body | 1 | STAT_OVERRIDES body + template uses `tool.post_body` |
+| heatmap/heatmap_point docs | 2 | REQUIRED_CREATE_FIELDS with map_id, heatmap_id, x, y |
+| spatialrecord docs | 1 | REQUIRED_CREATE_FIELDS: name, devices, description |
+| schedule_task full-object | 1 | FULL_OBJECT_UPDATE_REST docstring note |
+| traffic_rule enums | 1 | V2_CREATE_HINTS with target_devices[].type values |
+| v2 update full-object | 2 | v2 update docstring: "full object required" |
+| clear_dpi command | 1 | Renamed `clear-dpi` to `reset-dpi` |
+| MAC validation | 1 | `_validate_mac()` helper in all stamgr commands |
+| update_map type confusion | 1 | Not reproduced (transient) |
+| hotspotpackage fields | — | Reclassified: API_LIMITATION (needs payment gateway) |
+| dhcpoption fields | — | Reclassified: API_LIMITATION (needs DHCP gateway) |
+
 ### Next Sprints
 
-#### Sprint A: Fix Generator + Sonnet Verification (21 generator-fixable failures → 0)
-
-**Goal**: Fix all 21 generator-fixable first-attempt failures, regenerate MCP server, write a hand-crafted test task targeting exactly these calls, run with Sonnet, verify 0 first-attempt failures.
-
-**Step 1: Fix the generator** (templates, naming, schema_inference)
-
-| # | Issue | Failures | What to Fix |
-|---|-------|----------|-------------|
-| 1 | `update_setting` wrong endpoint | 6 | Investigate `set/setting/*` PUT vs `rest/setting` PUT. LLM probe confirmed set/setting/* are PUT-only. Generator may be routing to wrong path. |
-| 2 | `list_sessions` missing POST body | 1 | Stat endpoint needs `{"type":"all","start":0,"end":9999999999}`. Hardcode defaults or expose params. Check `STAT_OVERRIDES` in generator. |
-| 3 | `create_hotspot_package` undocumented fields | 1 | Check api-samples for hotspotpackage. Add required fields to docstring. May need to re-probe with create. |
-| 4 | `create_dhcp_option` undocumented fields | 3 | Check api-samples for dhcpoption. Add required fields to docstring. |
-| 5 | `create_heatmap` undocumented fields | 1 | Check api-samples for heatmap. Likely needs map_id + coordinates. |
-| 6 | `create_heatmap_point` undocumented fields | 1 | Check api-samples for heatmappoint. |
-| 7 | `create_spatial_record` undocumented fields | 1 | Check api-samples for spatialrecord. |
-| 8 | `update_schedule_task` full object required | 1 | Add docstring note: "Include all original fields when updating" |
-| 9 | `update_map` type confusion | 1 | Investigate JSON-to-string parsing issue in tool invocation |
-| 10 | `create_traffic_rule` missing enums | 1 | Add `target_devices[].type` enum values: ALL_CLIENTS, CLIENT, NETWORK |
-| 11 | `update_traffic_rule` full object on PUT | 1 | Add docstring: "v2 API requires full object on PUT, not partial updates" |
-| 12 | `update_traffic_route` full object on PUT | 1 | Same as above |
-| 13 | `clear_dpi` wrong endpoint | 1 | Mapped to cmd/stat (404). Find correct cmd manager. |
-| 14 | `block_client` no MAC validation | 1 | Add client-side MAC format regex before API call |
-
-**Step 2: Regenerate MCP server**
-
-```bash
-uv run python generate.py
-uv run python count_tools.py  # verify tool count unchanged
-```
-
-**Step 3: Write hand-crafted Sonnet verification test**
-
-Create `bank-tester/tasks/fix-generator-fixable.md` — a single task file that calls each of the 21 fixed tools in the exact way that previously failed. Copy the pattern from the auto-generated tasks but target specifically:
-- `unifi_update_setting` with key=ntp, data={...}
-- `unifi_list_sessions` (should work with no params now)
-- `unifi_create_hotspot_package` with correct required fields
-- `unifi_create_dhcp_option` with correct required fields
-- `unifi_create_heatmap/heatmap_point/spatial_record` with correct fields
-- `unifi_update_schedule_task` (full object)
-- `unifi_create_traffic_rule` with correct enum values
-- `unifi_update_traffic_rule` (full object)
-- `unifi_clear_dpi` (correct endpoint)
-- `unifi_block_client` with mac="not-a-mac" (should fail with validation error now)
-
-**Step 4: Run with Sonnet and verify**
-
-```bash
-bash bank-tester/run-bank-test.sh fix-generator
-```
-
-Target: 0 first-attempt failures on all generator-fixable tools.
-
-#### Sprint B: Opus Diagnosis of Remaining Failures (39 non-generator failures)
+#### Sprint B: Opus Diagnosis of Remaining Failures (51 non-generator failures)
 
 **Goal**: Write a hand-crafted test task covering all remaining first-attempt failures (hardware-dependent, API limitation, test-env, test-config). Run with Opus. Opus diagnoses each failure and recommends whether to fix via Docker test image enhancement, generator change, or accept as unfixable.
 
 **Step 1: Write Opus diagnosis test**
 
-Create `bank-tester/tasks/opus-diagnose-remaining.md` — a single task targeting all 39 remaining failures, organized by category. For each call, include the error from the Sonnet run and ask Opus to:
+Create `bank-tester/tasks/opus-diagnose-remaining.md` — a single task targeting all 51 remaining failures, organized by category. For each call, include the error from the Sonnet run and ask Opus to:
 1. Attempt the call
 2. Try alternative approaches (different params, different endpoint)
 3. Diagnose root cause
@@ -473,14 +442,19 @@ Failures to include:
 - Client commands (block, unblock, kick, reconnect, authorize_guest, unauthorize_guest) — 6 from task 23
 - `set_port_override`, `list_gateway_stats`, `create_firewall_policy`, `generate_backup`, `generate_backup_site`, `hotspot_authorize_guest`, `extend_guest_validity`, `set_site_leds`, `update_traffic_route`, `create_user` (stale MAC)
 
-**API limitation (7):**
+**API limitation (9):**
 - `set_site_name`, `delete_site` (x3), `grant_super_admin`, `revoke_super_admin`, `revoke_voucher`
+- `create_hotspot_package` (needs payment gateway — probed all field combos, always InvalidHotspotPackageDuration)
+- `create_dhcp_option` (needs DHCP gateway device — probed, code validation passes but create always api.err.Invalid)
 
 **Test environment (5):**
 - `unifi_self`, `sites`, `stat_sites`, `stat_admin` (startup race) + `invite_admin` (SMTP)
 
 **Test config (3):**
 - `assign_existing_admin`, `delete_admin`, `delete_user`
+
+**Adversarial expected (3):**
+- Task 30 error quality tests (expected behavior)
 
 **Step 2: Run with Opus**
 

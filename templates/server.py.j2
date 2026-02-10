@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any
 
 import httpx
@@ -177,6 +178,16 @@ def _format_response(data: Any, summary: str | None = None) -> str:
     return json.dumps(data, indent=2, default=str)
 
 
+_MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
+
+
+def _validate_mac(mac: str) -> str | None:
+    """Return an error message if MAC format is invalid, else None."""
+    if not _MAC_RE.match(mac):
+        return f"Invalid MAC address format: '{mac}'. Expected format: XX:XX:XX:XX:XX:XX (hex pairs separated by colons)."
+    return None
+
+
 # ===========================================================================
 # REST Endpoint Tools
 # ===========================================================================
@@ -219,27 +230,18 @@ async def unifi_update_setting(
     """Update a site setting by key.
 
     Args:
-        key: The setting key to update.
-        data: Fields to update.
+        key: The setting key to update (e.g. 'mgmt', 'snmp', 'ntp', 'locale').
+        data: Fields to update. Read current values first with unifi_get_setting.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
     if not confirm:
         return _format_response(
             {"action": "update_setting", "key": key, "data": data},
-            "DRY RUN (PUT rest/setting/{id}): Set confirm=True to execute.",
+            "DRY RUN (PUT set/setting/{key}): Set confirm=True to execute.",
         )
-    # Find the setting's _id first
     client = await _get_client()
-    all_settings = await client.request("GET", "rest/setting", site=site or None)
-    setting_id = None
-    for item in all_settings:
-        if isinstance(item, dict) and item.get("key") == key:
-            setting_id = item.get("_id")
-            break
-    if not setting_id:
-        return _format_response(None, f"Setting '{key}' not found")
-    result = await client.request("PUT", f"rest/setting/{setting_id}", json_data=data, site=site or None)
+    result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
     return _format_response(result, f"Updated setting '{key}'")
 
 {% elif tool.is_readonly %}
@@ -300,6 +302,8 @@ async def unifi_create_{{ tool.singular }}(
         data: {{ tool.singular | title }} configuration.
 {% if tool.writable_fields %}
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% elif tool.required_create_fields %}
+            {{ tool.required_create_fields }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -335,6 +339,11 @@ async def unifi_update_{{ tool.singular }}(
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+{% if tool.full_object_update %}
+
+    Note: This resource requires sending the FULL object on update, not just changed fields.
+    First GET the current object, modify the fields you want, then send the complete object.
+{% endif %}
 {% if tool.workflow_hint %}
 
     {{ tool.workflow_hint }}
@@ -417,7 +426,7 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
     """
     client = await _get_client()
 {% if tool.method == "POST" %}
-    data = await client.request("POST", "{{ tool.path }}", json_data={}, site=site or None)
+    data = await client.request("POST", "{{ tool.path }}", json_data={{ tool.post_body }}, site=site or None)
 {% else %}
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
 {% endif %}
@@ -475,6 +484,11 @@ async def unifi_{{ tool.tool_name }}(
             "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
         )
 {% endif %}
+{% if "mac" in tool.params %}
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
+{% endif %}
     payload: dict[str, Any] = {"cmd": "{{ tool.command }}"}
 {% for pname, ptype in tool.params.items() %}
 {% if pname == "site" %}
@@ -527,6 +541,8 @@ async def unifi_create_{{ tool.singular }}(
         data: {{ tool.singular | title }} configuration.
 {% if tool.writable_fields %}
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% elif tool.create_hint %}
+            {{ tool.create_hint }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -555,7 +571,9 @@ async def unifi_update_{{ tool.singular }}(
 
     Args:
         id: The ID of the {{ tool.singular }} to update.
-        data: Fields to update.
+        data: The FULL {{ tool.singular }} object with your changes applied.
+            v2 API requires sending the complete object, not just changed fields.
+            First GET the current object, modify the fields you want, then send the full object.
 {% if tool.writable_fields %}
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
 {% endif %}

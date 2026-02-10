@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any
 
 import httpx
@@ -175,6 +176,16 @@ def _format_response(data: Any, summary: str | None = None) -> str:
     if summary:
         return f"{summary}\n\n{json.dumps(data, indent=2, default=str)}"
     return json.dumps(data, indent=2, default=str)
+
+
+_MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
+
+
+def _validate_mac(mac: str) -> str | None:
+    """Return an error message if MAC format is invalid, else None."""
+    if not _MAC_RE.match(mac):
+        return f"Invalid MAC address format: '{mac}'. Expected format: XX:XX:XX:XX:XX:XX (hex pairs separated by colons)."
+    return None
 
 
 # ===========================================================================
@@ -450,6 +461,7 @@ async def unifi_create_dhcp_option(
 
     Args:
         data: Dhcp_option configuration.
+            Required: name (str), code (int, DHCP option number 7-254 excluding reserved: 15,42,43,44,51,66,67,252), value (str). Note: May require a DHCP-enabled network with gateway device.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1167,6 +1179,7 @@ async def unifi_create_heatmap(
 
     Args:
         data: Heatmap configuration.
+            Required: name (str), map_id (str, _id from unifi_list_maps)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1264,6 +1277,7 @@ async def unifi_create_heatmap_point(
 
     Args:
         data: Heatmap_point configuration.
+            Required: heatmap_id (str, _id from unifi_list_heatmaps), x (float, 0.0–1.0), y (float, 0.0–1.0)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -1555,6 +1569,7 @@ async def unifi_create_hotspot_package(
 
     Args:
         data: Hotspot_package configuration.
+            Required: name (str), amount (int, price in cents, 0=free), currency (str, e.g. 'USD'), hours (int, access duration in hours), bytes (int, bandwidth limit, 0=unlimited). Note: Requires hotspot portal + payment gateway configured on the controller.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -2492,6 +2507,9 @@ async def unifi_update_schedule_task(
         data: Fields to update.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    Note: This resource requires sending the FULL object on update, not just changed fields.
+    First GET the current object, modify the fields you want, then send the complete object.
     """
     if not confirm:
         return _format_response(
@@ -2562,27 +2580,18 @@ async def unifi_update_setting(
     """Update a site setting by key.
 
     Args:
-        key: The setting key to update.
-        data: Fields to update.
+        key: The setting key to update (e.g. 'mgmt', 'snmp', 'ntp', 'locale').
+        data: Fields to update. Read current values first with unifi_get_setting.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
     if not confirm:
         return _format_response(
             {"action": "update_setting", "key": key, "data": data},
-            "DRY RUN (PUT rest/setting/{id}): Set confirm=True to execute.",
+            "DRY RUN (PUT set/setting/{key}): Set confirm=True to execute.",
         )
-    # Find the setting's _id first
     client = await _get_client()
-    all_settings = await client.request("GET", "rest/setting", site=site or None)
-    setting_id = None
-    for item in all_settings:
-        if isinstance(item, dict) and item.get("key") == key:
-            setting_id = item.get("_id")
-            break
-    if not setting_id:
-        return _format_response(None, f"Setting '{key}' not found")
-    result = await client.request("PUT", f"rest/setting/{setting_id}", json_data=data, site=site or None)
+    result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
     return _format_response(result, f"Updated setting '{key}'")
 
 
@@ -2622,6 +2631,7 @@ async def unifi_create_spatial_record(
 
     Args:
         data: Spatial_record configuration.
+            Required: name (str), devices (list, device references e.g. []), description (str, e.g. 'Room label')
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -3532,7 +3542,7 @@ async def unifi_list_sessions(site: str = "") -> str:
     Note: requires POST with {"type":"all","start":0,"end":9999999999}
     """
     client = await _get_client()
-    data = await client.request("POST", "stat/session", json_data={}, site=site or None)
+    data = await client.request("POST", "stat/session", json_data={'type': 'all', 'start': 0, 'end': 9999999999}, site=site or None)
     return _format_response(data, f"Found {len(data)} sessions records")
 
 
@@ -3728,6 +3738,9 @@ async def unifi_adopt_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "adopt"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3755,6 +3768,9 @@ async def unifi_restart_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "restart"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3782,6 +3798,9 @@ async def unifi_force_provision_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "force-provision"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3813,6 +3832,9 @@ async def unifi_power_cycle_port(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "power-cycle"}
     payload["mac"] = mac
     payload["port_idx"] = port_idx
@@ -3877,6 +3899,9 @@ async def unifi_locate_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "set-locate"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3904,6 +3929,9 @@ async def unifi_unlocate_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "unset-locate"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3931,6 +3959,9 @@ async def unifi_upgrade_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "upgrade"}
     payload["mac"] = mac
     client = await _get_client()
@@ -3962,6 +3993,9 @@ async def unifi_upgrade_device_external(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "upgrade-external"}
     payload["mac"] = mac
     payload["url"] = url
@@ -3994,6 +4028,9 @@ async def unifi_migrate_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "migrate"}
     payload["mac"] = mac
     payload["inform_url"] = inform_url
@@ -4022,6 +4059,9 @@ async def unifi_cancel_migrate_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "cancel-migrate"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4049,6 +4089,9 @@ async def unifi_spectrum_scan(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "spectrum-scan"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4080,6 +4123,9 @@ async def unifi_rename_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "rename"}
     payload["mac"] = mac
     payload["name"] = name
@@ -4112,6 +4158,9 @@ async def unifi_led_override_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "led-override"}
     payload["mac"] = mac
     payload["led_override"] = led_override
@@ -4140,6 +4189,9 @@ async def unifi_disable_ap(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "disable-ap"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4255,6 +4307,9 @@ async def unifi_advanced_adopt_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "advanced-adopt"}
     payload["mac"] = mac
     payload["url"] = url
@@ -4284,6 +4339,9 @@ async def unifi_set_rollupgrade(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "set-rollupgrade"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4311,6 +4369,9 @@ async def unifi_unset_rollupgrade(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "unset-rollupgrade"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4360,6 +4421,9 @@ async def unifi_enable_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "enable"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4387,6 +4451,9 @@ async def unifi_disable_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "disable"}
     payload["mac"] = mac
     client = await _get_client()
@@ -4418,6 +4485,9 @@ async def unifi_cable_test(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "cable-test"}
     payload["mac"] = mac
     payload["port_idx"] = port_idx
@@ -4450,6 +4520,9 @@ async def unifi_set_inform_device(
             preview,
             "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "set-inform"}
     payload["mac"] = mac
     payload["inform_url"] = inform_url
@@ -4531,6 +4604,9 @@ async def unifi_hotspot_authorize_guest(
             preview,
             "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "authorize-guest"}
     payload["mac"] = mac
     payload["minutes"] = minutes
@@ -4776,6 +4852,9 @@ async def unifi_move_device(
             preview,
             "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "move-device"}
     payload["mac"] = mac
     payload["site"] = target_site
@@ -4804,6 +4883,9 @@ async def unifi_delete_device(
             preview,
             "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "delete-device"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5136,6 +5218,9 @@ async def unifi_block_client(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "block-sta"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5163,6 +5248,9 @@ async def unifi_unblock_client(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "unblock-sta"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5190,6 +5278,9 @@ async def unifi_kick_client(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "kick-sta"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5244,6 +5335,9 @@ async def unifi_unauthorize_guest(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "unauthorize-guest"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5275,6 +5369,9 @@ async def unifi_authorize_guest(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "authorize-guest"}
     payload["mac"] = mac
     payload["minutes"] = minutes
@@ -5303,6 +5400,9 @@ async def unifi_reconnect_client(
             preview,
             "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "reconnect-sta"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5315,21 +5415,21 @@ async def unifi_clear_dpi(
     confirm: bool = False,
     site: str = "",
 ) -> str:
-    """Execute 'clear-dpi' via stat.
+    """Execute 'reset-dpi' via stat.
 
         confirm: Must be True to execute. Returns preview if False.
         site: Site name override (default: from env).
     """
     if not confirm:
-        preview = {"action": "clear_dpi", "cmd": "clear-dpi"}
+        preview = {"action": "clear_dpi", "cmd": "reset-dpi"}
         return _format_response(
             preview,
             "DRY RUN (POST cmd/stat): Set confirm=True to execute.",
         )
-    payload: dict[str, Any] = {"cmd": "clear-dpi"}
+    payload: dict[str, Any] = {"cmd": "reset-dpi"}
     client = await _get_client()
     result = await client.request("POST", "cmd/stat", json_data=payload, site=site or None)
-    return _format_response(result, "Executed clear-dpi")
+    return _format_response(result, "Executed reset-dpi")
 
 
 @mcp.tool()
@@ -5396,6 +5496,9 @@ async def unifi_element_adoption(
             preview,
             "DRY RUN (POST cmd/system): Set confirm=True to execute.",
         )
+    mac_err = _validate_mac(mac)
+    if mac_err:
+        return _format_response({"error": mac_err}, mac_err)
     payload: dict[str, Any] = {"cmd": "element-adoption"}
     payload["mac"] = mac
     client = await _get_client()
@@ -5527,7 +5630,9 @@ async def unifi_update_firewall_policy(
 
     Args:
         id: The ID of the firewall_policy to update.
-        data: Fields to update.
+        data: The FULL firewall_policy object with your changes applied.
+            v2 API requires sending the complete object, not just changed fields.
+            First GET the current object, modify the fields you want, then send the full object.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -5591,7 +5696,9 @@ async def unifi_update_firewall_zone(
 
     Args:
         id: The ID of the firewall_zone to update.
-        data: Fields to update.
+        data: The FULL firewall_zone object with your changes applied.
+            v2 API requires sending the complete object, not just changed fields.
+            First GET the current object, modify the fields you want, then send the full object.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -5630,6 +5737,7 @@ async def unifi_create_traffic_rule(
 
     Args:
         data: Traffic_rule configuration.
+            Required: action (str: 'BLOCK'|'ALLOW'), enabled (bool), matching_target (str: 'INTERNET'|'LOCAL_NETWORK'), target_devices (list of {type: 'ALL_CLIENTS'|'CLIENT'|'NETWORK', client_mac/network_id}), network_id (str, _id from unifi_list_networks)
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -5655,7 +5763,9 @@ async def unifi_update_traffic_rule(
 
     Args:
         id: The ID of the traffic_rule to update.
-        data: Fields to update.
+        data: The FULL traffic_rule object with your changes applied.
+            v2 API requires sending the complete object, not just changed fields.
+            First GET the current object, modify the fields you want, then send the full object.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """
@@ -5719,7 +5829,9 @@ async def unifi_update_traffic_route(
 
     Args:
         id: The ID of the traffic_route to update.
-        data: Fields to update.
+        data: The FULL traffic_route object with your changes applied.
+            v2 API requires sending the complete object, not just changed fields.
+            First GET the current object, modify the fields you want, then send the full object.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
     """

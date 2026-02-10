@@ -8,11 +8,14 @@ from generator.naming import (
     COMMAND_TOOL_NAMES,
     CRUD_REST,
     DEVICE_DEPENDENT_COMMANDS,
+    FULL_OBJECT_UPDATE_REST,
     HARDWARE_DEPENDENT_REST,
+    V2_CREATE_HINTS,
     ID_CROSS_REFS,
     MINIMAL_CREATE_PAYLOADS,
     MUTATION_COMMANDS,
     READ_ONLY_REST,
+    REQUIRED_CREATE_FIELDS,
     RESOURCE_NAMES,
     SAFE_TEST_COMMANDS,
     STAT_NAMES,
@@ -113,6 +116,8 @@ def build_context(inventory: APIInventory) -> dict:
             "schema": _schema_to_dict(schema),
             "writable_fields": _writable_fields(schema),
             "create_payload": MINIMAL_CREATE_PAYLOADS.get(name, {}),
+            "required_create_fields": REQUIRED_CREATE_FIELDS.get(name, ""),
+            "full_object_update": name in FULL_OBJECT_UPDATE_REST,
             "workflow_hint": WORKFLOW_HINTS.get(name, ""),
         }
         ctx["rest_tools"].append(tool)
@@ -176,6 +181,7 @@ def build_context(inventory: APIInventory) -> dict:
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
             "writable_fields": _writable_fields(schema),
+            "create_hint": V2_CREATE_HINTS.get(name, ""),
         }
         ctx["v2_tools"].append(tool)
 
