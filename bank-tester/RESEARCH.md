@@ -244,22 +244,37 @@ Also fixed: MongoDB seed script privilege records used `.toString()` (returns `O
 
 ## Tool Coverage
 
-### Combined Coverage (all runs including Sprint B)
+### Combined Coverage (all runs through Sprint E)
 
 - **Smoke tests**: tasks 01, 02, 03, 08, 14, 16, 30 → ~47 unique tools
 - **Full run**: tasks 04-07, 09-13, 15, 17-29 → 234 unique tools
 - **Sprint A verification**: task 31 → 23 tools (14 unique new)
 - **Sprint B diagnosis**: task 33 → 63 tools
-- **Combined unique tools invoked**: ~275/285 (estimated ~96.5%)
+- **Sprint E verification**: task 22 → 8 tools (all passed)
+- **Combined unique tools invoked**: ~275/283 (~97.2%)
 
-### Tools Never Invoked (estimated ~10)
+### Tools Never Invoked (~8)
 
-These tools were not reachable because their create operation failed (blocking get/update/delete):
-- `unifi_get/update/delete_hotspot_package` (create fails — API limitation)
-- `unifi_get/update/delete_dhcp_option` (create fails — API limitation)
-- `unifi_update/delete_firewall_policy` (create fails — hardware-dependent)
-- `unifi_update_firewall_zone` (no zones exist)
-- `unifi_logout`, `unifi_system_poweroff`, `unifi_system_reboot` (destructive, task 99 skipped)
+These tools were not reachable because their create operation failed (blocking get/update/delete) or they are intentionally destructive:
+
+**Blocked by failed create (API/hardware limitation):**
+- `unifi_get/update/delete_hotspot_package` (create fails — needs payment gateway)
+- `unifi_get/update/delete_dhcp_option` (create fails — needs DHCP gateway device)
+- `unifi_update/delete_firewall_policy` (create fails — needs gateway + zones)
+- `unifi_update_firewall_zone` (no zones exist without gateway)
+
+**Intentionally skipped (destructive, task 99):**
+- `unifi_logout`, `unifi_system_poweroff`, `unifi_system_reboot`
+
+### Remaining Failures by Category
+
+| Category | Count | Fixable? |
+|----------|-------|----------|
+| Hardware-dependent | 23 | Need adopted devices or device simulator |
+| Standalone limitation | 5 | Need UniFi OS (not standalone Docker) |
+| API limitation | 3 | Need payment gateway / DHCP gateway |
+| Adversarial expected | 3 | By design (error quality testing) |
+| **Total** | **34** | |
 
 ---
 

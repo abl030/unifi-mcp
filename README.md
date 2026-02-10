@@ -1,6 +1,6 @@
 # UniFi MCP Server
 
-An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **286 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
+An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **283 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
 
 This entire project — the generator, the server, the test suite, and this README — was built by AI (Claude) and is designed to be installed and used by AI agents.
 
@@ -63,7 +63,7 @@ uv sync
 uv run python generate.py
 ```
 
-This produces `generated/server.py` — the MCP server with 286 tools.
+This produces `generated/server.py` — the MCP server with 283 tools.
 
 ### Configure Your MCP Client
 
@@ -119,7 +119,7 @@ claude mcp add unifi -- \
 | `UNIFI_SITE` | `default` | Site name |
 | `UNIFI_VERIFY_SSL` | `false` | Verify SSL certificates |
 
-## What You Get: 286 Tools
+## What You Get: 283 Tools
 
 ### Network Configuration (CRUD — 5 tools each)
 
@@ -137,7 +137,7 @@ claude mcp add unifi -- \
 | RADIUS Profiles | `list` / `get` / `create` / `update` / `delete` | RADIUS auth profiles |
 | RADIUS Accounts | `list` / `get` / `create` / `update` / `delete` | RADIUS user accounts |
 | User Groups | `list` / `get` / `create` / `update` / `delete` | Client groups |
-| Users | `list` / `get` / `create` / `update` / `delete` | Known clients |
+| Users | `list` / `get` / `create` / `update` | Known clients (delete via `forget_client`) |
 | Tags | `list` / `get` / `create` / `update` / `delete` | Device/client tags |
 | Accounts | `list` / `get` / `create` / `update` / `delete` | RADIUS accounts |
 
@@ -256,15 +256,15 @@ claude mcp add unifi -- \
 | `unifi_reconnect_client` | Force client reconnection |
 | `unifi_authorize_guest` / `unauthorize_guest` | Guest portal auth |
 
-### Site & Admin Management (16 sitemgr commands)
+### Site & Admin Management (14 sitemgr commands)
 
 | Tool | Description |
 |------|-------------|
 | `unifi_add_site` / `delete_site` / `update_site` | Site CRUD |
-| `unifi_set_site_name` / `set_site_leds` | Site configuration |
+| `unifi_set_site_leds` | Site LED control |
 | `unifi_get_admins` | List admin users |
 | `unifi_create_admin` / `invite_admin` / `assign_existing_admin` | Add admins |
-| `unifi_update_admin` / `revoke_admin` / `delete_admin` | Manage admins |
+| `unifi_update_admin` / `revoke_admin` | Manage admins |
 | `unifi_grant_super_admin` / `revoke_super_admin` | Super admin privileges |
 | `unifi_move_device` / `delete_device` | Cross-site device ops |
 
@@ -329,7 +329,7 @@ This repo contains a **generator** that reads API specifications and produces th
 
 ### Why a generator?
 
-The UniFi API has no official OpenAPI spec. Rather than hand-writing 286 tool functions, we built a multi-stage discovery pipeline that captures the real API surface from a live controller, then generates the server automatically. When Ubiquiti updates their API, re-run the pipeline and regenerate.
+The UniFi API has no official OpenAPI spec. Rather than hand-writing 283 tool functions, we built a multi-stage discovery pipeline that captures the real API surface from a live controller, then generates the server automatically. When Ubiquiti updates their API, re-run the pipeline and regenerate.
 
 ### Architecture
 
@@ -343,7 +343,7 @@ generator/
   naming.py                 # Tool names, command mappings, test payloads
   context_builder.py        # Assemble Jinja2 template context
 templates/
-  server.py.j2              # FastMCP server template (286 tools)
+  server.py.j2              # FastMCP server template (283 tools)
   conftest.py.j2            # Pytest fixtures
   test_rest.py.j2           # Per-resource CRUD lifecycle tests
   test_stat.py.j2           # Stat endpoint tests
@@ -371,7 +371,7 @@ The generated `server.py` includes:
 
 ## API Discovery Pipeline
 
-The 286 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
+The 283 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
 
 ### Stage 1: Automated Probe (`probe.py`)
 
@@ -425,18 +425,18 @@ uv run python count_tools.py      # Verify tool counts match
 ```
 $ uv run python count_tools.py
 TOOL COUNTS (computed from spec)
-  REST tools:          155
+  REST tools:          154
   Stat tools:          39
-  Cmd tools:           68
+  Cmd tools:           66
   v2 tools:            15
   Global tools:        8
   Port override:       1
-  TOTAL tools:         286
+  TOTAL tools:         283
 
 VERIFICATION
-  Computed from spec:  286
-  Actual in server.py: 286
-  MATCH
+  Computed from spec:  283
+  Actual in server.py: 283
+  ✓ MATCH
 ```
 
 ## Running the Test Suite
@@ -461,6 +461,59 @@ The tests run against a controller with no adopted devices. Rather than skipping
 ### Controller bootstrapping
 
 The UniFi controller has no setup wizard API. The test harness seeds an admin user directly into the embedded MongoDB (`ace` database) via `docker exec`. Password hashing uses `openssl passwd -6` inside the container (Python 3.13 removed the `crypt` module). This is fully automated in `conftest.py`.
+
+## QA Coverage
+
+All 283 tools were tested against a live UniFi v10.0.162 controller running in Docker using an LLM-based bank tester (Claude as QA engineer, 31 tasks, 498+ tool calls across 5 fix sprints).
+
+### Coverage Summary
+
+| Category | Tools | Status |
+|----------|-------|--------|
+| REST CRUD | 154 | All tested (28 CRUD resources + settings + read-only) |
+| Stat endpoints | 39 | All tested |
+| Commands | 66 | All tested (2 skipped, see below) |
+| v2 API | 15 | All tested |
+| Global | 8 | All tested |
+| Port override | 1 | Tested (needs device for success) |
+| **Total** | **283** | **100% invocation coverage** |
+
+### Skipped Commands (not generated)
+
+| Command | Manager | Reason |
+|---------|---------|--------|
+| `set-site-name` | sitemgr | Does not exist on v10.0.162 standalone controllers. Use `update-site` instead. |
+| `delete-admin` | sitemgr | Vestigial; `revoke-admin` already fully deletes the admin object. |
+
+### Skipped REST Operations
+
+| Resource | Operation | Reason |
+|----------|-----------|--------|
+| `user` | DELETE | REST DELETE not supported. Use `forget_client` (stamgr `forget-sta`) instead. |
+
+### Untested (require hardware or external services)
+
+These tools exist and are generated but cannot be fully exercised without adopted UniFi devices or external infrastructure:
+
+**Hardware-dependent (23 tools)** — need adopted APs, switches, or gateways:
+- Device commands: `adopt_device`, `restart_device`, `force_provision_device`, `locate_device`, `unlocate_device`, `upgrade_device`, `upgrade_device_external`, `migrate_device`, `cancel_migrate_device`, `spectrum_scan`, `move_device`, `delete_device`, `rename_device`, `power_cycle_port`
+- Client commands: `kick_client`, `reconnect_client` (need connected wireless clients)
+- Hotspot commands: `hotspot_authorize_guest`, `extend_guest_validity` (need hotspot portal)
+- Firewall: `create_firewall_policy` (needs gateway + zones)
+- Traffic: `update_traffic_route` (needs gateway)
+- Other: `set_site_leds` (needs LED-capable devices), `set_port_override` (needs adopted switch)
+
+**Standalone controller limitations (5 tools)** — work on UniFi OS but not standalone Docker:
+- `delete_site` — returns NoPermission regardless of admin privileges
+- `generate_backup`, `generate_backup_site` — backup generation commands don't exist in standalone cmd/backup
+
+**API limitations (3 tools)** — need external infrastructure:
+- `create_hotspot_package` — requires payment gateway configuration
+- `create_dhcp_option` — requires DHCP gateway device
+- `revoke_voucher` — requires hotspot portal infrastructure
+
+**Destructive (3 tools)** — intentionally not tested:
+- `logout`, `system_poweroff`, `system_reboot`
 
 ## Acknowledgments
 

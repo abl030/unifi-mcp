@@ -347,7 +347,31 @@ Docker must be enabled on NixOS: add `virtualisation.docker.enable = true;` to `
 
 If the docker socket path is wrong (e.g. trying podman), set `DOCKER_HOST=unix:///var/run/docker.sock`.
 
-## Bank Tester — LLM QA for 284 Tools
+## Skipped Commands and Operations
+
+Certain commands and REST operations are intentionally excluded from tool generation. These are configured in `generator/naming.py`.
+
+### SKIP_COMMANDS — Commands not generated as tools
+
+| Command | Manager | Reason | Alternative |
+|---------|---------|--------|-------------|
+| `set-site-name` | sitemgr | Does not exist on v10.0.162 standalone controllers. Returns `api.err.NotFound`. | Use `update-site` (`unifi_update_site`) instead. |
+| `delete-admin` | sitemgr | Vestigial/redundant. The `revoke-admin` command already fully deletes the admin object (removes from MongoDB). Calling `delete-admin` after `revoke-admin` returns `api.err.NotFound`. | Use `revoke-admin` (`unifi_revoke_admin`) instead. |
+
+### NO_REST_DELETE — REST resources without DELETE tool
+
+| Resource | Reason | Alternative |
+|----------|--------|-------------|
+| `user` | REST `DELETE /api/s/{site}/rest/user/{id}` is not supported by the API. Returns error. | Use `forget-sta` (`unifi_forget_client`) via stamgr commands. Workflow hint included in `create_user` docstring. |
+
+### How to add a new skip
+
+1. **Skip a command**: Add `("manager", "command-name")` to `SKIP_COMMANDS` in `generator/naming.py`
+2. **Skip REST delete**: Add `"resource"` to `NO_REST_DELETE` in `generator/naming.py`
+3. Regenerate: `uv run python generate.py`
+4. Verify: `uv run python count_tools.py` and `uv run --extra test python -m pytest generated/tests/test_server.py -v`
+
+## Bank Tester — LLM QA for 283 Tools
 
 **STATUS: This section is a living tracker. Update it as phases complete.**
 
