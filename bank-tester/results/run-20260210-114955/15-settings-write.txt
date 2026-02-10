@@ -1,0 +1,94 @@
+Every update attempt is failing with "api.err.Invalid". This suggests either:
+1. The PUT endpoint requires exact field matching or additional fields
+2. The controller version doesn't support these updates
+3. The tool implementation has an issue
+
+Let me document this as a systematic failure and move on. I've attempted 6 different update operations across 5 different settings, all failing with the same error. This is clearly a blocking issue with the update functionality.
+
+---TASK-REPORT-START---
+task_id: 15-settings-write
+status: failed
+total_tool_calls: 13
+first_attempt_failures: 6
+details:
+  - tool: unifi_update_setting
+    attempt: 1
+    params: {"key": "ntp", "data": {"ntp_server_1": "bt.test.ntp.org"}, "confirm": true}
+    error: UniFi API error on PUT /api/s/default/rest/setting/698aaafdde355a6ab1c2e4e8: api.err.Invalid
+    diagnosis: API returned generic "Invalid" error. Tried updating single field in existing NTP setting.
+    retry_params: Switched to dashboard setting
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_update_setting
+    attempt: 2
+    params: {"key": "dashboard", "data": {"layout_preference": "custom"}, "confirm": true}
+    error: UniFi API error on PUT /api/s/default/rest/setting/698aaafdde355a6ab1c2e4ef: api.err.Invalid
+    diagnosis: Same generic error. Dashboard setting also failed with single field update.
+    retry_params: Switched to mgmt setting with boolean field
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_update_setting
+    attempt: 3
+    params: {"key": "mgmt", "data": {"debug_tools_enabled": true}, "confirm": true}
+    error: UniFi API error on PUT /api/s/default/rest/setting/698aaafdde355a6ab1c2e4e9: api.err.Invalid
+    diagnosis: Same error. Tried boolean field toggle - still rejected.
+    retry_params: Included all visible fields from GET response
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_update_setting
+    attempt: 1
+    params: {"key": "mgmt", "data": {"x_ssh_bind_wildcard": false, "wifiman_enabled": true, "advanced_feature_enabled": true, "x_ssh_auth_password_enabled": true, "unifi_idp_enabled": true, "debug_tools_enabled": true, "auto_upgrade": true, "x_ssh_enabled": true, "auto_upgrade_hour": 3}, "confirm": true}
+    error: UniFi API error on PUT /api/s/default/rest/setting/698aaafdde355a6ab1c2e4e9: api.err.Invalid
+    diagnosis: Including all fields from GET response still rejected. Missing internal fields (x_api_token, x_mgmt_key) may be required but shouldn't be user-modifiable.
+    retry_params: Tried creating non-existent SNMP setting
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_update_setting
+    attempt: 1
+    params: {"key": "snmp", "data": {"community": "public", "enabled": false}, "confirm": true}
+    error: Setting 'snmp' not found
+    diagnosis: Tool cannot create new settings, only update existing ones. SNMP setting doesn't exist on this controller version.
+    retry_params: Tried simpler DPI setting
+    retry_success: false
+    category: tool_search_failure
+  - tool: unifi_update_setting
+    attempt: 1
+    params: {"key": "dpi", "data": {"fingerprintingEnabled": false, "enabled": true}, "confirm": true}
+    error: UniFi API error on PUT /api/s/default/rest/setting/698aaafdde355a6ab1c2e4ea: api.err.Invalid
+    diagnosis: Final attempt with minimal DPI setting fields also rejected. Pattern confirmed - all PUT operations fail with api.err.Invalid regardless of setting type or field selection.
+    retry_params: None - systematic failure confirmed
+    retry_success: false
+    category: unexpected_error
+cleanup_complete: true
+notes: |
+  CRITICAL FAILURE: unifi_update_setting tool is non-functional. All 6 update attempts across 5 different settings failed with "api.err.Invalid" error.
+  
+  Tool discoverability was excellent - get_setting and update_setting were immediately obvious by name.
+  
+  Attempted strategies:
+  1. Single field update (NTP, dashboard, mgmt) - FAILED
+  2. Multiple field update with all visible fields - FAILED  
+  3. Creating new setting (SNMP doesn't exist on v10.0.162) - Not supported
+  4. Minimal field set (DPI) - FAILED
+  
+  Root cause appears to be one of:
+  - PUT endpoint requires exact field matching including internal/readonly fields (x_api_token, x_mgmt_key, site_id, _id)
+  - Controller version (v10.0.162) doesn't support setting updates via REST API
+  - Tool implementation missing required headers or request format
+  
+  The generic "api.err.Invalid" error provides no actionable information about what's wrong.
+  
+  Task spec requested testing "snmp" and "locale" settings which don't exist on this controller version (29 settings total, neither present). Attempted substitutes with existing settings (ntp, dashboard, mgmt, dpi) all failed.
+  
+  unifi_get_setting works perfectly - reads all 29 existing settings successfully.
+  
+  RECOMMENDATION: 
+  1. Check if tool needs to send ALL fields including readonly ones (_id, site_id, x_* keys)
+  2. Add better error parsing - "api.err.Invalid" is not actionable
+  3. Investigate if there's a different endpoint for setting updates (possibly set/setting/* endpoints from LLM probe discoveries)
+  4. Document which settings are actually updatable via REST API
+tools_invoked:
+  - unifi_get_setting
+  - unifi_update_setting
+  - unifi_list_settings
+---TASK-REPORT-END---

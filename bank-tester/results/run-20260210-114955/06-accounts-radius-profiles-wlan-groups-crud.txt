@@ -1,0 +1,50 @@
+Perfect! All resources deleted successfully. Now I'll output the structured report:
+
+```
+---TASK-REPORT-START---
+task_id: 06-accounts-radius-profiles-wlan-groups-crud
+status: success
+total_tool_calls: 18
+first_attempt_failures: 0
+details: []
+cleanup_complete: true
+notes: |
+  All 15 tools worked flawlessly on first attempt. No issues discovered.
+  
+  Test flow:
+  - Created account with name and password
+  - Created RADIUS profile with auth server configuration
+  - Created WLAN group with name only
+  - Verified all resources appeared in list operations
+  - Retrieved each resource individually by ID
+  - Updated names for all three resources
+  - Verified updates persisted correctly
+  - Deleted all resources in reverse order
+  
+  All CRUD operations (create, read, update, delete) worked as expected for all three
+  resource types. Tool names were intuitive, parameter formats were clear from docstrings,
+  and the confirm=True pattern worked consistently.
+  
+  The RADIUS profile tool properly documented the auth_servers structure with ip, port,
+  and x_secret fields. The WLAN group tool had minimal required fields (just name).
+  Account creation required name and x_password.
+  
+  100% first-attempt success rate. No friction points.
+tools_invoked:
+  - mcp__unifi__unifi_create_account
+  - mcp__unifi__unifi_list_accounts
+  - mcp__unifi__unifi_get_account
+  - mcp__unifi__unifi_update_account
+  - mcp__unifi__unifi_delete_account
+  - mcp__unifi__unifi_create_radius_profile
+  - mcp__unifi__unifi_list_radius_profiles
+  - mcp__unifi__unifi_get_radius_profile
+  - mcp__unifi__unifi_update_radius_profile
+  - mcp__unifi__unifi_delete_radius_profile
+  - mcp__unifi__unifi_create_wlan_group
+  - mcp__unifi__unifi_list_wlan_groups
+  - mcp__unifi__unifi_get_wlan_group
+  - mcp__unifi__unifi_update_wlan_group
+  - mcp__unifi__unifi_delete_wlan_group
+---TASK-REPORT-END---
+```

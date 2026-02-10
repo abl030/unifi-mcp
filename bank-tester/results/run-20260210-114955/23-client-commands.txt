@@ -1,0 +1,88 @@
+---TASK-REPORT-START---
+task_id: 23-client-commands
+status: partial
+total_tool_calls: 14
+first_attempt_failures: 6
+details:
+  - tool: unifi_create_user
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:55", "name": "bt_sys23_client", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacAlreadyRegistered"
+    diagnosis: The MAC address I used (00:11:22:33:44:55) was already registered in the system, likely from a previous test run that didn't clean up properly.
+    retry_params: {"mac": "00:11:22:33:44:23", "name": "bt_sys23_client", "confirm": true}
+    retry_success: true
+    category: unexpected_error
+  - tool: unifi_block_client
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: The tool requires the client to actually exist as a connected/known client in the UniFi controller, not just as a user record. The test environment has no actual connected clients.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_unblock_client
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: Same as block_client - requires an actual connected client, not just a user record.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_kick_client
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: Requires an actively connected client to kick. Expected failure in test environment with no real devices.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_reconnect_client
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: Requires an actively connected client. Expected failure without real devices.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_authorize_guest
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "minutes": 60, "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: Requires client to be connected to a guest network. Expected failure.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_unauthorize_guest
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:23", "confirm": true}
+    error: "API Error: meta.rc=error, msg=api.err.MacNotRegistered"
+    diagnosis: Requires client to be an authorized guest first. Expected failure.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+cleanup_complete: true
+notes: |
+  This task revealed a fundamental limitation of the test environment: most client management commands (block, kick, authorize, etc.) require actual connected clients, not just user records in the database.
+  
+  Tool discoverability issues:
+  1. The unifi_create_user/list_users/get_user/delete_user tools work fine for managing the user database
+  2. However, the other 7 tools (block, unblock, kick, reconnect, authorize_guest, unauthorize_guest, forget) all operate on ACTIVE clients and fail with "MacNotRegistered" when no real devices are connected
+  3. The docstrings don't clearly distinguish between "user records" (rest/user) and "active clients" (cmd/stamgr operations)
+  4. The forget_client tool uses a 'macs' list parameter as documented, but couldn't be tested due to the MacNotRegistered error
+  
+  The user CRUD operations (create/list/get/delete) work perfectly. The client command operations are hardware-dependent and would need a real or simulated connected client to test properly.
+  
+  Error messages were clear and consistent (api.err.MacNotRegistered), making it obvious what the issue was. No ambiguity about why these commands failed.
+tools_invoked:
+  - unifi_create_user
+  - unifi_list_users
+  - unifi_get_user
+  - unifi_block_client
+  - unifi_unblock_client
+  - unifi_kick_client
+  - unifi_reconnect_client
+  - unifi_authorize_guest
+  - unifi_unauthorize_guest
+  - unifi_forget_client
+  - unifi_delete_user
+---TASK-REPORT-END---

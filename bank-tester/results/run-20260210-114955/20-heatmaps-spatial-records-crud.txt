@@ -1,0 +1,51 @@
+```
+---TASK-REPORT-START---
+task_id: 20-heatmaps-spatial-records-crud
+status: failed
+total_tool_calls: 16
+first_attempt_failures: 3
+details:
+  - tool: unifi_create_heatmap
+    attempt: 1
+    params: {"data": {"name": "bt_sys20_heatmap"}, "confirm": true}
+    error: "API error (400): api.err.Invalid"
+    diagnosis: The tool requires additional fields beyond just "name" to create a heatmap. The docstring doesn't specify what fields are required, so I tried the minimal approach.
+    retry_params: null
+    retry_success: false
+    category: missing_required_field
+  - tool: unifi_create_heatmap_point
+    attempt: 1
+    params: {"data": {"name": "bt_sys20_heatmappoint"}, "confirm": true}
+    error: "API error (400): api.err.Invalid"
+    diagnosis: Similar to heatmap creation - requires additional fields beyond just "name" that aren't documented in the tool docstring.
+    retry_params: null
+    retry_success: false
+    category: missing_required_field
+  - tool: unifi_create_spatial_record
+    attempt: 1
+    params: {"data": {"name": "bt_sys20_spatial"}, "confirm": true}
+    error: "API error (400): api.err.Invalid"
+    diagnosis: Same pattern - "name" alone is insufficient. The API requires additional fields that aren't documented in the tool's docstring.
+    retry_params: null
+    retry_success: false
+    category: missing_required_field
+cleanup_complete: true
+notes: |
+  All three create operations failed with the same generic "api.err.Invalid" 400 error. The tool docstrings provide no information about required fields beyond the basic structure. The list operations work fine (all returned empty arrays since no resources were created).
+  
+  Key friction points:
+  1. No required field information in docstrings - I had to guess that "name" would be sufficient
+  2. Error message "api.err.Invalid" is not actionable - doesn't tell me which fields are missing or invalid
+  3. No example data structures in the tool descriptions to guide proper usage
+  4. These appear to be specialized features (heatmaps for WiFi signal mapping, spatial records for physical layouts) that likely require additional context fields like map IDs, coordinates, etc.
+  
+  The API surface is exposed correctly (tools exist and connect), but discoverability is poor without field documentation or better error messages.
+tools_invoked:
+  - mcp__unifi__unifi_create_heatmap
+  - mcp__unifi__unifi_list_heatmaps
+  - mcp__unifi__unifi_create_heatmap_point
+  - mcp__unifi__unifi_list_heatmap_points
+  - mcp__unifi__unifi_create_spatial_record
+  - mcp__unifi__unifi_list_spatial_records
+---TASK-REPORT-END---
+```

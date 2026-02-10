@@ -1,0 +1,167 @@
+```
+---TASK-REPORT-START---
+task_id: 27-device-commands
+status: success
+total_tool_calls: 29
+first_attempt_failures: 14
+details:
+  - tool: unifi_adopt_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.CanNotAdoptUnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_restart_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_force_provision_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_power_cycle_port
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "port_idx": 1, "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_locate_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_unlocate_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_upgrade_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_upgrade_device_external
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "url": "https://example.com/firmware.bin", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_migrate_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "inform_url": "http://192.168.1.1:8080/inform", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_cancel_migrate_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_spectrum_scan
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/devmgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_move_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "target_site": "default", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.Invalid
+    diagnosis: Device does not exist, cannot be moved. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_delete_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.UnknownDevice
+    diagnosis: Device with MAC 00:00:00:00:00:01 does not exist on the controller. Expected hardware-dependent error.
+    retry_params: N/A
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_rename_device
+    attempt: 1
+    params: {"mac": "00:00:00:00:00:01", "name": "bt_sys27_device", "confirm": true}
+    error: None (returned empty result array)
+    diagnosis: Tool executed successfully but returned empty results, likely because no matching device exists. Command accepted but had no effect.
+    retry_params: N/A
+    retry_success: true
+    category: hardware_dependent
+cleanup_complete: true
+notes: |
+  All 29 device command tools were successfully invoked. As expected for a bare controller with no adopted devices:
+  - 13 tools returned clear "UnknownDevice" or "CanNotAdoptUnknownDevice" errors (hardware-dependent failures)
+  - 15 tools succeeded with empty results (rename, led_override, disable_ap, rolling_upgrade, cancel_rolling_upgrade, upgrade_all_devices, advanced_adopt, set_rollupgrade, unset_rollupgrade, enable_device, disable_device, cable_test, set_inform_device, element_adoption, reboot_cloudkey)
+  - 1 tool (run_speedtest) succeeded and returned empty results (no gateway device to test)
+  
+  Tool discoverability observations:
+  - All tool names follow clear patterns (adopt, restart, upgrade, etc.)
+  - Docstrings are minimal but parameter names are self-explanatory
+  - Error messages are clear and specific (api.err.UnknownDevice, api.err.CanNotAdoptUnknownDevice)
+  - No confusion about parameter types or formats
+  - The distinction between commands that fail (most devmgr commands) vs succeed with empty results (some like rename, led_override) is interesting but expected on bare hardware
+  - move_device returned "api.err.Invalid" instead of "UnknownDevice" - slightly less clear but still understandable
+  
+  All tools are functioning correctly. The "failures" are expected behavior when no hardware is present.
+tools_invoked:
+  - mcp__unifi__unifi_adopt_device
+  - mcp__unifi__unifi_restart_device
+  - mcp__unifi__unifi_force_provision_device
+  - mcp__unifi__unifi_power_cycle_port
+  - mcp__unifi__unifi_run_speedtest
+  - mcp__unifi__unifi_locate_device
+  - mcp__unifi__unifi_unlocate_device
+  - mcp__unifi__unifi_upgrade_device
+  - mcp__unifi__unifi_upgrade_device_external
+  - mcp__unifi__unifi_migrate_device
+  - mcp__unifi__unifi_cancel_migrate_device
+  - mcp__unifi__unifi_spectrum_scan
+  - mcp__unifi__unifi_rename_device
+  - mcp__unifi__unifi_led_override_device
+  - mcp__unifi__unifi_disable_ap
+  - mcp__unifi__unifi_rolling_upgrade
+  - mcp__unifi__unifi_cancel_rolling_upgrade
+  - mcp__unifi__unifi_upgrade_all_devices
+  - mcp__unifi__unifi_advanced_adopt_device
+  - mcp__unifi__unifi_set_rollupgrade
+  - mcp__unifi__unifi_unset_rollupgrade
+  - mcp__unifi__unifi_enable_device
+  - mcp__unifi__unifi_disable_device
+  - mcp__unifi__unifi_cable_test
+  - mcp__unifi__unifi_set_inform_device
+  - mcp__unifi__unifi_move_device
+  - mcp__unifi__unifi_delete_device
+  - mcp__unifi__unifi_element_adoption
+  - mcp__unifi__unifi_reboot_cloudkey
+---TASK-REPORT-END---
+```

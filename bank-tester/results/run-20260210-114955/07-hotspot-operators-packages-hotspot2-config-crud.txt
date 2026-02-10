@@ -1,0 +1,61 @@
+```
+---TASK-REPORT-START---
+task_id: 07-hotspot-operators-packages-hotspot2-config-crud
+status: partial
+total_tool_calls: 17
+first_attempt_failures: 1
+details:
+  - tool: unifi_create_hotspot_package
+    attempt: 1
+    params: {"name": "bt_sys07_package", "amount": 0, "currency": "USD"}
+    error: UniFi API error on POST /api/s/default/rest/hotspotpackage: api.err.InvalidPayload
+    diagnosis: Required fields not documented in tool docstring. Tried common payment fields (amount, currency) but API rejected them.
+    retry_params: {"name": "bt_sys07_package", "data_quota": 0, "time_quota": 0}
+    retry_success: false
+    category: missing_required_field
+  - tool: unifi_create_hotspot_package
+    attempt: 2
+    params: {"name": "bt_sys07_package", "data_quota": 0, "time_quota": 0}
+    error: UniFi API error on POST /api/s/default/rest/hotspotpackage: api.err.InvalidPayload
+    diagnosis: Still rejected. Tried quota fields but API still returns InvalidPayload.
+    retry_params: {"name": "bt_sys07_package"}
+    retry_success: false
+    category: missing_required_field
+  - tool: unifi_create_hotspot_package
+    attempt: 3
+    params: {"name": "bt_sys07_package"}
+    error: UniFi API error on POST /api/s/default/rest/hotspotpackage: api.err.InvalidPayload
+    diagnosis: Even minimal payload rejected. API requires undocumented field(s). Tool docstring provides no guidance on required fields or valid structure. Unable to proceed with hotspot_package CRUD testing.
+    retry_params: N/A
+    retry_success: false
+    category: missing_required_field
+cleanup_complete: true
+notes: |
+  Hotspot operator CRUD: Fully functional (5/5 tools). Create/list/get/update/delete all worked on first attempt with minimal fields.
+  
+  Hotspot package CRUD: Completely blocked (0/5 tools exercised). API consistently returns "api.err.InvalidPayload" regardless of payload structure. Tried:
+  - Payment model: amount + currency
+  - Quota model: data_quota + time_quota
+  - Minimal: name only
+  All rejected. Tool docstring says "Hotspot_package configuration" but provides no field examples or required field list.
+  
+  Hotspot2 config CRUD: Fully functional (5/5 tools). Create/list/get/update/delete all worked on first attempt with minimal fields.
+  
+  Tool discoverability: Good for operator and hotspot2_config (minimal fields sufficient). Poor for hotspot_package (no working field combination found after 3 attempts).
+  
+  Error quality: "api.err.InvalidPayload" provides no detail about what's wrong or what fields are required.
+tools_invoked:
+  - mcp__unifi__unifi_create_hotspot_operator
+  - mcp__unifi__unifi_list_hotspot_operators
+  - mcp__unifi__unifi_get_hotspot_operator
+  - mcp__unifi__unifi_update_hotspot_operator
+  - mcp__unifi__unifi_delete_hotspot_operator
+  - mcp__unifi__unifi_create_hotspot_package
+  - mcp__unifi__unifi_delete_hotspot2_config
+  - mcp__unifi__unifi_create_hotspot2_config
+  - mcp__unifi__unifi_list_hotspot2_configs
+  - mcp__unifi__unifi_get_hotspot2_config
+  - mcp__unifi__unifi_update_hotspot2_config
+  - mcp__unifi__unifi_delete_hotspot_operator
+---TASK-REPORT-END---
+```

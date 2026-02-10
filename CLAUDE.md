@@ -395,8 +395,8 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 |-------|-------------|--------|
 | **Phase 1: Build Harness** | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
 | **Phase 2: Generate Tasks** | Run `generate-tasks.py`, verify 100% tool coverage (286/286) | DONE |
-| **Phase 3: Sonnet First Pass** | Run all 31 tasks against Docker controller with Sonnet | NOT STARTED |
-| **Phase 4: Triage Failures** | Analyze results, categorize failures (generator-fixable vs test-config vs needs-opus) | NOT STARTED |
+| **Phase 3: Sonnet First Pass** | Run all 30 tasks against Docker controller with Sonnet | DONE |
+| **Phase 4: Triage Failures** | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 | **Phase 5: Fix & Re-run** | Fix generator/naming/templates for generator-fixable failures, re-run | NOT STARTED |
 | **Phase 6: Opus Escalation** | Re-run remaining failures with Opus for deeper diagnosis | NOT STARTED |
 | **Phase 7: Final Report** | Aggregate results, produce final coverage percentage and unfixed failure list | NOT STARTED |
@@ -414,34 +414,77 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | 7 | 29-30 | ~15 | Port override helper, user CRUD, adversarial tests |
 | opt-in | 99 | 3 | Destructive (logout, reboot, poweroff) |
 
-### Smoke Test Results (Phase 2.5)
+### Sonnet First Pass Results (Phase 3)
 
-Tasks 01, 02, 03, 08, 14, 16, 30 tested individually to verify plumbing:
+**30 tasks run, 398 tool calls, 70 first-attempt failures (82.4% success rate)**
 
-| Task | Status | Tools | Failures | Key Findings |
-|------|--------|-------|----------|--------------|
-| 01 | SUCCESS | 5/5 | 0 | Auth endpoints lag behind /status readiness (startup race) |
-| 02 | SUCCESS | 10/10 | 0 | Network + usergroup CRUD fully works, 100% first-attempt |
-| 03 | SUCCESS | 10/10 | 0 | Firewall group + rule CRUD fully works |
-| 08 | PARTIAL | 7/7 | 1 | `unifi_clear_dpi` 404 — cmd/stat endpoint missing |
-| 14 | SUCCESS | 2/2 | 0 | 18/36 settings returned data, 18 "not found" (expected) |
-| 16 | PARTIAL | 3/6 | 2 | v2 firewall policy create returns 400 (needs prerequisites) |
-| 30 | SUCCESS | 9/9 | 8 | 6/10 errors `missing` quality (generic 400s), MAC not validated |
+Full analysis in `bank-tester/RESEARCH.md`. Summary:
+
+| Category | Failures | % | Fixable? |
+|----------|----------|---|----------|
+| Hardware-dependent | 31 | 44% | Need device simulation |
+| Generator-fixable | 21 | 30% | Yes — Phase 5 |
+| API limitation | 7 | 10% | No — v10.0.162 limits |
+| Test environment | 5 | 7% | Setup changes |
+| Test config | 3 | 4% | Task spec fixes |
+| Adversarial (expected) | 3 | 4% | By design |
+
+#### Per-Task First-Attempt Failures
+
+| Task | Calls | Fails | Status | Notes |
+|------|-------|-------|--------|-------|
+| 01 | 6 | 4 | partial | Startup race (test_env) |
+| 02 | 12 | 0 | success | |
+| 03 | 12 | 0 | success | |
+| 04 | 12 | 0 | success | |
+| 05 | 12 | 0 | success | |
+| 06 | 18 | 0 | success | |
+| 07 | 17 | 1 | partial | hotspot_package undocumented fields |
+| 08 | 8 | 1 | partial | clear_dpi wrong endpoint |
+| 09 | 8 | 0 | success | |
+| 10 | 11 | 1 | partial | list_sessions missing params |
+| 11 | 8 | 0 | success | |
+| 12 | 7 | 1 | partial | gateway_stats needs hardware |
+| 13 | 10 | 0 | success | |
+| 14 | 37 | 0 | success | |
+| 15 | 13 | 6 | failed | update_setting wrong endpoint? |
+| 16 | 10 | 2 | partial | firewall policy needs hardware |
+| 17 | 13 | 2 | partial | v2 enum values + full-object PUT |
+| 18 | 12 | 0 | success | |
+| 19 | 21 | 5 | partial | dhcp_option + schedule_task |
+| 20 | 16 | 3 | failed | heatmap/spatial undocumented fields |
+| 21 | 10 | 4 | partial | site name/delete/leds |
+| 22 | 8 | 5 | partial | admin assign/invite/super |
+| 23 | 14 | 6 | partial | client commands need real clients |
+| 24 | 10 | 2 | partial | cmd/backup manager missing |
+| 25 | 7 | 3 | partial | hotspot authorize/extend/revoke |
+| 26 | 35 | 0 | success | hardware errors expected + clear |
+| 27 | 29 | 14 | success | device commands need real devices |
+| 28 | 2 | 0 | success | |
+| 29 | 10 | 2 | partial | port_override + delete_user |
+| 30 | 10 | 8 | partial | adversarial (errors by design) |
+
+#### Generator Fix Priority (Phase 5)
+
+| Priority | Issue | Failures | Fix |
+|----------|-------|----------|-----|
+| P0 | `update_setting` wrong endpoint | 6 | Investigate set/setting/* vs rest/setting PUT |
+| P0 | `list_sessions` missing POST body | 1 | Hardcode or expose type/start/end params |
+| P1 | 5 resources missing required field docs | 9 | Improve api-samples + schema inference |
+| P1 | v2 update requires full object | 2 | Add docstring note to v2 update tools |
+| P2 | Traffic rule missing enum values | 1 | Surface enums from schema_inference |
+| P2 | `clear_dpi` wrong endpoint | 1 | Verify correct cmd manager |
+| P2 | MAC address validation | 1 | Add client-side regex validation |
 
 ### Test Image Enhancement Backlog
 
-The bare `jacobalberty/unifi:latest` controller has limitations that cause expected failures. Before the full Sonnet pass, tabulate issues here for a future enhanced test image:
-
 | Issue | Affected Tasks | Fix Required |
 |-------|---------------|--------------|
-| **No adopted devices** | 26, 27, 28, 29 | Mock device via MongoDB seeding or UniFi inform simulator |
-| **v2 firewall policies need prerequisites** | 16 | May need gateway device + firewall zones configured |
-| **18/36 settings not initialized** | 14 | Pre-seed settings via MongoDB or initial API calls |
-| **cmd/stat endpoint missing (clear-dpi)** | 08 | Verify endpoint exists on this controller version; may need DPI enabled |
-| **No clients/sessions** | 10, 23 | Seed fake client records via MongoDB for stat/sta testing |
-| **No backups exist** | 24 | Generate a backup during setup for download/delete testing |
-| **No vouchers exist** | 25 | Need to create vouchers before revoke/delete testing |
-| **Generic 400 errors (no detail)** | 30 | Enhance generator error parsing (API-side limitation) |
-| **No MAC validation** | 30 | Add client-side MAC format validation in generator |
+| **No adopted devices** | 16, 23, 24, 25, 26, 27, 28, 29 | Mock device via MongoDB seeding or UniFi inform simulator |
+| **No connected clients** | 10, 23 | Seed fake client records via MongoDB |
+| **Hotspot feature not enabled** | 25 | Enable hotspot portal in controller config |
+| **cmd/backup manager missing** | 24 | May be version-specific; verify on newer controller |
+| **No SMTP configured** | 22 | Configure SMTP or skip invite_admin test |
+| **Startup race condition** | 01 | Wait for auth endpoints (not just /status) |
 
 Priority: Try MongoDB device seeding first (free, fast). If controller rejects fake devices, build an inform protocol simulator.

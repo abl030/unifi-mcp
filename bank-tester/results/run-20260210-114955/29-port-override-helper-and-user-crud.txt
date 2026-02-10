@@ -1,0 +1,53 @@
+The delete operation consistently fails. This appears to be an API limitation - the user resource may not support DELETE operations even though it was probed. Let me generate the final report:
+
+```
+---TASK-REPORT-START---
+task_id: 29-port-override-helper-and-user-crud
+status: partial
+total_tool_calls: 10
+first_attempt_failures: 2
+details:
+  - tool: mcp__unifi__unifi_set_port_override
+    attempt: 1
+    params: device_id=dummy_device_id, port_idx=1, name=bt_sys29_port, confirm=true
+    error: UniFi API error on GET /api/s/default/rest/device/dummy_device_id: api.err.NotFound
+    diagnosis: Expected failure - no adopted devices in test environment. The tool works correctly by attempting to fetch the device first.
+    retry_params: N/A - this is hardware-dependent and expected to fail
+    retry_success: false
+    category: hardware_dependent
+  - tool: mcp__unifi__unifi_delete_user
+    attempt: 1
+    params: id=698ab079de355a6ab1c2e53b, confirm=true
+    error: UniFi API error on DELETE /api/s/default/rest/user/698ab079de355a6ab1c2e53b: api.err.NotFound
+    diagnosis: The API returns NotFound for DELETE even though the user exists and was just retrieved successfully. This appears to be an API limitation - users may be read-only or require a different deletion method. The tool is correctly formatted but the endpoint doesn't support deletion.
+    retry_params: Retried with same params twice more
+    retry_success: false
+    category: unexpected_error
+cleanup_complete: false
+notes: |
+  Port override tool correctly requires a device_id and fails gracefully when device doesn't exist (expected in bare controller).
+  
+  User CRUD mostly works:
+  - Create: ✓ Successfully created user with MAC and name
+  - List: ✓ User appears in list
+  - Get: ✓ Retrieved user by ID
+  - Update: ✓ Successfully updated name field
+  - Delete: ✗ API returns NotFound even though user exists
+  
+  The delete failure is surprising - the user was created via the API and exists in the system, but DELETE returns api.err.NotFound. This may indicate:
+  1. Users in UniFi are meant to be "noted" clients (observed on network) rather than fully managed resources
+  2. The DELETE endpoint may not be implemented for the user resource
+  3. The probe may have incorrectly inferred DELETE support
+  
+  Tool discoverability was excellent - all tools had clear names and parameters.
+  
+  Cleanup incomplete: User bt_sys29_user_upd (ID 698ab079de355a6ab1c2e53b) remains in the controller.
+tools_invoked:
+  - mcp__unifi__unifi_set_port_override
+  - mcp__unifi__unifi_create_user
+  - mcp__unifi__unifi_list_users
+  - mcp__unifi__unifi_get_user
+  - mcp__unifi__unifi_update_user
+  - mcp__unifi__unifi_delete_user
+---TASK-REPORT-END---
+```

@@ -1,0 +1,82 @@
+The `delete_site` command is failing with various errors. Let me compile the final report:
+
+```
+---TASK-REPORT-START---
+task_id: 21-site-management-commands
+status: partial
+total_tool_calls: 10
+first_attempt_failures: 4
+details:
+  - tool: unifi_set_site_name
+    attempt: 1
+    params: {"desc": "bt_sys21_renamed", "confirm": true}
+    error: api.err.NotFound
+    diagnosis: Command expects to operate on default site but may need additional parameter to specify target site, or may only work on the current site context
+    retry_params: Added site parameter with newly created site name
+    retry_success: false
+    category: missing_required_field
+  - tool: unifi_set_site_name
+    attempt: 2
+    params: {"desc": "bt_sys21_renamed", "site": "f3ogyj3s", "confirm": true}
+    error: api.err.NoSiteContext
+    diagnosis: Site context parameter doesn't work as expected - commands must be executed from the site to be modified, not passed as parameter
+    retry_params: Removed site parameter to operate on default
+    retry_success: false
+    category: parameter_format
+  - tool: unifi_set_site_leds
+    attempt: 1
+    params: {"led_enabled": true, "confirm": true}
+    error: api.err.NotFound
+    diagnosis: Command not found on this controller - may require adopted devices with LEDs or feature not available
+    retry_params: None
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_delete_site
+    attempt: 1
+    params: {"target_site": "f3ogyj3s", "confirm": true}
+    error: api.err.IdInvalid
+    diagnosis: API expects different format for target_site parameter - tried site name, should try _id
+    retry_params: {"target_site": "698aadedde355a6ab1c2e517"}
+    retry_success: false
+    category: parameter_format
+  - tool: unifi_delete_site
+    attempt: 2
+    params: {"target_site": "698aadedde355a6ab1c2e517", "confirm": true}
+    error: 403 Forbidden
+    diagnosis: Site deletion requires super admin privileges that test admin doesn't have
+    retry_params: Tried with desc field instead
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_delete_site
+    attempt: 3
+    params: {"target_site": "bt_sys21_site", "confirm": true}
+    error: api.err.IdInvalid
+    diagnosis: API doesn't accept site description as target_site parameter - needs correct identifier format
+    retry_params: None
+    retry_success: false
+    category: parameter_format
+cleanup_complete: false
+notes: |
+  Site management commands have significant friction:
+  
+  1. unifi_add_site - WORKS perfectly, creates site and returns all IDs
+  2. unifi_update_site - WORKS on default site, updates description successfully
+  3. unifi_set_site_name - FAILS with NotFound on default site, needs better documentation on which site it operates on or what parameters are needed
+  4. unifi_set_site_leds - FAILS with NotFound, likely hardware-dependent (needs devices with LEDs)
+  5. unifi_delete_site - FAILS with multiple error types (IdInvalid, 403 Forbidden), unclear what format target_site expects
+  
+  Key issues:
+  - set_site_name docstring doesn't explain how to target a specific site or if it only works on current site
+  - delete_site target_site parameter format is unclear (tried: site name, site _id, site desc - all failed)
+  - 403 error suggests permission issues but test admin should have site management rights
+  - No clear workflow for: create site → rename it → delete it
+  
+  Successfully invoked 2/5 tools. The site cleanup is incomplete (created site still exists).
+tools_invoked:
+  - mcp__unifi__unifi_add_site
+  - mcp__unifi__unifi_set_site_name
+  - mcp__unifi__unifi_set_site_leds
+  - mcp__unifi__unifi_update_site
+  - mcp__unifi__unifi_delete_site
+---TASK-REPORT-END---
+```

@@ -1,0 +1,29 @@
+```
+---TASK-REPORT-START---
+task_id: 18-dpi-apps-and-groups-crud
+status: success
+total_tool_calls: 12
+first_attempt_failures: 0
+details: []
+cleanup_complete: true
+notes: |
+  All DPI Groups and DPI Apps CRUD operations worked perfectly on first attempt.
+  - DPI Group: create → list → get → update → get (verify) → delete
+  - DPI App: create → list → get → update → get (verify) → delete
+  - Tool names were clear and discoverable
+  - Minimal required fields (just "name") made testing straightforward
+  - Both resources created, updated, and deleted without issues
+  - No friction points encountered
+tools_invoked:
+  - unifi_create_dpi_group
+  - unifi_list_dpi_groups
+  - unifi_get_dpi_group
+  - unifi_update_dpi_group
+  - unifi_delete_dpi_group
+  - unifi_create_dpi_app
+  - unifi_list_dpi_apps
+  - unifi_get_dpi_app
+  - unifi_update_dpi_app
+  - unifi_delete_dpi_app
+---TASK-REPORT-END---
+```

@@ -1,0 +1,76 @@
+```
+---TASK-REPORT-START---
+task_id: 22-admin-management-commands
+status: partial
+total_tool_calls: 8
+first_attempt_failures: 5
+details:
+  - tool: unifi_assign_existing_admin
+    attempt: 1
+    params: {"admin": "698aae36de355a6ab1c2e539", "role": "admin", "confirm": true}
+    error: "UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.NotFound"
+    diagnosis: The admin was just created locally but may need to be part of a different site or the controller doesn't recognize it for assignment. This could be a standalone vs UniFi OS controller difference, or the admin needs to exist in a global admin table first.
+    retry_params: N/A
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_invite_admin
+    attempt: 1
+    params: {"email": "bt_sys22_invite@test.local", "name": "bt_sys22_invited", "role": "admin", "confirm": true}
+    error: "UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.SmtpNotEnabled"
+    diagnosis: The controller has no SMTP configured so email invitations cannot be sent. This is expected on a bare Docker test controller. The error message is clear and explains the issue.
+    retry_params: N/A
+    retry_success: false
+    category: error_quality_clear
+  - tool: unifi_grant_super_admin
+    attempt: 1
+    params: {"admin": "698aae36de355a6ab1c2e539", "confirm": true}
+    error: "UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.InvalidTarget"
+    diagnosis: The admin may not be eligible for super admin status, or this requires a CloudKey/UniFi OS environment. The API returned InvalidTarget which suggests the admin object isn't the right type for this operation. After revoking admin access in step 5, the admin may no longer be a valid target.
+    retry_params: N/A
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_revoke_super_admin
+    attempt: 1
+    params: {"admin": "698aae36de355a6ab1c2e539", "confirm": true}
+    error: "UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.InvalidTarget"
+    diagnosis: Same as grant_super_admin - the admin is not a super admin so cannot be revoked. This is expected since grant failed.
+    retry_params: N/A
+    retry_success: false
+    category: unexpected_error
+  - tool: unifi_delete_admin
+    attempt: 1
+    params: {"admin": "698aae36de355a6ab1c2e539", "confirm": true}
+    error: "UniFi API error on POST /api/s/default/cmd/sitemgr: api.err.NotFound"
+    diagnosis: The admin no longer exists after being revoked in step 5. It appears that unifi_revoke_admin actually deletes the admin rather than just removing permissions. The delete operation is redundant.
+    retry_params: N/A
+    retry_success: false
+    category: dependency_unknown
+cleanup_complete: true
+notes: |
+  Tool discoverability was excellent - all 8 tools were easy to find and their names matched expectations.
+  
+  Key findings:
+  1. unifi_create_admin works perfectly and returns the admin _id
+  2. unifi_update_admin works (changed role from admin to readonly)
+  3. unifi_revoke_admin appears to DELETE the admin entirely, not just revoke permissions
+  4. unifi_assign_existing_admin failed with NotFound - unclear what this command does differently from create
+  5. unifi_invite_admin requires SMTP configuration (expected on bare controller)
+  6. Super admin operations (grant/revoke) failed with InvalidTarget - likely requires CloudKey/UniFi OS
+  7. unifi_delete_admin failed because revoke_admin already deleted the admin
+  
+  Error messages were generally clear except for:
+  - assign_existing_admin NotFound error doesn't explain what "existing" means or how it differs from create
+  - InvalidTarget error on super admin operations doesn't explain the prerequisites
+  
+  Workflow confusion: The naming suggests "revoke_admin" removes permissions while "delete_admin" removes the admin object, but in practice revoke_admin appears to delete the admin entirely.
+tools_invoked:
+  - unifi_create_admin
+  - unifi_assign_existing_admin
+  - unifi_invite_admin
+  - unifi_update_admin
+  - unifi_revoke_admin
+  - unifi_grant_super_admin
+  - unifi_revoke_super_admin
+  - unifi_delete_admin
+---TASK-REPORT-END---
+```

@@ -1,0 +1,82 @@
+Now let me prepare the final task report:
+
+---TASK-REPORT-START---
+task_id: 19-maps-schedules-dhcp-options-crud
+status: partial
+total_tool_calls: 21
+first_attempt_failures: 5
+details:
+  - tool: mcp__unifi__unifi_update_map
+    attempt: 1
+    params: {"id": "698aad6bde355a6ab1c2e515", "data": {"name": "bt_sys19_map_upd"}}
+    error: "1 validation error for call[unifi_update_map] data Input should be a valid dictionary [type=dict_type, input_value='{\"name\": \"bt_sys19_map_upd\"}', input_type=str]"
+    diagnosis: JSON parameter being interpreted as string instead of object on first attempts, possibly due to parsing inconsistency in tool invocation
+    retry_params: Same parameters, retried without modification
+    retry_success: true
+    category: type_confusion
+  - tool: mcp__unifi__unifi_update_schedule_task
+    attempt: 1
+    params: {"id": "698aad87de355a6ab1c2e516", "data": {"name": "bt_sys19_schedule_upd"}}
+    error: "UniFi API error on PUT /api/s/default/rest/scheduletask/698aad87de355a6ab1c2e516: api.err.InvalidPayload"
+    diagnosis: Partial update not allowed - schedule tasks require all original fields (action, cron_expr) to be included when updating
+    retry_params: {"id": "698aad87de355a6ab1c2e516", "data": {"name": "bt_sys19_schedule_upd", "action": "upgrade", "cron_expr": "0 2 * * *"}}
+    retry_success: true
+    category: missing_required_field
+  - tool: mcp__unifi__unifi_create_dhcp_option
+    attempt: 1
+    params: {"data": {"name": "bt_sys19_dhcpoption"}}
+    error: "UniFi API error on POST /api/s/default/rest/dhcpoption: api.err.Invalid"
+    diagnosis: Name alone insufficient - DHCP options require additional fields not documented in tool docstring
+    retry_params: {"data": {"name": "bt_sys19_dhcpoption", "code": 66, "value": "test"}}
+    retry_success: false
+    category: missing_required_field
+  - tool: mcp__unifi__unifi_create_dhcp_option
+    attempt: 2
+    params: {"data": {"name": "bt_sys19_dhcpoption", "code": 66, "value": "test"}}
+    error: "UniFi API error on POST /api/s/default/rest/dhcpoption: api.err.InvalidPayload"
+    diagnosis: Still missing required fields or incorrect field names
+    retry_params: {"data": {"name": "bt_sys19_dhcpoption", "code": 66, "value": "test", "type": "text"}}
+    retry_success: false
+    category: missing_required_field
+  - tool: mcp__unifi__unifi_create_dhcp_option
+    attempt: 3
+    params: {"data": {"dhcp_option_code": 66, "dhcp_option_value": "tftp.example.com", "dhcp_option_type": "text", "network": "698aaafdde355a6ab1c2e4f7"}}
+    error: "UniFi API error on POST /api/s/default/rest/dhcpoption: api.err.Invalid"
+    diagnosis: Unable to determine correct field names and required fields from tool documentation alone. The endpoint has strict validation requirements that are not exposed in the docstring.
+    retry_params: N/A - max retries reached
+    retry_success: false
+    category: missing_required_field
+cleanup_complete: true
+notes: |
+  Maps CRUD: Fully functional (5/5 tools). Map creation, listing, getting, updating, and deletion all work as expected.
+  
+  Schedule Tasks CRUD: Fully functional with caveat (5/5 tools). All operations work, but updates require including ALL original fields, not just the fields being changed. This is a partial update limitation not documented in the tool docstring. The error message "api.err.InvalidPayload" doesn't clearly indicate this requirement.
+  
+  DHCP Options CRUD: Non-functional (0/5 tools). Unable to create a DHCP option after 3+ attempts with various field combinations. The tool docstring provides no guidance on required fields beyond "data: Dhcp_option configuration." Tried combinations included:
+    - name only
+    - name + code + value
+    - name + code + value + type
+    - dhcp_option_code + dhcp_option_value + dhcp_option_type + network
+  None succeeded. The API returns generic errors ("api.err.Invalid" or "api.err.InvalidPayload") with no detail on what's missing or wrong. Without access to API samples or schema documentation, this endpoint is not usable through tool discovery alone.
+  
+  Type confusion issue: Encountered intermittent JSON-to-string parsing issue where object parameters were being interpreted as strings. Retry without modification succeeded, suggesting a transient parsing inconsistency in the tool invocation layer.
+  
+  Overall tool discoverability: Maps tools are excellent (100% success). Schedule task tools work but have undocumented requirements (need full object on update). DHCP option tools are unusable without external documentation.
+tools_invoked:
+  - mcp__unifi__unifi_create_map
+  - mcp__unifi__unifi_list_maps
+  - mcp__unifi__unifi_get_map
+  - mcp__unifi__unifi_update_map
+  - mcp__unifi__unifi_delete_map
+  - mcp__unifi__unifi_create_schedule_task
+  - mcp__unifi__unifi_list_schedule_tasks
+  - mcp__unifi__unifi_get_schedule_task
+  - mcp__unifi__unifi_update_schedule_task
+  - mcp__unifi__unifi_delete_schedule_task
+  - mcp__unifi__unifi_create_dhcp_option
+  - mcp__unifi__unifi_list_dhcp_options
+  - mcp__unifi__unifi_get_dhcp_option
+  - mcp__unifi__unifi_update_dhcp_option
+  - mcp__unifi__unifi_delete_dhcp_option
+  - mcp__unifi__unifi_list_networks
+---TASK-REPORT-END---

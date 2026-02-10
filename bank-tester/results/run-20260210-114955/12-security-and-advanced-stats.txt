@@ -1,0 +1,32 @@
+---TASK-REPORT-START---
+task_id: 12-security-and-advanced-stats
+status: partial
+total_tool_calls: 7
+first_attempt_failures: 1
+details:
+  - tool: unifi_list_gateway_stats
+    attempt: 1
+    params: {"site": "default"}
+    error: UniFi API error on GET /api/s/default/stat/gateway: api.err.NotFound
+    diagnosis: This endpoint requires an adopted gateway device (USG/UDM). The docstring mentions "needs adopted USG/UDM gateway". On a bare controller with no adopted hardware, this endpoint returns 404 as expected.
+    retry_params: N/A (hardware dependency, no retry possible)
+    retry_success: false
+    category: hardware_dependent
+cleanup_complete: true
+notes: |
+  All 7 security and advanced stats tools were exercised successfully. 6 out of 7 returned empty data arrays (which is expected on a bare test controller with no network activity), and 1 (gateway_stats) returned a hardware-dependent 404 error as expected.
+
+  Tool discoverability: Excellent. All tool names clearly indicate their purpose (rogue_aps, anomalies, ips_events, remote_user_vpn, vouchers, payments, gateway_stats).
+
+  Hardware dependency: The gateway_stats tool correctly documents in its docstring that it "needs adopted USG/UDM gateway", and the 404 error is the expected behavior when no gateway is present.
+
+  All endpoints returned valid JSON responses with proper structure. The tools work correctly — they simply return empty arrays on a test controller with no real network activity or security events.
+tools_invoked:
+  - unifi_list_rogue_aps
+  - unifi_list_anomalies
+  - unifi_list_ips_events
+  - unifi_list_remote_user_vpn
+  - unifi_list_vouchers
+  - unifi_list_payments
+  - unifi_list_gateway_stats
+---TASK-REPORT-END---

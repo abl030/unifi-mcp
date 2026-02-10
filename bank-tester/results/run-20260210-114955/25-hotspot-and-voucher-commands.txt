@@ -1,0 +1,60 @@
+```
+---TASK-REPORT-START---
+task_id: 25-hotspot-and-voucher-commands
+status: partial
+total_tool_calls: 7
+first_attempt_failures: 3
+details:
+  - tool: unifi_hotspot_authorize_guest
+    attempt: 1
+    params: {"mac": "00:11:22:33:44:66", "minutes": 60, "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/hotspot: api.err.NotFound
+    diagnosis: The hotspot authorize-guest command expects the /api/s/{site}/cmd/hotspot endpoint, but returns NotFound. This suggests either the hotspot feature is not enabled/configured on this controller, or the endpoint expects different parameters, or this is a hardware-dependent feature requiring an adopted access point with hotspot/guest portal configured.
+    retry_params: None (not retried - suspected hardware/config dependency)
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_extend_guest_validity
+    attempt: 1
+    params: {"_id": "698aaed5de355a6ab1c2e53a", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/hotspot: api.err.NotFound
+    diagnosis: Same NotFound error on /cmd/hotspot endpoint. This command is meant to extend a guest authorization (not voucher validity as the name suggests). Since hotspot authorize-guest failed, this is also hotspot-feature-dependent.
+    retry_params: None (not retried - suspected hotspot feature dependency)
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_revoke_voucher
+    attempt: 1
+    params: {"_id": "698aaed5de355a6ab1c2e53a", "confirm": true}
+    error: UniFi API error on POST /api/s/default/cmd/hotspot: api.err.NotFound
+    diagnosis: Same NotFound error on /cmd/hotspot endpoint. The voucher was successfully created via /cmd/hotspot (create-voucher worked), but revoke-voucher hits the same endpoint and fails with NotFound. This is inconsistent - create works but revoke doesn't. Possible reasons: (1) revoke requires hotspot portal to be active, (2) API changed between versions, (3) revoke expects additional params not in the tool signature.
+    retry_params: None (not retried - endpoint issue)
+    retry_success: false
+    category: unexpected_error
+cleanup_complete: true
+notes: |
+  Successfully created and deleted a voucher (2/5 tools worked). The create_voucher and delete_voucher tools work correctly. However, all three hotspot-related commands (hotspot_authorize_guest, extend_guest_validity, revoke_voucher) failed with api.err.NotFound on the /cmd/hotspot endpoint.
+  
+  Key observations:
+  1. create_voucher (POST /cmd/hotspot with cmd=create-voucher) succeeded
+  2. delete_voucher (POST /cmd/hotspot with cmd=delete-voucher) succeeded
+  3. All other /cmd/hotspot operations failed with NotFound
+  
+  This inconsistency suggests:
+  - The hotspot manager accepts create/delete voucher commands but not authorize/extend/revoke commands
+  - These commands may require the guest portal feature to be enabled on the controller
+  - Or they may require an adopted AP with hotspot/portal configuration
+  
+  Tool discoverability issues:
+  - Tool names don't clearly indicate hardware/config dependencies (hotspot_authorize_guest sounds like a voucher operation but is actually for MAC-based guest auth)
+  - extend_guest_validity name is misleading - it extends a MAC-based guest authorization, not voucher validity
+  - No indication in docstrings that these require hotspot portal configuration
+  
+  The voucher lifecycle that DID work: create → list (verified) → delete. The voucher had status "VALID_ONE" and was successfully cleaned up.
+tools_invoked:
+  - unifi_create_voucher
+  - unifi_hotspot_authorize_guest
+  - unifi_list_vouchers
+  - unifi_extend_guest_validity
+  - unifi_revoke_voucher
+  - unifi_delete_voucher
+---TASK-REPORT-END---
+```
