@@ -15,7 +15,17 @@ ROOT = Path(__file__).parent
 INVENTORY_PATH = ROOT / "endpoint-inventory.json"
 
 # Import the authoritative sets from the generator so we stay in sync.
-from generator.naming import CRUD_REST, NO_REST_DELETE, READ_ONLY_REST, SKIP_COMMANDS
+from generator.naming import (
+    CMD_MODULES,
+    CRUD_REST,
+    MODULE_ORDER,
+    NO_REST_DELETE,
+    READ_ONLY_REST,
+    REST_MODULES,
+    SKIP_COMMANDS,
+    STAT_MODULES,
+    V2_MODULES,
+)
 
 
 def count_from_spec() -> dict:
@@ -124,6 +134,58 @@ def count_from_spec() -> dict:
     }
 
 
+def count_module_breakdown(counts: dict) -> dict[str, dict]:
+    """Compute per-module tool breakdown using the same mappings as the generator."""
+    raw = json.loads(INVENTORY_PATH.read_text())
+    rest = raw.get("rest_endpoints", {})
+    stat = raw.get("stat_endpoints", {})
+    cmd = raw.get("cmd_endpoints", {})
+    v2 = raw.get("v2_endpoints", {})
+
+    modules: dict[str, dict] = {m: {"v1": 0, "v2": 0} for m in MODULE_ORDER}
+
+    # REST tools by module
+    for name in rest:
+        is_setting = name == "setting"
+        is_readonly = name in READ_ONLY_REST
+        is_crud = name in CRUD_REST
+        if is_setting:
+            tools = 3
+        elif is_readonly:
+            tools = 1
+        elif is_crud:
+            tools = 4 if name in NO_REST_DELETE else 5
+        else:
+            continue
+        mod = REST_MODULES.get(name, "advanced")
+        modules[mod]["v1"] += tools
+
+    # Stat tools by module
+    for name in stat:
+        mod = STAT_MODULES.get(name, "monitor")
+        modules[mod]["v1"] += 1
+
+    # Cmd tools by module
+    for mgr, ep in cmd.items():
+        for c in ep.get("commands", []):
+            key = (mgr, c)
+            if key in SKIP_COMMANDS:
+                continue
+            mod = CMD_MODULES.get(key, "admin")
+            modules[mod]["v1"] += 1
+
+    # v2 tools by module
+    for name, ep in v2.items():
+        methods = len(ep.get("methods", ["GET"]))
+        mod = V2_MODULES.get(name, "advanced")
+        modules[mod]["v2"] += methods
+
+    # Port override helper → device module
+    modules["device"]["v1"] += 1
+
+    return modules
+
+
 def count_actual_tools() -> int | None:
     """Count actual tool functions in generated/server.py if it exists."""
     server_path = ROOT / "generated" / "server.py"
@@ -178,6 +240,28 @@ def main():
     print(f"  Port override:       {t['port_override']}")
     print(f"  Report issue:        {t['report_issue']}")
     print(f"  TOTAL tools:         {t['total']}")
+
+    # Module breakdown
+    modules = count_module_breakdown(counts)
+    print()
+    print("=" * 60)
+    print("MODULE BREAKDOWN")
+    print("=" * 60)
+    always_on = t["global"] + t["report_issue"]
+    print(f"  {'Module':<12s} {'v1':>5s} {'v2':>5s} {'Total':>7s}  (with always-on: +{always_on})")
+    print(f"  {'-'*12:s} {'-'*5:s} {'-'*5:s} {'-'*7:s}")
+    total_v1 = 0
+    total_v2 = 0
+    for mod in MODULE_ORDER:
+        m = modules[mod]
+        mod_total = m["v1"] + m["v2"]
+        total_v1 += m["v1"]
+        total_v2 += m["v2"]
+        print(f"  {mod:<12s} {m['v1']:>5d} {m['v2']:>5d} {mod_total:>7d}")
+    print(f"  {'-'*12:s} {'-'*5:s} {'-'*5:s} {'-'*7:s}")
+    print(f"  {'SUBTOTAL':<12s} {total_v1:>5d} {total_v2:>5d} {total_v1 + total_v2:>7d}")
+    print(f"  {'always-on':<12s} {'':>5s} {'':>5s} {always_on:>7d}  (global + report_issue)")
+    print(f"  {'GRAND TOTAL':<12s} {'':>5s} {'':>5s} {total_v1 + total_v2 + always_on:>7d}")
 
     if actual is not None:
         print()

@@ -4,14 +4,19 @@ from __future__ import annotations
 
 from generator.loader import APIInventory
 from generator.naming import (
+    CMD_MODULES,
     COMMAND_PARAMS,
     COMMAND_TOOL_NAMES,
     CRUD_REST,
     DEVICE_DEPENDENT_COMMANDS,
     FULL_OBJECT_UPDATE_REST,
     HARDWARE_DEPENDENT_REST,
+    MODULE_ORDER,
     NO_REST_DELETE,
+    REST_MODULES,
+    STAT_MODULES,
     V2_CREATE_HINTS,
+    V2_MODULES,
     ID_CROSS_REFS,
     MINIMAL_CREATE_PAYLOADS,
     MUTATION_COMMANDS,
@@ -123,6 +128,7 @@ def build_context(inventory: APIInventory) -> dict:
             "no_rest_delete": name in NO_REST_DELETE,
             "workflow_hint": WORKFLOW_HINTS.get(name, ""),
         }
+        tool["module"] = REST_MODULES.get(name, "advanced")
         ctx["rest_tools"].append(tool)
 
     # --- Stat endpoints ---
@@ -146,6 +152,7 @@ def build_context(inventory: APIInventory) -> dict:
             "note": ep.note,
             "sample_fields": [fi.name for fi in schema.values() if fi.common][:5],
         }
+        tool["module"] = STAT_MODULES.get(name, "monitor")
         ctx["stat_tools"].append(tool)
 
     # --- Command endpoints ---
@@ -170,6 +177,7 @@ def build_context(inventory: APIInventory) -> dict:
                 "is_safe_test": is_safe_test,
                 "is_device_dependent": is_device_dependent,
             }
+            tool["module"] = CMD_MODULES.get(key, "admin")
             ctx["cmd_tools"].append(tool)
 
     # --- v2 endpoints ---
@@ -188,6 +196,7 @@ def build_context(inventory: APIInventory) -> dict:
             "writable_fields": _writable_fields(schema),
             "create_hint": V2_CREATE_HINTS.get(name, ""),
         }
+        tool["module"] = V2_MODULES.get(name, "advanced")
         ctx["v2_tools"].append(tool)
 
     # --- Global endpoints ---
@@ -200,6 +209,28 @@ def build_context(inventory: APIInventory) -> dict:
             "skip_test": name in UNTESTABLE_GLOBALS,
         }
         ctx["global_tools"].append(tool)
+
+    # --- Group tools by module for per-module template blocks ---
+    from collections import defaultdict
+
+    rest_by_module: dict[str, list] = defaultdict(list)
+    for t in ctx["rest_tools"]:
+        rest_by_module[t["module"]].append(t)
+    stat_by_module: dict[str, list] = defaultdict(list)
+    for t in ctx["stat_tools"]:
+        stat_by_module[t["module"]].append(t)
+    cmd_by_module: dict[str, list] = defaultdict(list)
+    for t in ctx["cmd_tools"]:
+        cmd_by_module[t["module"]].append(t)
+    v2_by_module: dict[str, list] = defaultdict(list)
+    for t in ctx["v2_tools"]:
+        v2_by_module[t["module"]].append(t)
+
+    ctx["rest_by_module"] = dict(rest_by_module)
+    ctx["stat_by_module"] = dict(stat_by_module)
+    ctx["cmd_by_module"] = dict(cmd_by_module)
+    ctx["v2_by_module"] = dict(v2_by_module)
+    ctx["module_order"] = MODULE_ORDER
 
     # Summary counts
     ctx["tool_count"] = (

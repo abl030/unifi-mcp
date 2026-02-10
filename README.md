@@ -122,15 +122,39 @@ claude mcp add unifi -- \
 
 ### Module Toggle (`UNIFI_MODULES`)
 
-The v2 API endpoints (`/v2/api/...`) only exist on UniFi OS controllers (Dream Machine, Cloud Gateway). On standalone controllers they fail with misleading "connection failed" errors. Use `UNIFI_MODULES` to control which tool groups are registered:
+Control which tool groups are registered at runtime. Use fine-grained modules to load only what you need, reducing noise for the LLM.
+
+**Shortcuts** (backward compatible):
 
 | Value | Tools | Use case |
 |-------|-------|----------|
-| `v1,v2` (default) | 284 | UniFi OS controllers (Dream Machine, Cloud Gateway) |
-| `v1` | 269 | Standalone controllers (no v2 endpoints) |
-| `v2` | 25 | v2 + global tools only |
+| `v1,v2` (default) | 284 | All tools (UniFi OS controllers) |
+| `v1` | 269 | All v1 tools (standalone controllers, no v2 endpoints) |
+| `v2` | 24 | v2 + global tools only |
 
-Global tools (`status`, `self`, `sites`, etc.) and helpers (`set_port_override`, `report_issue`) are always registered regardless of this setting. No regeneration needed — just set the env var.
+**Fine-grained modules** (mix and match):
+
+| Module | Tools | What's included |
+|--------|-------|-----------------|
+| `device` | 33 | Device commands (adopt/restart/upgrade/locate), device stats, port override |
+| `client` | 17 | Client block/kick/forget, user CRUD, client stats, v2 active/history clients |
+| `wifi` | 15 | WLAN configs, WLAN groups, channel plans, v2 AP groups |
+| `network` | 15 | Networks/VLANs, port profiles, DNS records |
+| `firewall` | 42 | Firewall rules/groups, port forwards, routes, DDNS, DHCP, v2 policies/zones/traffic |
+| `monitor` | 34 | All stat endpoints, alarms, events, reports, DPI stats |
+| `admin` | 41 | Settings, user groups, tags, accounts, site/admin mgmt, backup |
+| `hotspot` | 32 | Hotspot ops/packages, Hotspot2, RADIUS, vouchers, guest commands |
+| `advanced` | 46 | Maps, heatmaps, spatial, DPI config, media, schedules, broadcast |
+
+Tool counts above include both v1 and v2 tools for each module. Global tools (9: `status`, `self`, `sites`, etc. + `report_issue`) are always registered regardless of this setting.
+
+**Example**: A standalone controller managing switches and APs:
+
+```bash
+UNIFI_MODULES=device,client,wifi,network,monitor  # 123 tools instead of 284
+```
+
+No regeneration needed — just set the env var.
 
 ## What You Get: 284 Tools
 

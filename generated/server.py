@@ -192,7 +192,7 @@ def _validate_mac(mac: str) -> str | None:
 
 
 # ===========================================================================
-# Error Reporting Tool
+# Error Reporting Tool (always-on)
 # ===========================================================================
 
 
@@ -241,254 +241,11 @@ async def unifi_report_issue(
     )
 
 
-if "v1" in UNIFI_MODULES:
+
+if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     # ===========================================================================
-    # REST Endpoint Tools
+    # Module: device
     # ===========================================================================
-
-    # --- Account CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_accounts(site: str = "") -> str:
-        """List all accounts.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/account", site=site or None)
-        return _format_response(data, f"Found {len(data)} accounts")
-
-
-    @mcp.tool()
-    async def unifi_get_account(id: str, site: str = "") -> str:
-        """Get a single account by ID.
-
-        Args:
-            id: The _id of the account.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/account/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_account(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new account.
-
-        Args:
-            data: Account configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_account", "data": data},
-                "DRY RUN (POST rest/account): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/account", json_data=data, site=site or None)
-        return _format_response(result, "Created account")
-
-
-    @mcp.tool()
-    async def unifi_update_account(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing account.
-
-        Args:
-            id: The _id of the account to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_account", "id": id, "data": data},
-                "DRY RUN (PUT rest/account/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/account/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated account")
-
-
-    @mcp.tool()
-    async def unifi_delete_account(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a account.
-
-        Args:
-            id: The _id of the account to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_account", "id": id},
-                "DRY RUN (DELETE rest/account/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/account/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted account")
-
-
-    # --- Alarm (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_alarms(site: str = "") -> str:
-        """List all alarms.
-
-        Returns alarms from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/alarm", site=site or None)
-        return _format_response(data, f"Found {len(data)} alarms")
-
-
-    # --- Broadcast_group CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_broadcast_groups(site: str = "") -> str:
-        """List all broadcast_groups.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/broadcastgroup", site=site or None)
-        return _format_response(data, f"Found {len(data)} broadcast_groups")
-
-
-    @mcp.tool()
-    async def unifi_get_broadcast_group(id: str, site: str = "") -> str:
-        """Get a single broadcast_group by ID.
-
-        Args:
-            id: The _id of the broadcast_group.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/broadcastgroup/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_broadcast_group(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new broadcast_group.
-
-        Args:
-            data: Broadcast_group configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_broadcast_group", "data": data},
-                "DRY RUN (POST rest/broadcastgroup): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/broadcastgroup", json_data=data, site=site or None)
-        return _format_response(result, "Created broadcast_group")
-
-
-    @mcp.tool()
-    async def unifi_update_broadcast_group(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing broadcast_group.
-
-        Args:
-            id: The _id of the broadcast_group to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_broadcast_group", "id": id, "data": data},
-                "DRY RUN (PUT rest/broadcastgroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/broadcastgroup/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated broadcast_group")
-
-
-    @mcp.tool()
-    async def unifi_delete_broadcast_group(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a broadcast_group.
-
-        Args:
-            id: The _id of the broadcast_group to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_broadcast_group", "id": id},
-                "DRY RUN (DELETE rest/broadcastgroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/broadcastgroup/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted broadcast_group")
-
-
-    # --- Channel_plan (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_channel_plans(site: str = "") -> str:
-        """List all channel_plans.
-
-        Returns channel_plans from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/channelplan", site=site or None)
-        return _format_response(data, f"Found {len(data)} channel_plans")
-
 
     # --- Device_config (read-only) ---
 
@@ -505,99 +262,1561 @@ if "v1" in UNIFI_MODULES:
         return _format_response(data, f"Found {len(data)} device_configs")
 
 
-    # --- Dhcp_option CRUD ---
+
+    # --- Element (read-only) ---
 
     @mcp.tool()
-    async def unifi_list_dhcp_options(site: str = "") -> str:
-        """List all dhcp_options.
+    async def unifi_list_elements(site: str = "") -> str:
+        """List all elements.
+
+        Returns elements from the UniFi controller.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        data = await client.request("GET", "rest/dhcpoption", site=site or None)
-        return _format_response(data, f"Found {len(data)} dhcp_options")
+        data = await client.request("GET", "rest/element", site=site or None)
+        return _format_response(data, f"Found {len(data)} elements")
+
+
+
+    # --- Virtual_device (read-only) ---
+
+    @mcp.tool()
+    async def unifi_list_virtual_devices(site: str = "") -> str:
+        """List all virtual_devices.
+
+        Returns virtual_devices from the UniFi controller.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/virtualdevice", site=site or None)
+        return _format_response(data, f"Found {len(data)} virtual_devices")
+
 
 
     @mcp.tool()
-    async def unifi_get_dhcp_option(id: str, site: str = "") -> str:
-        """Get a single dhcp_option by ID.
+    async def unifi_list_devices(site: str = "") -> str:
+        """List devices statistics.
+
+        Note: also POST with macs filter
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/device", site=site or None)
+        return _format_response(data, f"Found {len(data)} devices records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_devices_basic(site: str = "") -> str:
+        """List devices_basic statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/device-basic", site=site or None)
+        return _format_response(data, f"Found {len(data)} devices_basic records")
+
+
+
+    @mcp.tool()
+    async def unifi_adopt_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'adopt' via devmgr.
 
         Args:
-            id: The _id of the dhcp_option.
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "adopt_device", "cmd": "adopt"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "adopt"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed adopt")
+
+
+
+    @mcp.tool()
+    async def unifi_restart_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'restart' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "restart_device", "cmd": "restart"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "restart"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed restart")
+
+
+
+    @mcp.tool()
+    async def unifi_force_provision_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'force-provision' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "force_provision_device", "cmd": "force-provision"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "force-provision"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed force-provision")
+
+
+
+    @mcp.tool()
+    async def unifi_power_cycle_port(
+        mac: str,
+        port_idx: int,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'power-cycle' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            port_idx: port_idx parameter (int).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "power_cycle_port", "cmd": "power-cycle"}
+            preview["mac"] = mac
+            preview["port_idx"] = port_idx
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "power-cycle"}
+        payload["mac"] = mac
+        payload["port_idx"] = port_idx
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed power-cycle")
+
+
+
+    @mcp.tool()
+    async def unifi_run_speedtest(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'speedtest' via devmgr.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "run_speedtest", "cmd": "speedtest"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "speedtest"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed speedtest")
+
+
+
+    @mcp.tool()
+    async def unifi_get_speedtest_status(
+        site: str = "",
+    ) -> str:
+        """Execute 'speedtest-status' via devmgr.
+
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        payload: dict[str, Any] = {"cmd": "speedtest-status"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed speedtest-status")
+
+
+
+    @mcp.tool()
+    async def unifi_locate_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'set-locate' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "locate_device", "cmd": "set-locate"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "set-locate"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed set-locate")
+
+
+
+    @mcp.tool()
+    async def unifi_unlocate_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'unset-locate' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "unlocate_device", "cmd": "unset-locate"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "unset-locate"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed unset-locate")
+
+
+
+    @mcp.tool()
+    async def unifi_upgrade_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'upgrade' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "upgrade_device", "cmd": "upgrade"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "upgrade"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed upgrade")
+
+
+
+    @mcp.tool()
+    async def unifi_upgrade_device_external(
+        mac: str,
+        url: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'upgrade-external' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            url: url parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "upgrade_device_external", "cmd": "upgrade-external"}
+            preview["mac"] = mac
+            preview["url"] = url
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "upgrade-external"}
+        payload["mac"] = mac
+        payload["url"] = url
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed upgrade-external")
+
+
+
+    @mcp.tool()
+    async def unifi_migrate_device(
+        mac: str,
+        inform_url: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'migrate' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            inform_url: inform_url parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "migrate_device", "cmd": "migrate"}
+            preview["mac"] = mac
+            preview["inform_url"] = inform_url
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "migrate"}
+        payload["mac"] = mac
+        payload["inform_url"] = inform_url
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed migrate")
+
+
+
+    @mcp.tool()
+    async def unifi_cancel_migrate_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'cancel-migrate' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "cancel_migrate_device", "cmd": "cancel-migrate"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "cancel-migrate"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed cancel-migrate")
+
+
+
+    @mcp.tool()
+    async def unifi_spectrum_scan(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'spectrum-scan' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "spectrum_scan", "cmd": "spectrum-scan"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "spectrum-scan"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed spectrum-scan")
+
+
+
+    @mcp.tool()
+    async def unifi_rename_device(
+        mac: str,
+        name: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'rename' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            name: name parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "rename_device", "cmd": "rename"}
+            preview["mac"] = mac
+            preview["name"] = name
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "rename"}
+        payload["mac"] = mac
+        payload["name"] = name
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed rename")
+
+
+
+    @mcp.tool()
+    async def unifi_led_override_device(
+        mac: str,
+        led_override: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'led-override' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            led_override: led_override parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "led_override_device", "cmd": "led-override"}
+            preview["mac"] = mac
+            preview["led_override"] = led_override
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "led-override"}
+        payload["mac"] = mac
+        payload["led_override"] = led_override
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed led-override")
+
+
+
+    @mcp.tool()
+    async def unifi_disable_ap(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'disable-ap' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "disable_ap", "cmd": "disable-ap"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "disable-ap"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed disable-ap")
+
+
+
+    @mcp.tool()
+    async def unifi_upgrade_all_devices(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'upgrade-all-devices' via devmgr.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "upgrade_all_devices", "cmd": "upgrade-all-devices"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "upgrade-all-devices"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed upgrade-all-devices")
+
+
+
+    @mcp.tool()
+    async def unifi_advanced_adopt_device(
+        mac: str,
+        url: str,
+        key: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'advanced-adopt' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            url: url parameter (str).
+        Args:
+            key: key parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "advanced_adopt_device", "cmd": "advanced-adopt"}
+            preview["mac"] = mac
+            preview["url"] = url
+            preview["key"] = key
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "advanced-adopt"}
+        payload["mac"] = mac
+        payload["url"] = url
+        payload["key"] = key
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed advanced-adopt")
+
+
+
+    @mcp.tool()
+    async def unifi_restart_http_portal(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'restart-http-portal' via devmgr.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "restart_http_portal", "cmd": "restart-http-portal"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "restart-http-portal"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed restart-http-portal")
+
+
+
+    @mcp.tool()
+    async def unifi_enable_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'enable' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "enable_device", "cmd": "enable"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "enable"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed enable")
+
+
+
+    @mcp.tool()
+    async def unifi_disable_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'disable' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "disable_device", "cmd": "disable"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "disable"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed disable")
+
+
+
+    @mcp.tool()
+    async def unifi_cable_test(
+        mac: str,
+        port_idx: int,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'cable-test' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            port_idx: port_idx parameter (int).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "cable_test", "cmd": "cable-test"}
+            preview["mac"] = mac
+            preview["port_idx"] = port_idx
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "cable-test"}
+        payload["mac"] = mac
+        payload["port_idx"] = port_idx
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed cable-test")
+
+
+
+    @mcp.tool()
+    async def unifi_set_inform_device(
+        mac: str,
+        inform_url: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'set-inform' via devmgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            inform_url: inform_url parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "set_inform_device", "cmd": "set-inform"}
+            preview["mac"] = mac
+            preview["inform_url"] = inform_url
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "set-inform"}
+        payload["mac"] = mac
+        payload["inform_url"] = inform_url
+        client = await _get_client()
+        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed set-inform")
+
+
+
+    @mcp.tool()
+    async def unifi_move_device(
+        mac: str,
+        target_site: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'move-device' via sitemgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            target_site: Target site for the command (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "move_device", "cmd": "move-device"}
+            preview["mac"] = mac
+            preview["site"] = target_site
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "move-device"}
+        payload["mac"] = mac
+        payload["site"] = target_site
+        client = await _get_client()
+        result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed move-device")
+
+
+
+    @mcp.tool()
+    async def unifi_delete_device(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'delete-device' via sitemgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "delete_device", "cmd": "delete-device"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "delete-device"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed delete-device")
+
+
+
+    @mcp.tool()
+    async def unifi_reboot_cloudkey(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'reboot-cloudkey' via system.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "reboot_cloudkey", "cmd": "reboot-cloudkey"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/system): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "reboot-cloudkey"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/system", json_data=payload, site=site or None)
+        return _format_response(result, "Executed reboot-cloudkey")
+
+
+
+    @mcp.tool()
+    async def unifi_element_adoption(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'element-adoption' via system.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "element_adoption", "cmd": "element-adoption"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/system): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "element-adoption"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/system", json_data=payload, site=site or None)
+        return _format_response(result, "Executed element-adoption")
+
+
+
+    # ===========================================================================
+    # Special: Port Override Helper
+    # ===========================================================================
+
+    @mcp.tool()
+    async def unifi_set_port_override(
+        device_id: str,
+        port_idx: int,
+        portconf_id: str = "",
+        name: str = "",
+        native_networkconf_id: str = "",
+        forward: str = "",
+        poe_mode: str = "",
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Set port override on a device (switch port configuration).
+
+        This updates a specific port on a UniFi switch device.
+
+        Args:
+            device_id: The _id of the device.
+            port_idx: Port number (1-based).
+            portconf_id: Port profile ID to apply (from rest/portconf).
+            name: Custom port name.
+            native_networkconf_id: Network ID for native VLAN.
+            forward: Forward mode ('all', 'customize', 'disabled').
+            poe_mode: PoE mode ('auto', 'off', 'pasv24', 'passthrough').
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        override: dict[str, Any] = {"port_idx": port_idx}
+        if portconf_id:
+            override["portconf_id"] = portconf_id
+        if name:
+            override["name"] = name
+        if native_networkconf_id:
+            override["native_networkconf_id"] = native_networkconf_id
+        if forward:
+            override["forward"] = forward
+        if poe_mode:
+            override["poe_mode"] = poe_mode
+
+        if not confirm:
+            return _format_response(
+                {"action": "set_port_override", "device_id": device_id, "override": override},
+                "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
+            )
+
+        client = await _get_client()
+        # First get current device to preserve existing overrides
+        device_data = await client.request("GET", f"rest/device/{device_id}", site=site or None)
+        if isinstance(device_data, list) and device_data:
+            device_data = device_data[0]
+
+        existing_overrides = []
+        if isinstance(device_data, dict):
+            existing_overrides = device_data.get("port_overrides", [])
+
+        # Replace or append override for this port_idx
+        new_overrides = [o for o in existing_overrides if o.get("port_idx") != port_idx]
+        new_overrides.append(override)
+
+        result = await client.request(
+            "PUT",
+            f"rest/device/{device_id}",
+            json_data={"port_overrides": new_overrides},
+            site=site or None,
+        )
+        return _format_response(result, f"Set port override on port {port_idx}")
+
+
+if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: client
+    # ===========================================================================
+
+    # --- User CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_users(site: str = "") -> str:
+        """List all users.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/user", site=site or None)
+        return _format_response(data, f"Found {len(data)} users")
+
+
+    @mcp.tool()
+    async def unifi_get_user(id: str, site: str = "") -> str:
+        """Get a single user by ID.
+
+        Args:
+            id: The _id of the user.
             site: Site name (default: from env).
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        data = await client.request("GET", "rest/dhcpoption/{id}".format(id=id), site=site or None)
+        data = await client.request("GET", "rest/user/{id}".format(id=id), site=site or None)
         if isinstance(data, list) and len(data) == 1:
             return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_create_dhcp_option(
+    async def unifi_create_user(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Create a new dhcp_option.
+        """Create a new user.
 
         Args:
-            data: Dhcp_option configuration.
-                Required: name (str), code (int, DHCP option number 7-254 excluding reserved: 15,42,43,44,51,66,67,252), value (str). Note: May require a DHCP-enabled network with gateway device.
+            data: User configuration.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
+
+        Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         if not confirm:
             return _format_response(
-                {"action": "create_dhcp_option", "data": data},
-                "DRY RUN (POST rest/dhcpoption): Set confirm=True to execute.",
+                {"action": "create_user", "data": data},
+                "DRY RUN (POST rest/user): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("POST", "rest/dhcpoption", json_data=data, site=site or None)
-        return _format_response(result, "Created dhcp_option")
+        result = await client.request("POST", "rest/user", json_data=data, site=site or None)
+        return _format_response(result, "Created user")
 
 
     @mcp.tool()
-    async def unifi_update_dhcp_option(
+    async def unifi_update_user(
         id: str,
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update an existing dhcp_option.
+        """Update an existing user.
 
         Args:
-            id: The _id of the dhcp_option to update.
+            id: The _id of the user to update.
             data: Fields to update.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
+        Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.
+
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         if not confirm:
             return _format_response(
-                {"action": "update_dhcp_option", "id": id, "data": data},
-                "DRY RUN (PUT rest/dhcpoption/{id}): Set confirm=True to execute.",
+                {"action": "update_user", "id": id, "data": data},
+                "DRY RUN (PUT rest/user/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("PUT", "rest/dhcpoption/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated dhcp_option")
+        result = await client.request("PUT", "rest/user/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated user")
+
+
 
 
     @mcp.tool()
-    async def unifi_delete_dhcp_option(
+    async def unifi_list_all_users(site: str = "") -> str:
+        """List all_users statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/alluser", site=site or None)
+        return _format_response(data, f"Found {len(data)} all_users records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_guests(site: str = "") -> str:
+        """List guests statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/guest", site=site or None)
+        return _format_response(data, f"Found {len(data)} guests records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_sessions(site: str = "") -> str:
+        """List sessions statistics.
+
+        Note: requires POST with {"type":"all","start":0,"end":9999999999}
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/session", json_data={'type': 'all', 'start': 0, 'end': 9999999999}, site=site or None)
+        return _format_response(data, f"Found {len(data)} sessions records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_clients(site: str = "") -> str:
+        """List clients statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/sta", site=site or None)
+        return _format_response(data, f"Found {len(data)} clients records")
+
+
+
+    @mcp.tool()
+    async def unifi_block_client(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'block-sta' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "block_client", "cmd": "block-sta"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "block-sta"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed block-sta")
+
+
+
+    @mcp.tool()
+    async def unifi_unblock_client(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'unblock-sta' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "unblock_client", "cmd": "unblock-sta"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "unblock-sta"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed unblock-sta")
+
+
+
+    @mcp.tool()
+    async def unifi_kick_client(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'kick-sta' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "kick_client", "cmd": "kick-sta"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "kick-sta"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed kick-sta")
+
+
+
+    @mcp.tool()
+    async def unifi_forget_client(
+        macs: list,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'forget-sta' via stamgr.
+
+        Args:
+            macs: macs parameter (list).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "forget_client", "cmd": "forget-sta"}
+            preview["macs"] = macs
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "forget-sta"}
+        payload["macs"] = macs
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed forget-sta")
+
+
+
+    @mcp.tool()
+    async def unifi_unauthorize_guest(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'unauthorize-guest' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "unauthorize_guest", "cmd": "unauthorize-guest"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "unauthorize-guest"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed unauthorize-guest")
+
+
+
+    @mcp.tool()
+    async def unifi_authorize_guest(
+        mac: str,
+        minutes: int,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'authorize-guest' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            minutes: minutes parameter (int).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "authorize_guest", "cmd": "authorize-guest"}
+            preview["mac"] = mac
+            preview["minutes"] = minutes
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "authorize-guest"}
+        payload["mac"] = mac
+        payload["minutes"] = minutes
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed authorize-guest")
+
+
+
+    @mcp.tool()
+    async def unifi_reconnect_client(
+        mac: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'reconnect-sta' via stamgr.
+
+        Args:
+            mac: mac parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "reconnect_client", "cmd": "reconnect-sta"}
+            preview["mac"] = mac
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "reconnect-sta"}
+        payload["mac"] = mac
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed reconnect-sta")
+
+
+
+if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
+    
+    # --- v2: Active_client ---
+
+    @mcp.tool()
+    async def unifi_list_active_clients(site: str = "") -> str:
+        """List all active_clients (v2 API).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/clients/active".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} active_clients")
+        return _format_response(data)
+
+
+
+    # --- v2: Client_history ---
+
+    @mcp.tool()
+    async def unifi_list_clients_history(site: str = "") -> str:
+        """List all clients_history (v2 API).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/clients/history".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} clients_history")
+        return _format_response(data)
+
+
+
+if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: wifi
+    # ===========================================================================
+
+    # --- Channel_plan (read-only) ---
+
+    @mcp.tool()
+    async def unifi_list_channel_plans(site: str = "") -> str:
+        """List all channel_plans.
+
+        Returns channel_plans from the UniFi controller.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/channelplan", site=site or None)
+        return _format_response(data, f"Found {len(data)} channel_plans")
+
+
+
+    # --- Wlan CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_wlans(site: str = "") -> str:
+        """List all wlans.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/wlanconf", site=site or None)
+        return _format_response(data, f"Found {len(data)} wlans")
+
+
+    @mcp.tool()
+    async def unifi_get_wlan(id: str, site: str = "") -> str:
+        """Get a single wlan by ID.
+
+        Args:
+            id: The _id of the wlan.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/wlanconf/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_wlan(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new wlan.
+
+        Args:
+            data: Wlan configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_wlan", "data": data},
+                "DRY RUN (POST rest/wlanconf): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/wlanconf", json_data=data, site=site or None)
+        return _format_response(result, "Created wlan")
+
+
+    @mcp.tool()
+    async def unifi_update_wlan(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing wlan.
+
+        Args:
+            id: The _id of the wlan to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_wlan", "id": id, "data": data},
+                "DRY RUN (PUT rest/wlanconf/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/wlanconf/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated wlan")
+
+
+    @mcp.tool()
+    async def unifi_delete_wlan(
         id: str,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Delete a dhcp_option.
+        """Delete a wlan.
 
         Args:
-            id: The _id of the dhcp_option to delete.
+            id: The _id of the wlan to delete.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -605,13 +1824,192 @@ if "v1" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "delete_dhcp_option", "id": id},
-                "DRY RUN (DELETE rest/dhcpoption/{id}): Set confirm=True to execute.",
+                {"action": "delete_wlan", "id": id},
+                "DRY RUN (DELETE rest/wlanconf/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("DELETE", "rest/dhcpoption/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted dhcp_option")
+        result = await client.request("DELETE", "rest/wlanconf/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted wlan")
 
+
+
+    # --- Wlan_group CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_wlan_groups(site: str = "") -> str:
+        """List all wlan_groups.
+
+        Key fields: name (str)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/wlangroup", site=site or None)
+        return _format_response(data, f"Found {len(data)} wlan_groups")
+
+
+    @mcp.tool()
+    async def unifi_get_wlan_group(id: str, site: str = "") -> str:
+        """Get a single wlan_group by ID.
+
+        Args:
+            id: The _id of the wlan_group.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/wlangroup/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_wlan_group(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new wlan_group.
+
+        Args:
+            data: Wlan_group configuration.
+                Fields: name (str)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_wlan_group", "data": data},
+                "DRY RUN (POST rest/wlangroup): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/wlangroup", json_data=data, site=site or None)
+        return _format_response(result, "Created wlan_group")
+
+
+    @mcp.tool()
+    async def unifi_update_wlan_group(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing wlan_group.
+
+        Args:
+            id: The _id of the wlan_group to update.
+            data: Fields to update.
+                Fields: name (str)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_wlan_group", "id": id, "data": data},
+                "DRY RUN (PUT rest/wlangroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/wlangroup/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated wlan_group")
+
+
+    @mcp.tool()
+    async def unifi_delete_wlan_group(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a wlan_group.
+
+        Args:
+            id: The _id of the wlan_group to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_wlan_group", "id": id},
+                "DRY RUN (DELETE rest/wlangroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/wlangroup/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted wlan_group")
+
+
+
+    @mcp.tool()
+    async def unifi_list_country_codes(site: str = "") -> str:
+        """List country_codes statistics.
+
+        Key fields: code, key, name
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/ccode", site=site or None)
+        return _format_response(data, f"Found {len(data)} country_codes records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_current_channels(site: str = "") -> str:
+        """List current_channels statistics.
+
+        Key fields: afc, channels_6e, channels_6e_160, channels_6e_320, channels_6e_40
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/current-channel", site=site or None)
+        return _format_response(data, f"Found {len(data)} current_channels records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_spectrum_scans(site: str = "") -> str:
+        """List spectrum_scans statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/spectrum-scan", site=site or None)
+        return _format_response(data, f"Found {len(data)} spectrum_scans records")
+
+
+
+if "wifi" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
+    
+    # --- v2: Ap_group ---
+
+    @mcp.tool()
+    async def unifi_list_ap_groups(site: str = "") -> str:
+        """List all ap_groups (v2 API).
+
+        Key fields: device_macs (list), for_wlanconf (bool), name (str)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/apgroups".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} ap_groups")
+        return _format_response(data)
+
+
+
+if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: network
+    # ===========================================================================
 
     # --- Dns_record CRUD ---
 
@@ -719,1334 +2117,6 @@ if "v1" in UNIFI_MODULES:
         result = await client.request("DELETE", "rest/dnsrecord/{id}".format(id=id), site=site or None)
         return _format_response(result, "Deleted dns_record")
 
-
-    # --- Dpi_app CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_dpi_apps(site: str = "") -> str:
-        """List all dpi_apps.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dpiapp", site=site or None)
-        return _format_response(data, f"Found {len(data)} dpi_apps")
-
-
-    @mcp.tool()
-    async def unifi_get_dpi_app(id: str, site: str = "") -> str:
-        """Get a single dpi_app by ID.
-
-        Args:
-            id: The _id of the dpi_app.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dpiapp/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_dpi_app(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new dpi_app.
-
-        Args:
-            data: Dpi_app configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_dpi_app", "data": data},
-                "DRY RUN (POST rest/dpiapp): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/dpiapp", json_data=data, site=site or None)
-        return _format_response(result, "Created dpi_app")
-
-
-    @mcp.tool()
-    async def unifi_update_dpi_app(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing dpi_app.
-
-        Args:
-            id: The _id of the dpi_app to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_dpi_app", "id": id, "data": data},
-                "DRY RUN (PUT rest/dpiapp/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/dpiapp/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated dpi_app")
-
-
-    @mcp.tool()
-    async def unifi_delete_dpi_app(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a dpi_app.
-
-        Args:
-            id: The _id of the dpi_app to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_dpi_app", "id": id},
-                "DRY RUN (DELETE rest/dpiapp/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/dpiapp/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted dpi_app")
-
-
-    # --- Dpi_group CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_dpi_groups(site: str = "") -> str:
-        """List all dpi_groups.
-
-        Key fields: name (str)
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dpigroup", site=site or None)
-        return _format_response(data, f"Found {len(data)} dpi_groups")
-
-
-    @mcp.tool()
-    async def unifi_get_dpi_group(id: str, site: str = "") -> str:
-        """Get a single dpi_group by ID.
-
-        Args:
-            id: The _id of the dpi_group.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dpigroup/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_dpi_group(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new dpi_group.
-
-        Args:
-            data: Dpi_group configuration.
-                Fields: name (str)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_dpi_group", "data": data},
-                "DRY RUN (POST rest/dpigroup): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/dpigroup", json_data=data, site=site or None)
-        return _format_response(result, "Created dpi_group")
-
-
-    @mcp.tool()
-    async def unifi_update_dpi_group(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing dpi_group.
-
-        Args:
-            id: The _id of the dpi_group to update.
-            data: Fields to update.
-                Fields: name (str)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_dpi_group", "id": id, "data": data},
-                "DRY RUN (PUT rest/dpigroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/dpigroup/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated dpi_group")
-
-
-    @mcp.tool()
-    async def unifi_delete_dpi_group(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a dpi_group.
-
-        Args:
-            id: The _id of the dpi_group to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_dpi_group", "id": id},
-                "DRY RUN (DELETE rest/dpigroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/dpigroup/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted dpi_group")
-
-
-    # --- Dynamic_dns CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_dynamic_dns_entries(site: str = "") -> str:
-        """List all dynamic_dns_entries.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dynamicdns", site=site or None)
-        return _format_response(data, f"Found {len(data)} dynamic_dns_entries")
-
-
-    @mcp.tool()
-    async def unifi_get_dynamic_dns(id: str, site: str = "") -> str:
-        """Get a single dynamic_dns by ID.
-
-        Args:
-            id: The _id of the dynamic_dns.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/dynamicdns/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_dynamic_dns(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new dynamic_dns.
-
-        Args:
-            data: Dynamic_dns configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_dynamic_dns", "data": data},
-                "DRY RUN (POST rest/dynamicdns): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/dynamicdns", json_data=data, site=site or None)
-        return _format_response(result, "Created dynamic_dns")
-
-
-    @mcp.tool()
-    async def unifi_update_dynamic_dns(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing dynamic_dns.
-
-        Args:
-            id: The _id of the dynamic_dns to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_dynamic_dns", "id": id, "data": data},
-                "DRY RUN (PUT rest/dynamicdns/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/dynamicdns/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated dynamic_dns")
-
-
-    @mcp.tool()
-    async def unifi_delete_dynamic_dns(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a dynamic_dns.
-
-        Args:
-            id: The _id of the dynamic_dns to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_dynamic_dns", "id": id},
-                "DRY RUN (DELETE rest/dynamicdns/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/dynamicdns/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted dynamic_dns")
-
-
-    # --- Element (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_elements(site: str = "") -> str:
-        """List all elements.
-
-        Returns elements from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/element", site=site or None)
-        return _format_response(data, f"Found {len(data)} elements")
-
-
-    # --- Event (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_events(site: str = "") -> str:
-        """List all events.
-
-        Returns events from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/event", site=site or None)
-        return _format_response(data, f"Found {len(data)} events")
-
-
-    # --- Firewall_group CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_firewall_groups(site: str = "") -> str:
-        """List all firewall_groups.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/firewallgroup", site=site or None)
-        return _format_response(data, f"Found {len(data)} firewall_groups")
-
-
-    @mcp.tool()
-    async def unifi_get_firewall_group(id: str, site: str = "") -> str:
-        """Get a single firewall_group by ID.
-
-        Args:
-            id: The _id of the firewall_group.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/firewallgroup/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_firewall_group(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new firewall_group.
-
-        Args:
-            data: Firewall_group configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_firewall_group", "data": data},
-                "DRY RUN (POST rest/firewallgroup): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/firewallgroup", json_data=data, site=site or None)
-        return _format_response(result, "Created firewall_group")
-
-
-    @mcp.tool()
-    async def unifi_update_firewall_group(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing firewall_group.
-
-        Args:
-            id: The _id of the firewall_group to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_firewall_group", "id": id, "data": data},
-                "DRY RUN (PUT rest/firewallgroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/firewallgroup/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated firewall_group")
-
-
-    @mcp.tool()
-    async def unifi_delete_firewall_group(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a firewall_group.
-
-        Args:
-            id: The _id of the firewall_group to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_firewall_group", "id": id},
-                "DRY RUN (DELETE rest/firewallgroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/firewallgroup/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted firewall_group")
-
-
-    # --- Firewall_rule CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_firewall_rules(site: str = "") -> str:
-        """List all firewall_rules.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/firewallrule", site=site or None)
-        return _format_response(data, f"Found {len(data)} firewall_rules")
-
-
-    @mcp.tool()
-    async def unifi_get_firewall_rule(id: str, site: str = "") -> str:
-        """Get a single firewall_rule by ID.
-
-        Args:
-            id: The _id of the firewall_rule.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/firewallrule/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_firewall_rule(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new firewall_rule.
-
-        Args:
-            data: Firewall_rule configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_firewall_rule", "data": data},
-                "DRY RUN (POST rest/firewallrule): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/firewallrule", json_data=data, site=site or None)
-        return _format_response(result, "Created firewall_rule")
-
-
-    @mcp.tool()
-    async def unifi_update_firewall_rule(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing firewall_rule.
-
-        Args:
-            id: The _id of the firewall_rule to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_firewall_rule", "id": id, "data": data},
-                "DRY RUN (PUT rest/firewallrule/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/firewallrule/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated firewall_rule")
-
-
-    @mcp.tool()
-    async def unifi_delete_firewall_rule(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a firewall_rule.
-
-        Args:
-            id: The _id of the firewall_rule to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_firewall_rule", "id": id},
-                "DRY RUN (DELETE rest/firewallrule/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/firewallrule/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted firewall_rule")
-
-
-    # --- Heatmap CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_heatmaps(site: str = "") -> str:
-        """List all heatmaps.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/heatmap", site=site or None)
-        return _format_response(data, f"Found {len(data)} heatmaps")
-
-
-    @mcp.tool()
-    async def unifi_get_heatmap(id: str, site: str = "") -> str:
-        """Get a single heatmap by ID.
-
-        Args:
-            id: The _id of the heatmap.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/heatmap/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_heatmap(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new heatmap.
-
-        Args:
-            data: Heatmap configuration.
-                Required: name (str), map_id (str, _id from unifi_list_maps)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_heatmap", "data": data},
-                "DRY RUN (POST rest/heatmap): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/heatmap", json_data=data, site=site or None)
-        return _format_response(result, "Created heatmap")
-
-
-    @mcp.tool()
-    async def unifi_update_heatmap(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing heatmap.
-
-        Args:
-            id: The _id of the heatmap to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_heatmap", "id": id, "data": data},
-                "DRY RUN (PUT rest/heatmap/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/heatmap/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated heatmap")
-
-
-    @mcp.tool()
-    async def unifi_delete_heatmap(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a heatmap.
-
-        Args:
-            id: The _id of the heatmap to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_heatmap", "id": id},
-                "DRY RUN (DELETE rest/heatmap/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/heatmap/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted heatmap")
-
-
-    # --- Heatmap_point CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_heatmap_points(site: str = "") -> str:
-        """List all heatmap_points.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/heatmappoint", site=site or None)
-        return _format_response(data, f"Found {len(data)} heatmap_points")
-
-
-    @mcp.tool()
-    async def unifi_get_heatmap_point(id: str, site: str = "") -> str:
-        """Get a single heatmap_point by ID.
-
-        Args:
-            id: The _id of the heatmap_point.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/heatmappoint/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_heatmap_point(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new heatmap_point.
-
-        Args:
-            data: Heatmap_point configuration.
-                Required: heatmap_id (str, _id from unifi_list_heatmaps), x (float, 0.0–1.0), y (float, 0.0–1.0)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_heatmap_point", "data": data},
-                "DRY RUN (POST rest/heatmappoint): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/heatmappoint", json_data=data, site=site or None)
-        return _format_response(result, "Created heatmap_point")
-
-
-    @mcp.tool()
-    async def unifi_update_heatmap_point(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing heatmap_point.
-
-        Args:
-            id: The _id of the heatmap_point to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_heatmap_point", "id": id, "data": data},
-                "DRY RUN (PUT rest/heatmappoint/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/heatmappoint/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated heatmap_point")
-
-
-    @mcp.tool()
-    async def unifi_delete_heatmap_point(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a heatmap_point.
-
-        Args:
-            id: The _id of the heatmap_point to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_heatmap_point", "id": id},
-                "DRY RUN (DELETE rest/heatmappoint/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/heatmappoint/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted heatmap_point")
-
-
-    # --- Hotspot2_config CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_hotspot2_configs(site: str = "") -> str:
-        """List all hotspot2_configs.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspot2conf", site=site or None)
-        return _format_response(data, f"Found {len(data)} hotspot2_configs")
-
-
-    @mcp.tool()
-    async def unifi_get_hotspot2_config(id: str, site: str = "") -> str:
-        """Get a single hotspot2_config by ID.
-
-        Args:
-            id: The _id of the hotspot2_config.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspot2conf/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_hotspot2_config(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new hotspot2_config.
-
-        Args:
-            data: Hotspot2_config configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_hotspot2_config", "data": data},
-                "DRY RUN (POST rest/hotspot2conf): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/hotspot2conf", json_data=data, site=site or None)
-        return _format_response(result, "Created hotspot2_config")
-
-
-    @mcp.tool()
-    async def unifi_update_hotspot2_config(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing hotspot2_config.
-
-        Args:
-            id: The _id of the hotspot2_config to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_hotspot2_config", "id": id, "data": data},
-                "DRY RUN (PUT rest/hotspot2conf/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/hotspot2conf/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated hotspot2_config")
-
-
-    @mcp.tool()
-    async def unifi_delete_hotspot2_config(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a hotspot2_config.
-
-        Args:
-            id: The _id of the hotspot2_config to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_hotspot2_config", "id": id},
-                "DRY RUN (DELETE rest/hotspot2conf/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/hotspot2conf/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted hotspot2_config")
-
-
-    # --- Hotspot_operator CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_hotspot_operators(site: str = "") -> str:
-        """List all hotspot_operators.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspotop", site=site or None)
-        return _format_response(data, f"Found {len(data)} hotspot_operators")
-
-
-    @mcp.tool()
-    async def unifi_get_hotspot_operator(id: str, site: str = "") -> str:
-        """Get a single hotspot_operator by ID.
-
-        Args:
-            id: The _id of the hotspot_operator.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspotop/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_hotspot_operator(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new hotspot_operator.
-
-        Args:
-            data: Hotspot_operator configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_hotspot_operator", "data": data},
-                "DRY RUN (POST rest/hotspotop): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/hotspotop", json_data=data, site=site or None)
-        return _format_response(result, "Created hotspot_operator")
-
-
-    @mcp.tool()
-    async def unifi_update_hotspot_operator(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing hotspot_operator.
-
-        Args:
-            id: The _id of the hotspot_operator to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_hotspot_operator", "id": id, "data": data},
-                "DRY RUN (PUT rest/hotspotop/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/hotspotop/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated hotspot_operator")
-
-
-    @mcp.tool()
-    async def unifi_delete_hotspot_operator(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a hotspot_operator.
-
-        Args:
-            id: The _id of the hotspot_operator to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_hotspot_operator", "id": id},
-                "DRY RUN (DELETE rest/hotspotop/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/hotspotop/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted hotspot_operator")
-
-
-    # --- Hotspot_package CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_hotspot_packages(site: str = "") -> str:
-        """List all hotspot_packages.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspotpackage", site=site or None)
-        return _format_response(data, f"Found {len(data)} hotspot_packages")
-
-
-    @mcp.tool()
-    async def unifi_get_hotspot_package(id: str, site: str = "") -> str:
-        """Get a single hotspot_package by ID.
-
-        Args:
-            id: The _id of the hotspot_package.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/hotspotpackage/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_hotspot_package(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new hotspot_package.
-
-        Args:
-            data: Hotspot_package configuration.
-                Required: name (str), amount (int, price in cents, 0=free), currency (str, e.g. 'USD'), hours (int, access duration in hours), bytes (int, bandwidth limit, 0=unlimited). Note: Requires hotspot portal + payment gateway configured on the controller.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_hotspot_package", "data": data},
-                "DRY RUN (POST rest/hotspotpackage): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/hotspotpackage", json_data=data, site=site or None)
-        return _format_response(result, "Created hotspot_package")
-
-
-    @mcp.tool()
-    async def unifi_update_hotspot_package(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing hotspot_package.
-
-        Args:
-            id: The _id of the hotspot_package to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_hotspot_package", "id": id, "data": data},
-                "DRY RUN (PUT rest/hotspotpackage/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/hotspotpackage/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated hotspot_package")
-
-
-    @mcp.tool()
-    async def unifi_delete_hotspot_package(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a hotspot_package.
-
-        Args:
-            id: The _id of the hotspot_package to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_hotspot_package", "id": id},
-                "DRY RUN (DELETE rest/hotspotpackage/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/hotspotpackage/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted hotspot_package")
-
-
-    # --- Map CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_maps(site: str = "") -> str:
-        """List all maps.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/map", site=site or None)
-        return _format_response(data, f"Found {len(data)} maps")
-
-
-    @mcp.tool()
-    async def unifi_get_map(id: str, site: str = "") -> str:
-        """Get a single map by ID.
-
-        Args:
-            id: The _id of the map.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/map/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_map(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new map.
-
-        Args:
-            data: Map configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_map", "data": data},
-                "DRY RUN (POST rest/map): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/map", json_data=data, site=site or None)
-        return _format_response(result, "Created map")
-
-
-    @mcp.tool()
-    async def unifi_update_map(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing map.
-
-        Args:
-            id: The _id of the map to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_map", "id": id, "data": data},
-                "DRY RUN (PUT rest/map/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/map/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated map")
-
-
-    @mcp.tool()
-    async def unifi_delete_map(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a map.
-
-        Args:
-            id: The _id of the map to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_map", "id": id},
-                "DRY RUN (DELETE rest/map/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/map/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted map")
-
-
-    # --- Media_file CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_media_files(site: str = "") -> str:
-        """List all media_files.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/mediafile", site=site or None)
-        return _format_response(data, f"Found {len(data)} media_files")
-
-
-    @mcp.tool()
-    async def unifi_get_media_file(id: str, site: str = "") -> str:
-        """Get a single media_file by ID.
-
-        Args:
-            id: The _id of the media_file.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/mediafile/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_media_file(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new media_file.
-
-        Args:
-            data: Media_file configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_media_file", "data": data},
-                "DRY RUN (POST rest/mediafile): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/mediafile", json_data=data, site=site or None)
-        return _format_response(result, "Created media_file")
-
-
-    @mcp.tool()
-    async def unifi_update_media_file(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing media_file.
-
-        Args:
-            id: The _id of the media_file to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_media_file", "id": id, "data": data},
-                "DRY RUN (PUT rest/mediafile/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/mediafile/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated media_file")
-
-
-    @mcp.tool()
-    async def unifi_delete_media_file(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a media_file.
-
-        Args:
-            id: The _id of the media_file to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_media_file", "id": id},
-                "DRY RUN (DELETE rest/mediafile/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/mediafile/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted media_file")
 
 
     # --- Network CRUD ---
@@ -2164,6 +2234,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Deleted network")
 
 
+
     # --- Port_profile CRUD ---
 
     @mcp.tool()
@@ -2273,6 +2344,453 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("DELETE", "rest/portconf/{id}".format(id=id), site=site or None)
         return _format_response(result, "Deleted port_profile")
+
+
+
+if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: firewall
+    # ===========================================================================
+
+    # --- Dhcp_option CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_dhcp_options(site: str = "") -> str:
+        """List all dhcp_options.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dhcpoption", site=site or None)
+        return _format_response(data, f"Found {len(data)} dhcp_options")
+
+
+    @mcp.tool()
+    async def unifi_get_dhcp_option(id: str, site: str = "") -> str:
+        """Get a single dhcp_option by ID.
+
+        Args:
+            id: The _id of the dhcp_option.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dhcpoption/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_dhcp_option(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new dhcp_option.
+
+        Args:
+            data: Dhcp_option configuration.
+                Required: name (str), code (int, DHCP option number 7-254 excluding reserved: 15,42,43,44,51,66,67,252), value (str). Note: May require a DHCP-enabled network with gateway device.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_dhcp_option", "data": data},
+                "DRY RUN (POST rest/dhcpoption): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/dhcpoption", json_data=data, site=site or None)
+        return _format_response(result, "Created dhcp_option")
+
+
+    @mcp.tool()
+    async def unifi_update_dhcp_option(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing dhcp_option.
+
+        Args:
+            id: The _id of the dhcp_option to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_dhcp_option", "id": id, "data": data},
+                "DRY RUN (PUT rest/dhcpoption/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/dhcpoption/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated dhcp_option")
+
+
+    @mcp.tool()
+    async def unifi_delete_dhcp_option(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a dhcp_option.
+
+        Args:
+            id: The _id of the dhcp_option to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_dhcp_option", "id": id},
+                "DRY RUN (DELETE rest/dhcpoption/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/dhcpoption/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted dhcp_option")
+
+
+
+    # --- Dynamic_dns CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_dynamic_dns_entries(site: str = "") -> str:
+        """List all dynamic_dns_entries.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dynamicdns", site=site or None)
+        return _format_response(data, f"Found {len(data)} dynamic_dns_entries")
+
+
+    @mcp.tool()
+    async def unifi_get_dynamic_dns(id: str, site: str = "") -> str:
+        """Get a single dynamic_dns by ID.
+
+        Args:
+            id: The _id of the dynamic_dns.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dynamicdns/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_dynamic_dns(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new dynamic_dns.
+
+        Args:
+            data: Dynamic_dns configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_dynamic_dns", "data": data},
+                "DRY RUN (POST rest/dynamicdns): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/dynamicdns", json_data=data, site=site or None)
+        return _format_response(result, "Created dynamic_dns")
+
+
+    @mcp.tool()
+    async def unifi_update_dynamic_dns(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing dynamic_dns.
+
+        Args:
+            id: The _id of the dynamic_dns to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_dynamic_dns", "id": id, "data": data},
+                "DRY RUN (PUT rest/dynamicdns/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/dynamicdns/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated dynamic_dns")
+
+
+    @mcp.tool()
+    async def unifi_delete_dynamic_dns(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a dynamic_dns.
+
+        Args:
+            id: The _id of the dynamic_dns to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_dynamic_dns", "id": id},
+                "DRY RUN (DELETE rest/dynamicdns/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/dynamicdns/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted dynamic_dns")
+
+
+
+    # --- Firewall_group CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_firewall_groups(site: str = "") -> str:
+        """List all firewall_groups.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/firewallgroup", site=site or None)
+        return _format_response(data, f"Found {len(data)} firewall_groups")
+
+
+    @mcp.tool()
+    async def unifi_get_firewall_group(id: str, site: str = "") -> str:
+        """Get a single firewall_group by ID.
+
+        Args:
+            id: The _id of the firewall_group.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/firewallgroup/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_firewall_group(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new firewall_group.
+
+        Args:
+            data: Firewall_group configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_firewall_group", "data": data},
+                "DRY RUN (POST rest/firewallgroup): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/firewallgroup", json_data=data, site=site or None)
+        return _format_response(result, "Created firewall_group")
+
+
+    @mcp.tool()
+    async def unifi_update_firewall_group(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing firewall_group.
+
+        Args:
+            id: The _id of the firewall_group to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Reference this group's _id in src_firewallgroup_ids or dst_firewallgroup_ids when creating firewall rules.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_firewall_group", "id": id, "data": data},
+                "DRY RUN (PUT rest/firewallgroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/firewallgroup/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated firewall_group")
+
+
+    @mcp.tool()
+    async def unifi_delete_firewall_group(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a firewall_group.
+
+        Args:
+            id: The _id of the firewall_group to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_firewall_group", "id": id},
+                "DRY RUN (DELETE rest/firewallgroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/firewallgroup/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted firewall_group")
+
+
+
+    # --- Firewall_rule CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_firewall_rules(site: str = "") -> str:
+        """List all firewall_rules.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/firewallrule", site=site or None)
+        return _format_response(data, f"Found {len(data)} firewall_rules")
+
+
+    @mcp.tool()
+    async def unifi_get_firewall_rule(id: str, site: str = "") -> str:
+        """Get a single firewall_rule by ID.
+
+        Args:
+            id: The _id of the firewall_rule.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/firewallrule/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_firewall_rule(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new firewall_rule.
+
+        Args:
+            data: Firewall_rule configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_firewall_rule", "data": data},
+                "DRY RUN (POST rest/firewallrule): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/firewallrule", json_data=data, site=site or None)
+        return _format_response(result, "Created firewall_rule")
+
+
+    @mcp.tool()
+    async def unifi_update_firewall_rule(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing firewall_rule.
+
+        Args:
+            id: The _id of the firewall_rule to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Create firewall groups first (unifi_create_firewall_group) to use in src/dst_firewallgroup_ids.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_firewall_rule", "id": id, "data": data},
+                "DRY RUN (PUT rest/firewallrule/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/firewallrule/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated firewall_rule")
+
+
+    @mcp.tool()
+    async def unifi_delete_firewall_rule(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a firewall_rule.
+
+        Args:
+            id: The _id of the firewall_rule to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_firewall_rule", "id": id},
+                "DRY RUN (DELETE rest/firewallrule/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/firewallrule/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted firewall_rule")
+
 
 
     # --- Port_forward CRUD ---
@@ -2386,242 +2904,6 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Deleted port_forward")
 
 
-    # --- Radius_account CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_radius_accounts(site: str = "") -> str:
-        """List all radius_accounts.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/radiusaccount", site=site or None)
-        return _format_response(data, f"Found {len(data)} radius_accounts")
-
-
-    @mcp.tool()
-    async def unifi_get_radius_account(id: str, site: str = "") -> str:
-        """Get a single radius_account by ID.
-
-        Args:
-            id: The _id of the radius_account.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/radiusaccount/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_radius_account(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new radius_account.
-
-        Args:
-            data: Radius_account configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_radius_account", "data": data},
-                "DRY RUN (POST rest/radiusaccount): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/radiusaccount", json_data=data, site=site or None)
-        return _format_response(result, "Created radius_account")
-
-
-    @mcp.tool()
-    async def unifi_update_radius_account(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing radius_account.
-
-        Args:
-            id: The _id of the radius_account to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_radius_account", "id": id, "data": data},
-                "DRY RUN (PUT rest/radiusaccount/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/radiusaccount/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated radius_account")
-
-
-    @mcp.tool()
-    async def unifi_delete_radius_account(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a radius_account.
-
-        Args:
-            id: The _id of the radius_account to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_radius_account", "id": id},
-                "DRY RUN (DELETE rest/radiusaccount/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/radiusaccount/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted radius_account")
-
-
-    # --- Radius_profile CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_radius_profiles(site: str = "") -> str:
-        """List all radius_profiles.
-
-        Key fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/radiusprofile", site=site or None)
-        return _format_response(data, f"Found {len(data)} radius_profiles")
-
-
-    @mcp.tool()
-    async def unifi_get_radius_profile(id: str, site: str = "") -> str:
-        """Get a single radius_profile by ID.
-
-        Args:
-            id: The _id of the radius_profile.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/radiusprofile/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_radius_profile(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new radius_profile.
-
-        Args:
-            data: Radius_profile configuration.
-                Fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_radius_profile", "data": data},
-                "DRY RUN (POST rest/radiusprofile): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/radiusprofile", json_data=data, site=site or None)
-        return _format_response(result, "Created radius_profile")
-
-
-    @mcp.tool()
-    async def unifi_update_radius_profile(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing radius_profile.
-
-        Args:
-            id: The _id of the radius_profile to update.
-            data: Fields to update.
-                Fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_radius_profile", "id": id, "data": data},
-                "DRY RUN (PUT rest/radiusprofile/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/radiusprofile/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated radius_profile")
-
-
-    @mcp.tool()
-    async def unifi_delete_radius_profile(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a radius_profile.
-
-        Args:
-            id: The _id of the radius_profile to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_radius_profile", "id": id},
-                "DRY RUN (DELETE rest/radiusprofile/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/radiusprofile/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted radius_profile")
-
-
-    # --- Known_rogue_ap (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_known_rogue_aps(site: str = "") -> str:
-        """List all known_rogue_aps.
-
-        Returns known_rogue_aps from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/rogueknown", site=site or None)
-        return _format_response(data, f"Found {len(data)} known_rogue_aps")
-
 
     # --- Route CRUD ---
 
@@ -2730,46 +3012,863 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Deleted route")
 
 
-    # --- Schedule_task CRUD ---
+
+if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
+    
+    # --- v2: Firewall_policy ---
 
     @mcp.tool()
-    async def unifi_list_schedule_tasks(site: str = "") -> str:
-        """List all schedule_tasks.
+    async def unifi_list_firewall_policies(site: str = "") -> str:
+        """List all firewall_policies (v2 API).
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        data = await client.request("GET", "rest/scheduletask", site=site or None)
-        return _format_response(data, f"Found {len(data)} schedule_tasks")
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/firewall-policies".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} firewall_policies")
+        return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_get_schedule_task(id: str, site: str = "") -> str:
-        """Get a single schedule_task by ID.
+    async def unifi_create_firewall_policy(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new firewall_policy (v2 API).
 
         Args:
-            id: The _id of the schedule_task.
+            data: Firewall_policy configuration.
+                Required: action (str), ipVersion (str: 'V4'|'V6'), source (obj with zoneId from unifi_list_firewall_zones), destination (obj with zoneId from unifi_list_firewall_zones), schedule (obj with mode, e.g. {'mode': 'ALWAYS'}). Note: Requires firewall zones which are created when a gateway device is adopted.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_firewall_policy", "data": data},
+                "DRY RUN (POST /v2/api/site/{site}/firewall-policies): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("POST", "/v2/api/site/{site}/firewall-policies".replace("{site}", effective_site), json_data=data)
+        return _format_response(result, "Created firewall_policy")
+
+
+    @mcp.tool()
+    async def unifi_update_firewall_policy(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update a firewall_policy (v2 API).
+
+        Args:
+            id: The ID of the firewall_policy to update.
+            data: The FULL firewall_policy object with your changes applied.
+                v2 API requires sending the complete object, not just changed fields.
+                First GET the current object, modify the fields you want, then send the full object.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_firewall_policy", "id": id, "data": data},
+                "DRY RUN (PUT /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("PUT", "/v2/api/site/{site}/firewall-policies/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
+        return _format_response(result, "Updated firewall_policy")
+
+
+    @mcp.tool()
+    async def unifi_delete_firewall_policy(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a firewall_policy (v2 API).
+
+        Args:
+            id: The ID of the firewall_policy to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_firewall_policy", "id": id},
+                "DRY RUN (DELETE /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("DELETE", "/v2/api/site/{site}/firewall-policies/{id}".replace("{site}", effective_site).format(id=id))
+        return _format_response(result, "Deleted firewall_policy")
+
+
+
+    # --- v2: Firewall_zone ---
+
+    @mcp.tool()
+    async def unifi_list_firewall_zones(site: str = "") -> str:
+        """List all firewall_zones (v2 API).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/firewall/zone".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} firewall_zones")
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_update_firewall_zone(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update a firewall_zone (v2 API).
+
+        Args:
+            id: The ID of the firewall_zone to update.
+            data: The FULL firewall_zone object with your changes applied.
+                v2 API requires sending the complete object, not just changed fields.
+                First GET the current object, modify the fields you want, then send the full object.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_firewall_zone", "id": id, "data": data},
+                "DRY RUN (PUT /v2/api/site/{site}/firewall/zone/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("PUT", "/v2/api/site/{site}/firewall/zone/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
+        return _format_response(result, "Updated firewall_zone")
+
+
+
+    # --- v2: Traffic_rule ---
+
+    @mcp.tool()
+    async def unifi_list_traffic_rules(site: str = "") -> str:
+        """List all traffic_rules (v2 API).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/trafficrules".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} traffic_rules")
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_traffic_rule(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new traffic_rule (v2 API).
+
+        Args:
+            data: Traffic_rule configuration.
+                Required: action (str: 'BLOCK'|'ALLOW'), enabled (bool), matching_target (str: 'INTERNET'|'LOCAL_NETWORK'), target_devices (list of {type: 'ALL_CLIENTS'|'CLIENT'|'NETWORK', client_mac/network_id}), network_id (str, _id from unifi_list_networks)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_traffic_rule", "data": data},
+                "DRY RUN (POST /v2/api/site/{site}/trafficrules): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("POST", "/v2/api/site/{site}/trafficrules".replace("{site}", effective_site), json_data=data)
+        return _format_response(result, "Created traffic_rule")
+
+
+    @mcp.tool()
+    async def unifi_update_traffic_rule(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update a traffic_rule (v2 API).
+
+        Args:
+            id: The ID of the traffic_rule to update.
+            data: The FULL traffic_rule object with your changes applied.
+                v2 API requires sending the complete object, not just changed fields.
+                First GET the current object, modify the fields you want, then send the full object.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_traffic_rule", "id": id, "data": data},
+                "DRY RUN (PUT /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("PUT", "/v2/api/site/{site}/trafficrules/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
+        return _format_response(result, "Updated traffic_rule")
+
+
+    @mcp.tool()
+    async def unifi_delete_traffic_rule(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a traffic_rule (v2 API).
+
+        Args:
+            id: The ID of the traffic_rule to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_traffic_rule", "id": id},
+                "DRY RUN (DELETE /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("DELETE", "/v2/api/site/{site}/trafficrules/{id}".replace("{site}", effective_site).format(id=id))
+        return _format_response(result, "Deleted traffic_rule")
+
+
+
+    # --- v2: Traffic_route ---
+
+    @mcp.tool()
+    async def unifi_list_traffic_routes(site: str = "") -> str:
+        """List all traffic_routes (v2 API).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/v2/api/site/{site}/trafficroutes".replace("{site}", effective_site))
+        if isinstance(data, list):
+            return _format_response(data, f"Found {len(data)} traffic_routes")
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_update_traffic_route(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update a traffic_route (v2 API).
+
+        Args:
+            id: The ID of the traffic_route to update.
+            data: The FULL traffic_route object with your changes applied.
+                v2 API requires sending the complete object, not just changed fields.
+                First GET the current object, modify the fields you want, then send the full object.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_traffic_route", "id": id, "data": data},
+                "DRY RUN (PUT /v2/api/site/{site}/trafficroutes/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("PUT", "/v2/api/site/{site}/trafficroutes/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
+        return _format_response(result, "Updated traffic_route")
+
+
+
+if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: monitor
+    # ===========================================================================
+
+    # --- Alarm (read-only) ---
+
+    @mcp.tool()
+    async def unifi_list_alarms(site: str = "") -> str:
+        """List all alarms.
+
+        Returns alarms from the UniFi controller.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/alarm", site=site or None)
+        return _format_response(data, f"Found {len(data)} alarms")
+
+
+
+    # --- Event (read-only) ---
+
+    @mcp.tool()
+    async def unifi_list_events(site: str = "") -> str:
+        """List all events.
+
+        Returns events from the UniFi controller.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/event", site=site or None)
+        return _format_response(data, f"Found {len(data)} events")
+
+
+
+    @mcp.tool()
+    async def unifi_list_stat_alarms(site: str = "") -> str:
+        """List stat_alarms statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/alarm", site=site or None)
+        return _format_response(data, f"Found {len(data)} stat_alarms records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_anomalies(site: str = "") -> str:
+        """List anomalies statistics.
+
+        Note: site anomalies (unpoller). Supports ?scale=hourly&end=<timestamp>
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/anomalies", site=site or None)
+        return _format_response(data, f"Found {len(data)} anomalies records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_authorizations(site: str = "") -> str:
+        """List authorizations statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/authorization", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} authorizations records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_dashboard(site: str = "") -> str:
+        """List dashboard statistics.
+
+        Key fields: time
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/dashboard", site=site or None)
+        return _format_response(data, f"Found {len(data)} dashboard records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_dpi_stats(site: str = "") -> str:
+        """List dpi_stats statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/dpi", site=site or None)
+        return _format_response(data, f"Found {len(data)} dpi_stats records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_dynamic_dns_stats(site: str = "") -> str:
+        """List dynamic_dns_stats statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/dynamicdns", site=site or None)
+        return _format_response(data, f"Found {len(data)} dynamic_dns_stats records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_stat_events(site: str = "") -> str:
+        """List stat_events statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/event", site=site or None)
+        return _format_response(data, f"Found {len(data)} stat_events records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_gateway_stats(site: str = "") -> str:
+        """List gateway_stats statistics.
+
+        Note: needs adopted USG/UDM gateway
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/gateway", site=site or None)
+        return _format_response(data, f"Found {len(data)} gateway_stats records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_health(site: str = "") -> str:
+        """List health statistics.
+
+        Key fields: status, subsystem
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/health", site=site or None)
+        return _format_response(data, f"Found {len(data)} health records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_ips_events(site: str = "") -> str:
+        """List ips_events statistics.
+
+        Note: IDS/IPS events — singular form (unpoller APIEventPathIDS)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/ips/event", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} ips_events records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_port_forward_stats(site: str = "") -> str:
+        """List port_forward_stats statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/portforward", site=site or None)
+        return _format_response(data, f"Found {len(data)} port_forward_stats records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_remote_user_vpn(site: str = "") -> str:
+        """List remote_user_vpn statistics.
+
+        Note: remote user VPN stats
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/remoteuservpn", site=site or None)
+        return _format_response(data, f"Found {len(data)} remote_user_vpn records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report(
+        interval: str = "hourly",
+        report_type: str = "site",
+        site: str = "",
+    ) -> str:
+        """Get statistical reports.
+
+        Args:
+            interval: Report interval: '5minutes', 'hourly', or 'daily'.
+            report_type: Report type: 'site', 'user', 'ap'.
+            site: Site name (default: from env).
+
+        Note: intervals: 5minutes, hourly, daily, monthly; types: site, ap, user, gw
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        path = f"stat/report/{interval}.{report_type}"
+        data = await client.request("POST", path, json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_5min_ap(site: str = "") -> str:
+        """List report_5min_ap statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/5minutes.ap", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_5min_ap records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_5min_gateway(site: str = "") -> str:
+        """List report_5min_gateway statistics.
+
+        Note: 5-minute gateway stats
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/5minutes.gw", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_5min_gateway records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_speedtest_results(site: str = "") -> str:
+        """List speedtest_results statistics.
+
+        Note: archived speedtest results with start/end timestamps (Art-of-WiFi)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/archive.speedtest", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} speedtest_results records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_daily_gateway(site: str = "") -> str:
+        """List report_daily_gateway statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/daily.gw", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_daily_gateway records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_hourly_gateway(site: str = "") -> str:
+        """List report_hourly_gateway statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/hourly.gw", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_hourly_gateway records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_monthly_ap(site: str = "") -> str:
+        """List report_monthly_ap statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/monthly.ap", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_monthly_ap records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_monthly_gateway(site: str = "") -> str:
+        """List report_monthly_gateway statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/monthly.gw", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_monthly_gateway records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_monthly_site(site: str = "") -> str:
+        """List report_monthly_site statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/monthly.site", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_monthly_site records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_report_monthly_user(site: str = "") -> str:
+        """List report_monthly_user statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("POST", "stat/report/monthly.user", json_data={}, site=site or None)
+        return _format_response(data, f"Found {len(data)} report_monthly_user records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_rogue_aps(site: str = "") -> str:
+        """List rogue_aps statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/rogueap", site=site or None)
+        return _format_response(data, f"Found {len(data)} rogue_aps records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_routing_stats(site: str = "") -> str:
+        """List routing_stats statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/routing", site=site or None)
+        return _format_response(data, f"Found {len(data)} routing_stats records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_sdn_status(site: str = "") -> str:
+        """List sdn_status statistics.
+
+        Key fields: cloud_env, connected, connecting, enabled, has_sso_auth
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/sdn", site=site or None)
+        return _format_response(data, f"Found {len(data)} sdn_status records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_site_dpi(site: str = "") -> str:
+        """List site_dpi statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/sitedpi", site=site or None)
+        return _format_response(data, f"Found {len(data)} site_dpi records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_client_dpi(site: str = "") -> str:
+        """List client_dpi statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/stadpi", site=site or None)
+        return _format_response(data, f"Found {len(data)} client_dpi records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_sysinfo(site: str = "") -> str:
+        """List sysinfo statistics.
+
+        Key fields: anonymous_controller_id, autobackup, build, data_retention_days, data_retention_time_in_hours_for_5minutes_scale
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/sysinfo", site=site or None)
+        return _format_response(data, f"Found {len(data)} sysinfo records")
+
+
+
+    @mcp.tool()
+    async def unifi_alarm_archive(
+        _id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'archive' via alarm.
+
+        Args:
+            _id: _id parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "alarm_archive", "cmd": "archive"}
+            preview["_id"] = _id
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/alarm): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "archive"}
+        payload["_id"] = _id
+        client = await _get_client()
+        result = await client.request("POST", "cmd/alarm", json_data=payload, site=site or None)
+        return _format_response(result, "Executed archive")
+
+
+
+    @mcp.tool()
+    async def unifi_archive_all_alarms(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'archive-all-alarms' via evtmgr.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "archive_all_alarms", "cmd": "archive-all-alarms"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/evtmgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "archive-all-alarms"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/evtmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed archive-all-alarms")
+
+
+
+    @mcp.tool()
+    async def unifi_archive_alarm(
+        _id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'archive-alarm' via evtmgr.
+
+        Args:
+            _id: _id parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "archive_alarm", "cmd": "archive-alarm"}
+            preview["_id"] = _id
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/evtmgr): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "archive-alarm"}
+        payload["_id"] = _id
+        client = await _get_client()
+        result = await client.request("POST", "cmd/evtmgr", json_data=payload, site=site or None)
+        return _format_response(result, "Executed archive-alarm")
+
+
+
+    @mcp.tool()
+    async def unifi_clear_dpi(
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'reset-dpi' via stat.
+
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "clear_dpi", "cmd": "reset-dpi"}
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/stat): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "reset-dpi"}
+        client = await _get_client()
+        result = await client.request("POST", "cmd/stat", json_data=payload, site=site or None)
+        return _format_response(result, "Executed reset-dpi")
+
+
+
+if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: admin
+    # ===========================================================================
+
+    # --- Account CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_accounts(site: str = "") -> str:
+        """List all accounts.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/account", site=site or None)
+        return _format_response(data, f"Found {len(data)} accounts")
+
+
+    @mcp.tool()
+    async def unifi_get_account(id: str, site: str = "") -> str:
+        """Get a single account by ID.
+
+        Args:
+            id: The _id of the account.
             site: Site name (default: from env).
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        data = await client.request("GET", "rest/scheduletask/{id}".format(id=id), site=site or None)
+        data = await client.request("GET", "rest/account/{id}".format(id=id), site=site or None)
         if isinstance(data, list) and len(data) == 1:
             return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_create_schedule_task(
+    async def unifi_create_account(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Create a new schedule_task.
+        """Create a new account.
 
         Args:
-            data: Schedule_task configuration.
+            data: Account configuration.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -2777,54 +3876,51 @@ if "v1" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "create_schedule_task", "data": data},
-                "DRY RUN (POST rest/scheduletask): Set confirm=True to execute.",
+                {"action": "create_account", "data": data},
+                "DRY RUN (POST rest/account): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("POST", "rest/scheduletask", json_data=data, site=site or None)
-        return _format_response(result, "Created schedule_task")
+        result = await client.request("POST", "rest/account", json_data=data, site=site or None)
+        return _format_response(result, "Created account")
 
 
     @mcp.tool()
-    async def unifi_update_schedule_task(
+    async def unifi_update_account(
         id: str,
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update an existing schedule_task.
+        """Update an existing account.
 
         Args:
-            id: The _id of the schedule_task to update.
+            id: The _id of the account to update.
             data: Fields to update.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
-        Note: This resource requires sending the FULL object on update, not just changed fields.
-        First GET the current object, modify the fields you want, then send the complete object.
-
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         if not confirm:
             return _format_response(
-                {"action": "update_schedule_task", "id": id, "data": data},
-                "DRY RUN (PUT rest/scheduletask/{id}): Set confirm=True to execute.",
+                {"action": "update_account", "id": id, "data": data},
+                "DRY RUN (PUT rest/account/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("PUT", "rest/scheduletask/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated schedule_task")
+        result = await client.request("PUT", "rest/account/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated account")
 
 
     @mcp.tool()
-    async def unifi_delete_schedule_task(
+    async def unifi_delete_account(
         id: str,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Delete a schedule_task.
+        """Delete a account.
 
         Args:
-            id: The _id of the schedule_task to delete.
+            id: The _id of the account to delete.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -2832,12 +3928,13 @@ if "v1" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "delete_schedule_task", "id": id},
-                "DRY RUN (DELETE rest/scheduletask/{id}): Set confirm=True to execute.",
+                {"action": "delete_account", "id": id},
+                "DRY RUN (DELETE rest/account/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        result = await client.request("DELETE", "rest/scheduletask/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted schedule_task")
+        result = await client.request("DELETE", "rest/account/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted account")
+
 
 
     # --- Settings (special handling: keyed by 'key' field) ---
@@ -2897,113 +3994,6 @@ if "v1" in UNIFI_MODULES:
         result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
         return _format_response(result, f"Updated setting '{key}'")
 
-
-    # --- Spatial_record CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_spatial_records(site: str = "") -> str:
-        """List all spatial_records.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/spatialrecord", site=site or None)
-        return _format_response(data, f"Found {len(data)} spatial_records")
-
-
-    @mcp.tool()
-    async def unifi_get_spatial_record(id: str, site: str = "") -> str:
-        """Get a single spatial_record by ID.
-
-        Args:
-            id: The _id of the spatial_record.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/spatialrecord/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_spatial_record(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new spatial_record.
-
-        Args:
-            data: Spatial_record configuration.
-                Required: name (str), devices (list, device references e.g. []), description (str, e.g. 'Room label')
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_spatial_record", "data": data},
-                "DRY RUN (POST rest/spatialrecord): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/spatialrecord", json_data=data, site=site or None)
-        return _format_response(result, "Created spatial_record")
-
-
-    @mcp.tool()
-    async def unifi_update_spatial_record(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing spatial_record.
-
-        Args:
-            id: The _id of the spatial_record to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_spatial_record", "id": id, "data": data},
-                "DRY RUN (PUT rest/spatialrecord/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/spatialrecord/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated spatial_record")
-
-
-    @mcp.tool()
-    async def unifi_delete_spatial_record(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a spatial_record.
-
-        Args:
-            id: The _id of the spatial_record to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_spatial_record", "id": id},
-                "DRY RUN (DELETE rest/spatialrecord/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/spatialrecord/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted spatial_record")
 
 
     # --- Tag CRUD ---
@@ -3111,92 +4101,6 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("DELETE", "rest/tag/{id}".format(id=id), site=site or None)
         return _format_response(result, "Deleted tag")
-
-
-    # --- User CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_users(site: str = "") -> str:
-        """List all users.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/user", site=site or None)
-        return _format_response(data, f"Found {len(data)} users")
-
-
-    @mcp.tool()
-    async def unifi_get_user(id: str, site: str = "") -> str:
-        """Get a single user by ID.
-
-        Args:
-            id: The _id of the user.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/user/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_user(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new user.
-
-        Args:
-            data: User configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_user", "data": data},
-                "DRY RUN (POST rest/user): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/user", json_data=data, site=site or None)
-        return _format_response(result, "Created user")
-
-
-    @mcp.tool()
-    async def unifi_update_user(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing user.
-
-        Args:
-            id: The _id of the user to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_user", "id": id, "data": data},
-                "DRY RUN (PUT rest/user/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/user/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated user")
 
 
 
@@ -3315,748 +4219,6 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Deleted user_group")
 
 
-    # --- Virtual_device (read-only) ---
-
-    @mcp.tool()
-    async def unifi_list_virtual_devices(site: str = "") -> str:
-        """List all virtual_devices.
-
-        Returns virtual_devices from the UniFi controller.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/virtualdevice", site=site or None)
-        return _format_response(data, f"Found {len(data)} virtual_devices")
-
-
-    # --- Wlan CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_wlans(site: str = "") -> str:
-        """List all wlans.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/wlanconf", site=site or None)
-        return _format_response(data, f"Found {len(data)} wlans")
-
-
-    @mcp.tool()
-    async def unifi_get_wlan(id: str, site: str = "") -> str:
-        """Get a single wlan by ID.
-
-        Args:
-            id: The _id of the wlan.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/wlanconf/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_wlan(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new wlan.
-
-        Args:
-            data: Wlan configuration.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_wlan", "data": data},
-                "DRY RUN (POST rest/wlanconf): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/wlanconf", json_data=data, site=site or None)
-        return _format_response(result, "Created wlan")
-
-
-    @mcp.tool()
-    async def unifi_update_wlan(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing wlan.
-
-        Args:
-            id: The _id of the wlan to update.
-            data: Fields to update.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        Tip: Requires a network (networkconf_id from unifi_list_networks) and at least one adopted AP.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_wlan", "id": id, "data": data},
-                "DRY RUN (PUT rest/wlanconf/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/wlanconf/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated wlan")
-
-
-    @mcp.tool()
-    async def unifi_delete_wlan(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a wlan.
-
-        Args:
-            id: The _id of the wlan to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_wlan", "id": id},
-                "DRY RUN (DELETE rest/wlanconf/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/wlanconf/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted wlan")
-
-
-    # --- Wlan_group CRUD ---
-
-    @mcp.tool()
-    async def unifi_list_wlan_groups(site: str = "") -> str:
-        """List all wlan_groups.
-
-        Key fields: name (str)
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/wlangroup", site=site or None)
-        return _format_response(data, f"Found {len(data)} wlan_groups")
-
-
-    @mcp.tool()
-    async def unifi_get_wlan_group(id: str, site: str = "") -> str:
-        """Get a single wlan_group by ID.
-
-        Args:
-            id: The _id of the wlan_group.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "rest/wlangroup/{id}".format(id=id), site=site or None)
-        if isinstance(data, list) and len(data) == 1:
-            return _format_response(data[0])
-        return _format_response(data)
-
-
-    @mcp.tool()
-    async def unifi_create_wlan_group(
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Create a new wlan_group.
-
-        Args:
-            data: Wlan_group configuration.
-                Fields: name (str)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "create_wlan_group", "data": data},
-                "DRY RUN (POST rest/wlangroup): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("POST", "rest/wlangroup", json_data=data, site=site or None)
-        return _format_response(result, "Created wlan_group")
-
-
-    @mcp.tool()
-    async def unifi_update_wlan_group(
-        id: str,
-        data: dict,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Update an existing wlan_group.
-
-        Args:
-            id: The _id of the wlan_group to update.
-            data: Fields to update.
-                Fields: name (str)
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "update_wlan_group", "id": id, "data": data},
-                "DRY RUN (PUT rest/wlangroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("PUT", "rest/wlangroup/{id}".format(id=id), json_data=data, site=site or None)
-        return _format_response(result, "Updated wlan_group")
-
-
-    @mcp.tool()
-    async def unifi_delete_wlan_group(
-        id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Delete a wlan_group.
-
-        Args:
-            id: The _id of the wlan_group to delete.
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            return _format_response(
-                {"action": "delete_wlan_group", "id": id},
-                "DRY RUN (DELETE rest/wlangroup/{id}): Set confirm=True to execute.",
-            )
-        client = await _get_client()
-        result = await client.request("DELETE", "rest/wlangroup/{id}".format(id=id), site=site or None)
-        return _format_response(result, "Deleted wlan_group")
-
-
-    # ===========================================================================
-    # Stat Endpoint Tools
-    # ===========================================================================
-
-    @mcp.tool()
-    async def unifi_list_stat_alarms(site: str = "") -> str:
-        """List stat_alarms statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/alarm", site=site or None)
-        return _format_response(data, f"Found {len(data)} stat_alarms records")
-
-
-    @mcp.tool()
-    async def unifi_list_all_users(site: str = "") -> str:
-        """List all_users statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/alluser", site=site or None)
-        return _format_response(data, f"Found {len(data)} all_users records")
-
-
-    @mcp.tool()
-    async def unifi_list_anomalies(site: str = "") -> str:
-        """List anomalies statistics.
-
-        Note: site anomalies (unpoller). Supports ?scale=hourly&end=<timestamp>
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/anomalies", site=site or None)
-        return _format_response(data, f"Found {len(data)} anomalies records")
-
-
-    @mcp.tool()
-    async def unifi_list_authorizations(site: str = "") -> str:
-        """List authorizations statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/authorization", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} authorizations records")
-
-
-    @mcp.tool()
-    async def unifi_list_country_codes(site: str = "") -> str:
-        """List country_codes statistics.
-
-        Key fields: code, key, name
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/ccode", site=site or None)
-        return _format_response(data, f"Found {len(data)} country_codes records")
-
-
-    @mcp.tool()
-    async def unifi_list_current_channels(site: str = "") -> str:
-        """List current_channels statistics.
-
-        Key fields: afc, channels_6e, channels_6e_160, channels_6e_320, channels_6e_40
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/current-channel", site=site or None)
-        return _format_response(data, f"Found {len(data)} current_channels records")
-
-
-    @mcp.tool()
-    async def unifi_list_dashboard(site: str = "") -> str:
-        """List dashboard statistics.
-
-        Key fields: time
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/dashboard", site=site or None)
-        return _format_response(data, f"Found {len(data)} dashboard records")
-
-
-    @mcp.tool()
-    async def unifi_list_devices(site: str = "") -> str:
-        """List devices statistics.
-
-        Note: also POST with macs filter
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/device", site=site or None)
-        return _format_response(data, f"Found {len(data)} devices records")
-
-
-    @mcp.tool()
-    async def unifi_list_devices_basic(site: str = "") -> str:
-        """List devices_basic statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/device-basic", site=site or None)
-        return _format_response(data, f"Found {len(data)} devices_basic records")
-
-
-    @mcp.tool()
-    async def unifi_list_dpi_stats(site: str = "") -> str:
-        """List dpi_stats statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/dpi", site=site or None)
-        return _format_response(data, f"Found {len(data)} dpi_stats records")
-
-
-    @mcp.tool()
-    async def unifi_list_dynamic_dns_stats(site: str = "") -> str:
-        """List dynamic_dns_stats statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/dynamicdns", site=site or None)
-        return _format_response(data, f"Found {len(data)} dynamic_dns_stats records")
-
-
-    @mcp.tool()
-    async def unifi_list_stat_events(site: str = "") -> str:
-        """List stat_events statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/event", site=site or None)
-        return _format_response(data, f"Found {len(data)} stat_events records")
-
-
-    @mcp.tool()
-    async def unifi_list_gateway_stats(site: str = "") -> str:
-        """List gateway_stats statistics.
-
-        Note: needs adopted USG/UDM gateway
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/gateway", site=site or None)
-        return _format_response(data, f"Found {len(data)} gateway_stats records")
-
-
-    @mcp.tool()
-    async def unifi_list_guests(site: str = "") -> str:
-        """List guests statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/guest", site=site or None)
-        return _format_response(data, f"Found {len(data)} guests records")
-
-
-    @mcp.tool()
-    async def unifi_list_health(site: str = "") -> str:
-        """List health statistics.
-
-        Key fields: status, subsystem
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/health", site=site or None)
-        return _format_response(data, f"Found {len(data)} health records")
-
-
-    @mcp.tool()
-    async def unifi_list_ips_events(site: str = "") -> str:
-        """List ips_events statistics.
-
-        Note: IDS/IPS events — singular form (unpoller APIEventPathIDS)
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/ips/event", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} ips_events records")
-
-
-    @mcp.tool()
-    async def unifi_list_payments(site: str = "") -> str:
-        """List payments statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/payment", site=site or None)
-        return _format_response(data, f"Found {len(data)} payments records")
-
-
-    @mcp.tool()
-    async def unifi_list_port_forward_stats(site: str = "") -> str:
-        """List port_forward_stats statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/portforward", site=site or None)
-        return _format_response(data, f"Found {len(data)} port_forward_stats records")
-
-
-    @mcp.tool()
-    async def unifi_list_remote_user_vpn(site: str = "") -> str:
-        """List remote_user_vpn statistics.
-
-        Note: remote user VPN stats
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/remoteuservpn", site=site or None)
-        return _format_response(data, f"Found {len(data)} remote_user_vpn records")
-
-
-    @mcp.tool()
-    async def unifi_list_report(
-        interval: str = "hourly",
-        report_type: str = "site",
-        site: str = "",
-    ) -> str:
-        """Get statistical reports.
-
-        Args:
-            interval: Report interval: '5minutes', 'hourly', or 'daily'.
-            report_type: Report type: 'site', 'user', 'ap'.
-            site: Site name (default: from env).
-
-        Note: intervals: 5minutes, hourly, daily, monthly; types: site, ap, user, gw
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        path = f"stat/report/{interval}.{report_type}"
-        data = await client.request("POST", path, json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_5min_ap(site: str = "") -> str:
-        """List report_5min_ap statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/5minutes.ap", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_5min_ap records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_5min_gateway(site: str = "") -> str:
-        """List report_5min_gateway statistics.
-
-        Note: 5-minute gateway stats
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/5minutes.gw", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_5min_gateway records")
-
-
-    @mcp.tool()
-    async def unifi_list_speedtest_results(site: str = "") -> str:
-        """List speedtest_results statistics.
-
-        Note: archived speedtest results with start/end timestamps (Art-of-WiFi)
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/archive.speedtest", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} speedtest_results records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_daily_gateway(site: str = "") -> str:
-        """List report_daily_gateway statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/daily.gw", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_daily_gateway records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_hourly_gateway(site: str = "") -> str:
-        """List report_hourly_gateway statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/hourly.gw", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_hourly_gateway records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_monthly_ap(site: str = "") -> str:
-        """List report_monthly_ap statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/monthly.ap", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_monthly_ap records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_monthly_gateway(site: str = "") -> str:
-        """List report_monthly_gateway statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/monthly.gw", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_monthly_gateway records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_monthly_site(site: str = "") -> str:
-        """List report_monthly_site statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/monthly.site", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_monthly_site records")
-
-
-    @mcp.tool()
-    async def unifi_list_report_monthly_user(site: str = "") -> str:
-        """List report_monthly_user statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/report/monthly.user", json_data={}, site=site or None)
-        return _format_response(data, f"Found {len(data)} report_monthly_user records")
-
-
-    @mcp.tool()
-    async def unifi_list_rogue_aps(site: str = "") -> str:
-        """List rogue_aps statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/rogueap", site=site or None)
-        return _format_response(data, f"Found {len(data)} rogue_aps records")
-
-
-    @mcp.tool()
-    async def unifi_list_routing_stats(site: str = "") -> str:
-        """List routing_stats statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/routing", site=site or None)
-        return _format_response(data, f"Found {len(data)} routing_stats records")
-
-
-    @mcp.tool()
-    async def unifi_list_sdn_status(site: str = "") -> str:
-        """List sdn_status statistics.
-
-        Key fields: cloud_env, connected, connecting, enabled, has_sso_auth
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/sdn", site=site or None)
-        return _format_response(data, f"Found {len(data)} sdn_status records")
-
-
-    @mcp.tool()
-    async def unifi_list_sessions(site: str = "") -> str:
-        """List sessions statistics.
-
-        Note: requires POST with {"type":"all","start":0,"end":9999999999}
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("POST", "stat/session", json_data={'type': 'all', 'start': 0, 'end': 9999999999}, site=site or None)
-        return _format_response(data, f"Found {len(data)} sessions records")
-
-
-    @mcp.tool()
-    async def unifi_list_site_dpi(site: str = "") -> str:
-        """List site_dpi statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/sitedpi", site=site or None)
-        return _format_response(data, f"Found {len(data)} site_dpi records")
-
-
-    @mcp.tool()
-    async def unifi_list_spectrum_scans(site: str = "") -> str:
-        """List spectrum_scans statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/spectrum-scan", site=site or None)
-        return _format_response(data, f"Found {len(data)} spectrum_scans records")
-
-
-    @mcp.tool()
-    async def unifi_list_clients(site: str = "") -> str:
-        """List clients statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/sta", site=site or None)
-        return _format_response(data, f"Found {len(data)} clients records")
-
-
-    @mcp.tool()
-    async def unifi_list_client_dpi(site: str = "") -> str:
-        """List client_dpi statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/stadpi", site=site or None)
-        return _format_response(data, f"Found {len(data)} client_dpi records")
-
-
-    @mcp.tool()
-    async def unifi_list_sysinfo(site: str = "") -> str:
-        """List sysinfo statistics.
-
-        Key fields: anonymous_controller_id, autobackup, build, data_retention_days, data_retention_time_in_hours_for_5minutes_scale
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/sysinfo", site=site or None)
-        return _format_response(data, f"Found {len(data)} sysinfo records")
-
-
-    @mcp.tool()
-    async def unifi_list_vouchers(site: str = "") -> str:
-        """List vouchers statistics.
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        data = await client.request("GET", "stat/voucher", site=site or None)
-        return _format_response(data, f"Found {len(data)} vouchers records")
-
-
-    # ===========================================================================
-    # Command Tools
-    # ===========================================================================
-
-    @mcp.tool()
-    async def unifi_alarm_archive(
-        _id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'archive' via alarm.
-
-        Args:
-            _id: _id parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "alarm_archive", "cmd": "archive"}
-            preview["_id"] = _id
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/alarm): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "archive"}
-        payload["_id"] = _id
-        client = await _get_client()
-        result = await client.request("POST", "cmd/alarm", json_data=payload, site=site or None)
-        return _format_response(result, "Executed archive")
-
 
     @mcp.tool()
     async def unifi_list_backups(
@@ -4072,6 +4234,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/backup", json_data=payload, site=site or None)
         return _format_response(result, "Executed list-backups")
+
 
 
     @mcp.tool()
@@ -4103,6 +4266,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed delete-backup")
 
 
+
     @mcp.tool()
     async def unifi_generate_backup(
         confirm: bool = False,
@@ -4125,6 +4289,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/backup", json_data=payload, site=site or None)
         return _format_response(result, "Executed generate-backup")
+
 
 
     @mcp.tool()
@@ -4151,518 +4316,6 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed generate-backup-site")
 
 
-    @mcp.tool()
-    async def unifi_adopt_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'adopt' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "adopt_device", "cmd": "adopt"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "adopt"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed adopt")
-
-
-    @mcp.tool()
-    async def unifi_restart_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'restart' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "restart_device", "cmd": "restart"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "restart"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed restart")
-
-
-    @mcp.tool()
-    async def unifi_force_provision_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'force-provision' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "force_provision_device", "cmd": "force-provision"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "force-provision"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed force-provision")
-
-
-    @mcp.tool()
-    async def unifi_power_cycle_port(
-        mac: str,
-        port_idx: int,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'power-cycle' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            port_idx: port_idx parameter (int).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "power_cycle_port", "cmd": "power-cycle"}
-            preview["mac"] = mac
-            preview["port_idx"] = port_idx
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "power-cycle"}
-        payload["mac"] = mac
-        payload["port_idx"] = port_idx
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed power-cycle")
-
-
-    @mcp.tool()
-    async def unifi_run_speedtest(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'speedtest' via devmgr.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "run_speedtest", "cmd": "speedtest"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "speedtest"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed speedtest")
-
-
-    @mcp.tool()
-    async def unifi_get_speedtest_status(
-        site: str = "",
-    ) -> str:
-        """Execute 'speedtest-status' via devmgr.
-
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        payload: dict[str, Any] = {"cmd": "speedtest-status"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed speedtest-status")
-
-
-    @mcp.tool()
-    async def unifi_locate_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'set-locate' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "locate_device", "cmd": "set-locate"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "set-locate"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed set-locate")
-
-
-    @mcp.tool()
-    async def unifi_unlocate_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'unset-locate' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "unlocate_device", "cmd": "unset-locate"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "unset-locate"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed unset-locate")
-
-
-    @mcp.tool()
-    async def unifi_upgrade_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'upgrade' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "upgrade_device", "cmd": "upgrade"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "upgrade"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed upgrade")
-
-
-    @mcp.tool()
-    async def unifi_upgrade_device_external(
-        mac: str,
-        url: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'upgrade-external' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            url: url parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "upgrade_device_external", "cmd": "upgrade-external"}
-            preview["mac"] = mac
-            preview["url"] = url
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "upgrade-external"}
-        payload["mac"] = mac
-        payload["url"] = url
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed upgrade-external")
-
-
-    @mcp.tool()
-    async def unifi_migrate_device(
-        mac: str,
-        inform_url: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'migrate' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            inform_url: inform_url parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "migrate_device", "cmd": "migrate"}
-            preview["mac"] = mac
-            preview["inform_url"] = inform_url
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "migrate"}
-        payload["mac"] = mac
-        payload["inform_url"] = inform_url
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed migrate")
-
-
-    @mcp.tool()
-    async def unifi_cancel_migrate_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'cancel-migrate' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "cancel_migrate_device", "cmd": "cancel-migrate"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "cancel-migrate"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed cancel-migrate")
-
-
-    @mcp.tool()
-    async def unifi_spectrum_scan(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'spectrum-scan' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "spectrum_scan", "cmd": "spectrum-scan"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "spectrum-scan"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed spectrum-scan")
-
-
-    @mcp.tool()
-    async def unifi_rename_device(
-        mac: str,
-        name: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'rename' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            name: name parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "rename_device", "cmd": "rename"}
-            preview["mac"] = mac
-            preview["name"] = name
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "rename"}
-        payload["mac"] = mac
-        payload["name"] = name
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed rename")
-
-
-    @mcp.tool()
-    async def unifi_led_override_device(
-        mac: str,
-        led_override: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'led-override' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            led_override: led_override parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "led_override_device", "cmd": "led-override"}
-            preview["mac"] = mac
-            preview["led_override"] = led_override
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "led-override"}
-        payload["mac"] = mac
-        payload["led_override"] = led_override
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed led-override")
-
-
-    @mcp.tool()
-    async def unifi_disable_ap(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'disable-ap' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "disable_ap", "cmd": "disable-ap"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "disable-ap"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed disable-ap")
-
 
     @mcp.tool()
     async def unifi_rolling_upgrade(
@@ -4686,6 +4339,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed rolling-upgrade")
+
 
 
     @mcp.tool()
@@ -4712,6 +4366,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed cancel-rolling-upgrade")
 
 
+
     @mcp.tool()
     async def unifi_check_firmware_update(
         site: str = "",
@@ -4727,71 +4382,6 @@ if "v1" in UNIFI_MODULES:
         result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed check-firmware-update")
 
-
-    @mcp.tool()
-    async def unifi_upgrade_all_devices(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'upgrade-all-devices' via devmgr.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "upgrade_all_devices", "cmd": "upgrade-all-devices"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "upgrade-all-devices"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed upgrade-all-devices")
-
-
-    @mcp.tool()
-    async def unifi_advanced_adopt_device(
-        mac: str,
-        url: str,
-        key: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'advanced-adopt' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            url: url parameter (str).
-        Args:
-            key: key parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "advanced_adopt_device", "cmd": "advanced-adopt"}
-            preview["mac"] = mac
-            preview["url"] = url
-            preview["key"] = key
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "advanced-adopt"}
-        payload["mac"] = mac
-        payload["url"] = url
-        payload["key"] = key
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed advanced-adopt")
 
 
     @mcp.tool()
@@ -4826,6 +4416,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed set-rollupgrade")
 
 
+
     @mcp.tool()
     async def unifi_unset_rollupgrade(
         mac: str,
@@ -4858,383 +4449,6 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed unset-rollupgrade")
 
 
-    @mcp.tool()
-    async def unifi_restart_http_portal(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'restart-http-portal' via devmgr.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "restart_http_portal", "cmd": "restart-http-portal"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "restart-http-portal"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed restart-http-portal")
-
-
-    @mcp.tool()
-    async def unifi_enable_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'enable' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "enable_device", "cmd": "enable"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "enable"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed enable")
-
-
-    @mcp.tool()
-    async def unifi_disable_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'disable' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "disable_device", "cmd": "disable"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "disable"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed disable")
-
-
-    @mcp.tool()
-    async def unifi_cable_test(
-        mac: str,
-        port_idx: int,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'cable-test' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            port_idx: port_idx parameter (int).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "cable_test", "cmd": "cable-test"}
-            preview["mac"] = mac
-            preview["port_idx"] = port_idx
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "cable-test"}
-        payload["mac"] = mac
-        payload["port_idx"] = port_idx
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed cable-test")
-
-
-    @mcp.tool()
-    async def unifi_set_inform_device(
-        mac: str,
-        inform_url: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'set-inform' via devmgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            inform_url: inform_url parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "set_inform_device", "cmd": "set-inform"}
-            preview["mac"] = mac
-            preview["inform_url"] = inform_url
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/devmgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "set-inform"}
-        payload["mac"] = mac
-        payload["inform_url"] = inform_url
-        client = await _get_client()
-        result = await client.request("POST", "cmd/devmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed set-inform")
-
-
-    @mcp.tool()
-    async def unifi_archive_all_alarms(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'archive-all-alarms' via evtmgr.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "archive_all_alarms", "cmd": "archive-all-alarms"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/evtmgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "archive-all-alarms"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/evtmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed archive-all-alarms")
-
-
-    @mcp.tool()
-    async def unifi_archive_alarm(
-        _id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'archive-alarm' via evtmgr.
-
-        Args:
-            _id: _id parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "archive_alarm", "cmd": "archive-alarm"}
-            preview["_id"] = _id
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/evtmgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "archive-alarm"}
-        payload["_id"] = _id
-        client = await _get_client()
-        result = await client.request("POST", "cmd/evtmgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed archive-alarm")
-
-
-    @mcp.tool()
-    async def unifi_hotspot_authorize_guest(
-        mac: str,
-        minutes: int,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'authorize-guest' via hotspot.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            minutes: minutes parameter (int).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "hotspot_authorize_guest", "cmd": "authorize-guest"}
-            preview["mac"] = mac
-            preview["minutes"] = minutes
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "authorize-guest"}
-        payload["mac"] = mac
-        payload["minutes"] = minutes
-        client = await _get_client()
-        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
-        return _format_response(result, "Executed authorize-guest")
-
-
-    @mcp.tool()
-    async def unifi_create_voucher(
-        expire: int,
-        n: int,
-        quota: int,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'create-voucher' via hotspot.
-
-        Args:
-            expire: expire parameter (int).
-        Args:
-            n: n parameter (int).
-        Args:
-            quota: quota parameter (int).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "create_voucher", "cmd": "create-voucher"}
-            preview["expire"] = expire
-            preview["n"] = n
-            preview["quota"] = quota
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "create-voucher"}
-        payload["expire"] = expire
-        payload["n"] = n
-        payload["quota"] = quota
-        client = await _get_client()
-        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
-        return _format_response(result, "Executed create-voucher")
-
-
-    @mcp.tool()
-    async def unifi_revoke_voucher(
-        _id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'revoke-voucher' via hotspot.
-
-        Args:
-            _id: _id parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "revoke_voucher", "cmd": "revoke-voucher"}
-            preview["_id"] = _id
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "revoke-voucher"}
-        payload["_id"] = _id
-        client = await _get_client()
-        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
-        return _format_response(result, "Executed revoke-voucher")
-
-
-    @mcp.tool()
-    async def unifi_extend_guest_validity(
-        _id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'extend-guest-validity' via hotspot.
-
-        Args:
-            _id: _id parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "extend_guest_validity", "cmd": "extend-guest-validity"}
-            preview["_id"] = _id
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "extend-guest-validity"}
-        payload["_id"] = _id
-        client = await _get_client()
-        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
-        return _format_response(result, "Executed extend-guest-validity")
-
-
-    @mcp.tool()
-    async def unifi_delete_voucher(
-        _id: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'delete-voucher' via hotspot.
-
-        Args:
-            _id: _id parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "delete_voucher", "cmd": "delete-voucher"}
-            preview["_id"] = _id
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "delete-voucher"}
-        payload["_id"] = _id
-        client = await _get_client()
-        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
-        return _format_response(result, "Executed delete-voucher")
-
 
     @mcp.tool()
     async def unifi_add_site(
@@ -5263,6 +4477,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed add-site")
+
 
 
     @mcp.tool()
@@ -5294,6 +4509,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed delete-site")
 
 
+
     @mcp.tool()
     async def unifi_update_site(
         desc: str,
@@ -5323,6 +4539,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed update-site")
 
 
+
     @mcp.tool()
     async def unifi_get_admins(
         site: str = "",
@@ -5338,74 +4555,6 @@ if "v1" in UNIFI_MODULES:
         result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed get-admins")
 
-
-    @mcp.tool()
-    async def unifi_move_device(
-        mac: str,
-        target_site: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'move-device' via sitemgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            target_site: Target site for the command (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "move_device", "cmd": "move-device"}
-            preview["mac"] = mac
-            preview["site"] = target_site
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "move-device"}
-        payload["mac"] = mac
-        payload["site"] = target_site
-        client = await _get_client()
-        result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed move-device")
-
-
-    @mcp.tool()
-    async def unifi_delete_device(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'delete-device' via sitemgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "delete_device", "cmd": "delete-device"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/sitemgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "delete-device"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed delete-device")
 
 
     @mcp.tool()
@@ -5435,6 +4584,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed site-leds")
+
 
 
     @mcp.tool()
@@ -5476,6 +4626,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed invite-admin")
 
 
+
     @mcp.tool()
     async def unifi_assign_existing_admin(
         admin: str,
@@ -5508,6 +4659,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed assign-existing-admin")
+
 
 
     @mcp.tool()
@@ -5544,6 +4696,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed update-admin")
 
 
+
     @mcp.tool()
     async def unifi_revoke_admin(
         admin: str,
@@ -5573,6 +4726,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed revoke-admin")
 
 
+
     @mcp.tool()
     async def unifi_grant_super_admin(
         admin: str,
@@ -5600,6 +4754,7 @@ if "v1" in UNIFI_MODULES:
         client = await _get_client()
         result = await client.request("POST", "cmd/sitemgr", json_data=payload, site=site or None)
         return _format_response(result, "Executed grant-super-admin")
+
 
 
     @mcp.tool()
@@ -5646,6 +4801,7 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed create-admin")
 
 
+
     @mcp.tool()
     async def unifi_revoke_super_admin(
         admin: str,
@@ -5675,255 +4831,6 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed revoke-super-admin")
 
 
-    @mcp.tool()
-    async def unifi_block_client(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'block-sta' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "block_client", "cmd": "block-sta"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "block-sta"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed block-sta")
-
-
-    @mcp.tool()
-    async def unifi_unblock_client(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'unblock-sta' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "unblock_client", "cmd": "unblock-sta"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "unblock-sta"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed unblock-sta")
-
-
-    @mcp.tool()
-    async def unifi_kick_client(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'kick-sta' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "kick_client", "cmd": "kick-sta"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "kick-sta"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed kick-sta")
-
-
-    @mcp.tool()
-    async def unifi_forget_client(
-        macs: list,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'forget-sta' via stamgr.
-
-        Args:
-            macs: macs parameter (list).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "forget_client", "cmd": "forget-sta"}
-            preview["macs"] = macs
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "forget-sta"}
-        payload["macs"] = macs
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed forget-sta")
-
-
-    @mcp.tool()
-    async def unifi_unauthorize_guest(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'unauthorize-guest' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "unauthorize_guest", "cmd": "unauthorize-guest"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "unauthorize-guest"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed unauthorize-guest")
-
-
-    @mcp.tool()
-    async def unifi_authorize_guest(
-        mac: str,
-        minutes: int,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'authorize-guest' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-        Args:
-            minutes: minutes parameter (int).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "authorize_guest", "cmd": "authorize-guest"}
-            preview["mac"] = mac
-            preview["minutes"] = minutes
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "authorize-guest"}
-        payload["mac"] = mac
-        payload["minutes"] = minutes
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed authorize-guest")
-
-
-    @mcp.tool()
-    async def unifi_reconnect_client(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'reconnect-sta' via stamgr.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "reconnect_client", "cmd": "reconnect-sta"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stamgr): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "reconnect-sta"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stamgr", json_data=payload, site=site or None)
-        return _format_response(result, "Executed reconnect-sta")
-
-
-    @mcp.tool()
-    async def unifi_clear_dpi(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'reset-dpi' via stat.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "clear_dpi", "cmd": "reset-dpi"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/stat): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "reset-dpi"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/stat", json_data=payload, site=site or None)
-        return _format_response(result, "Executed reset-dpi")
-
 
     @mcp.tool()
     async def unifi_create_backup(
@@ -5948,61 +4855,6 @@ if "v1" in UNIFI_MODULES:
         result = await client.request("POST", "cmd/system", json_data=payload, site=site or None)
         return _format_response(result, "Executed backup")
 
-
-    @mcp.tool()
-    async def unifi_reboot_cloudkey(
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'reboot-cloudkey' via system.
-
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "reboot_cloudkey", "cmd": "reboot-cloudkey"}
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/system): Set confirm=True to execute.",
-            )
-        payload: dict[str, Any] = {"cmd": "reboot-cloudkey"}
-        client = await _get_client()
-        result = await client.request("POST", "cmd/system", json_data=payload, site=site or None)
-        return _format_response(result, "Executed reboot-cloudkey")
-
-
-    @mcp.tool()
-    async def unifi_element_adoption(
-        mac: str,
-        confirm: bool = False,
-        site: str = "",
-    ) -> str:
-        """Execute 'element-adoption' via system.
-
-        Args:
-            mac: mac parameter (str).
-            confirm: Must be True to execute. Returns preview if False.
-            site: Site name override (default: from env).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        if not confirm:
-            preview = {"action": "element_adoption", "cmd": "element-adoption"}
-            preview["mac"] = mac
-            return _format_response(
-                preview,
-                "DRY RUN (POST cmd/system): Set confirm=True to execute.",
-            )
-        mac_err = _validate_mac(mac)
-        if mac_err:
-            return _format_response({"error": mac_err}, mac_err)
-        payload: dict[str, Any] = {"cmd": "element-adoption"}
-        payload["mac"] = mac
-        client = await _get_client()
-        result = await client.request("POST", "cmd/system", json_data=payload, site=site or None)
-        return _format_response(result, "Executed element-adoption")
 
 
     @mcp.tool()
@@ -6034,88 +4886,52 @@ if "v1" in UNIFI_MODULES:
         return _format_response(result, "Executed download-backup")
 
 
-if "v2" in UNIFI_MODULES:
+
+if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     # ===========================================================================
-    # v2 Endpoint Tools
+    # Module: hotspot
     # ===========================================================================
 
-    # --- v2: Ap_group ---
+    # --- Hotspot2_config CRUD ---
 
     @mcp.tool()
-    async def unifi_list_ap_groups(site: str = "") -> str:
-        """List all ap_groups (v2 API).
-
-        Key fields: device_macs (list), for_wlanconf (bool), name (str)
+    async def unifi_list_hotspot2_configs(site: str = "") -> str:
+        """List all hotspot2_configs.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/apgroups".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} ap_groups")
-        return _format_response(data)
+        data = await client.request("GET", "rest/hotspot2conf", site=site or None)
+        return _format_response(data, f"Found {len(data)} hotspot2_configs")
 
-
-    # --- v2: Active_client ---
 
     @mcp.tool()
-    async def unifi_list_active_clients(site: str = "") -> str:
-        """List all active_clients (v2 API).
+    async def unifi_get_hotspot2_config(id: str, site: str = "") -> str:
+        """Get a single hotspot2_config by ID.
+
+        Args:
+            id: The _id of the hotspot2_config.
+            site: Site name (default: from env).
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/clients/active".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} active_clients")
-        return _format_response(data)
-
-
-    # --- v2: Client_history ---
-
-    @mcp.tool()
-    async def unifi_list_clients_history(site: str = "") -> str:
-        """List all clients_history (v2 API).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/clients/history".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} clients_history")
-        return _format_response(data)
-
-
-    # --- v2: Firewall_policy ---
-
-    @mcp.tool()
-    async def unifi_list_firewall_policies(site: str = "") -> str:
-        """List all firewall_policies (v2 API).
-
-        If this tool returns an unexpected error, call unifi_report_issue to report it.
-        """
-        client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/firewall-policies".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} firewall_policies")
+        data = await client.request("GET", "rest/hotspot2conf/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_create_firewall_policy(
+    async def unifi_create_hotspot2_config(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Create a new firewall_policy (v2 API).
+        """Create a new hotspot2_config.
 
         Args:
-            data: Firewall_policy configuration.
-                Required: action (str), ipVersion (str: 'V4'|'V6'), source (obj with zoneId from unifi_list_firewall_zones), destination (obj with zoneId from unifi_list_firewall_zones), schedule (obj with mode, e.g. {'mode': 'ALWAYS'}). Note: Requires firewall zones which are created when a gateway device is adopted.
+            data: Hotspot2_config configuration.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6123,29 +4939,26 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "create_firewall_policy", "data": data},
-                "DRY RUN (POST /v2/api/site/{site}/firewall-policies): Set confirm=True to execute.",
+                {"action": "create_hotspot2_config", "data": data},
+                "DRY RUN (POST rest/hotspot2conf): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("POST", "/v2/api/site/{site}/firewall-policies".replace("{site}", effective_site), json_data=data)
-        return _format_response(result, "Created firewall_policy")
+        result = await client.request("POST", "rest/hotspot2conf", json_data=data, site=site or None)
+        return _format_response(result, "Created hotspot2_config")
 
 
     @mcp.tool()
-    async def unifi_update_firewall_policy(
+    async def unifi_update_hotspot2_config(
         id: str,
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update a firewall_policy (v2 API).
+        """Update an existing hotspot2_config.
 
         Args:
-            id: The ID of the firewall_policy to update.
-            data: The FULL firewall_policy object with your changes applied.
-                v2 API requires sending the complete object, not just changed fields.
-                First GET the current object, modify the fields you want, then send the full object.
+            id: The _id of the hotspot2_config to update.
+            data: Fields to update.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6153,25 +4966,24 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "update_firewall_policy", "id": id, "data": data},
-                "DRY RUN (PUT /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
+                {"action": "update_hotspot2_config", "id": id, "data": data},
+                "DRY RUN (PUT rest/hotspot2conf/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("PUT", "/v2/api/site/{site}/firewall-policies/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
-        return _format_response(result, "Updated firewall_policy")
+        result = await client.request("PUT", "rest/hotspot2conf/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated hotspot2_config")
 
 
     @mcp.tool()
-    async def unifi_delete_firewall_policy(
+    async def unifi_delete_hotspot2_config(
         id: str,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Delete a firewall_policy (v2 API).
+        """Delete a hotspot2_config.
 
         Args:
-            id: The ID of the firewall_policy to delete.
+            id: The _id of the hotspot2_config to delete.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6179,45 +4991,55 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "delete_firewall_policy", "id": id},
-                "DRY RUN (DELETE /v2/api/site/{site}/firewall-policies/{id}): Set confirm=True to execute.",
+                {"action": "delete_hotspot2_config", "id": id},
+                "DRY RUN (DELETE rest/hotspot2conf/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("DELETE", "/v2/api/site/{site}/firewall-policies/{id}".replace("{site}", effective_site).format(id=id))
-        return _format_response(result, "Deleted firewall_policy")
+        result = await client.request("DELETE", "rest/hotspot2conf/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted hotspot2_config")
 
 
-    # --- v2: Firewall_zone ---
+
+    # --- Hotspot_operator CRUD ---
 
     @mcp.tool()
-    async def unifi_list_firewall_zones(site: str = "") -> str:
-        """List all firewall_zones (v2 API).
+    async def unifi_list_hotspot_operators(site: str = "") -> str:
+        """List all hotspot_operators.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/firewall/zone".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} firewall_zones")
+        data = await client.request("GET", "rest/hotspotop", site=site or None)
+        return _format_response(data, f"Found {len(data)} hotspot_operators")
+
+
+    @mcp.tool()
+    async def unifi_get_hotspot_operator(id: str, site: str = "") -> str:
+        """Get a single hotspot_operator by ID.
+
+        Args:
+            id: The _id of the hotspot_operator.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/hotspotop/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_update_firewall_zone(
-        id: str,
+    async def unifi_create_hotspot_operator(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update a firewall_zone (v2 API).
+        """Create a new hotspot_operator.
 
         Args:
-            id: The ID of the firewall_zone to update.
-            data: The FULL firewall_zone object with your changes applied.
-                v2 API requires sending the complete object, not just changed fields.
-                First GET the current object, modify the fields you want, then send the full object.
+            data: Hotspot_operator configuration.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6225,42 +5047,108 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "update_firewall_zone", "id": id, "data": data},
-                "DRY RUN (PUT /v2/api/site/{site}/firewall/zone/{id}): Set confirm=True to execute.",
+                {"action": "create_hotspot_operator", "data": data},
+                "DRY RUN (POST rest/hotspotop): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("PUT", "/v2/api/site/{site}/firewall/zone/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
-        return _format_response(result, "Updated firewall_zone")
+        result = await client.request("POST", "rest/hotspotop", json_data=data, site=site or None)
+        return _format_response(result, "Created hotspot_operator")
 
-
-    # --- v2: Traffic_rule ---
 
     @mcp.tool()
-    async def unifi_list_traffic_rules(site: str = "") -> str:
-        """List all traffic_rules (v2 API).
+    async def unifi_update_hotspot_operator(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing hotspot_operator.
+
+        Args:
+            id: The _id of the hotspot_operator to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_hotspot_operator", "id": id, "data": data},
+                "DRY RUN (PUT rest/hotspotop/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/hotspotop/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated hotspot_operator")
+
+
+    @mcp.tool()
+    async def unifi_delete_hotspot_operator(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a hotspot_operator.
+
+        Args:
+            id: The _id of the hotspot_operator to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_hotspot_operator", "id": id},
+                "DRY RUN (DELETE rest/hotspotop/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/hotspotop/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted hotspot_operator")
+
+
+
+    # --- Hotspot_package CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_hotspot_packages(site: str = "") -> str:
+        """List all hotspot_packages.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/trafficrules".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} traffic_rules")
+        data = await client.request("GET", "rest/hotspotpackage", site=site or None)
+        return _format_response(data, f"Found {len(data)} hotspot_packages")
+
+
+    @mcp.tool()
+    async def unifi_get_hotspot_package(id: str, site: str = "") -> str:
+        """Get a single hotspot_package by ID.
+
+        Args:
+            id: The _id of the hotspot_package.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/hotspotpackage/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_create_traffic_rule(
+    async def unifi_create_hotspot_package(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Create a new traffic_rule (v2 API).
+        """Create a new hotspot_package.
 
         Args:
-            data: Traffic_rule configuration.
-                Required: action (str: 'BLOCK'|'ALLOW'), enabled (bool), matching_target (str: 'INTERNET'|'LOCAL_NETWORK'), target_devices (list of {type: 'ALL_CLIENTS'|'CLIENT'|'NETWORK', client_mac/network_id}), network_id (str, _id from unifi_list_networks)
+            data: Hotspot_package configuration.
+                Required: name (str), amount (int, price in cents, 0=free), currency (str, e.g. 'USD'), hours (int, access duration in hours), bytes (int, bandwidth limit, 0=unlimited). Note: Requires hotspot portal + payment gateway configured on the controller.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6268,29 +5156,26 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "create_traffic_rule", "data": data},
-                "DRY RUN (POST /v2/api/site/{site}/trafficrules): Set confirm=True to execute.",
+                {"action": "create_hotspot_package", "data": data},
+                "DRY RUN (POST rest/hotspotpackage): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("POST", "/v2/api/site/{site}/trafficrules".replace("{site}", effective_site), json_data=data)
-        return _format_response(result, "Created traffic_rule")
+        result = await client.request("POST", "rest/hotspotpackage", json_data=data, site=site or None)
+        return _format_response(result, "Created hotspot_package")
 
 
     @mcp.tool()
-    async def unifi_update_traffic_rule(
+    async def unifi_update_hotspot_package(
         id: str,
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update a traffic_rule (v2 API).
+        """Update an existing hotspot_package.
 
         Args:
-            id: The ID of the traffic_rule to update.
-            data: The FULL traffic_rule object with your changes applied.
-                v2 API requires sending the complete object, not just changed fields.
-                First GET the current object, modify the fields you want, then send the full object.
+            id: The _id of the hotspot_package to update.
+            data: Fields to update.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6298,25 +5183,24 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "update_traffic_rule", "id": id, "data": data},
-                "DRY RUN (PUT /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
+                {"action": "update_hotspot_package", "id": id, "data": data},
+                "DRY RUN (PUT rest/hotspotpackage/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("PUT", "/v2/api/site/{site}/trafficrules/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
-        return _format_response(result, "Updated traffic_rule")
+        result = await client.request("PUT", "rest/hotspotpackage/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated hotspot_package")
 
 
     @mcp.tool()
-    async def unifi_delete_traffic_rule(
+    async def unifi_delete_hotspot_package(
         id: str,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Delete a traffic_rule (v2 API).
+        """Delete a hotspot_package.
 
         Args:
-            id: The ID of the traffic_rule to delete.
+            id: The _id of the hotspot_package to delete.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6324,45 +5208,55 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "delete_traffic_rule", "id": id},
-                "DRY RUN (DELETE /v2/api/site/{site}/trafficrules/{id}): Set confirm=True to execute.",
+                {"action": "delete_hotspot_package", "id": id},
+                "DRY RUN (DELETE rest/hotspotpackage/{id}): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("DELETE", "/v2/api/site/{site}/trafficrules/{id}".replace("{site}", effective_site).format(id=id))
-        return _format_response(result, "Deleted traffic_rule")
+        result = await client.request("DELETE", "rest/hotspotpackage/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted hotspot_package")
 
 
-    # --- v2: Traffic_route ---
+
+    # --- Radius_account CRUD ---
 
     @mcp.tool()
-    async def unifi_list_traffic_routes(site: str = "") -> str:
-        """List all traffic_routes (v2 API).
+    async def unifi_list_radius_accounts(site: str = "") -> str:
+        """List all radius_accounts.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        data = await client.request("GET", "/v2/api/site/{site}/trafficroutes".replace("{site}", effective_site))
-        if isinstance(data, list):
-            return _format_response(data, f"Found {len(data)} traffic_routes")
+        data = await client.request("GET", "rest/radiusaccount", site=site or None)
+        return _format_response(data, f"Found {len(data)} radius_accounts")
+
+
+    @mcp.tool()
+    async def unifi_get_radius_account(id: str, site: str = "") -> str:
+        """Get a single radius_account by ID.
+
+        Args:
+            id: The _id of the radius_account.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/radiusaccount/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
         return _format_response(data)
 
 
     @mcp.tool()
-    async def unifi_update_traffic_route(
-        id: str,
+    async def unifi_create_radius_account(
         data: dict,
         confirm: bool = False,
         site: str = "",
     ) -> str:
-        """Update a traffic_route (v2 API).
+        """Create a new radius_account.
 
         Args:
-            id: The ID of the traffic_route to update.
-            data: The FULL traffic_route object with your changes applied.
-                v2 API requires sending the complete object, not just changed fields.
-                First GET the current object, modify the fields you want, then send the full object.
+            data: Radius_account configuration.
             confirm: Must be True to execute. Returns preview if False.
             site: Site name (default: from env).
 
@@ -6370,17 +5264,1380 @@ if "v2" in UNIFI_MODULES:
         """
         if not confirm:
             return _format_response(
-                {"action": "update_traffic_route", "id": id, "data": data},
-                "DRY RUN (PUT /v2/api/site/{site}/trafficroutes/{id}): Set confirm=True to execute.",
+                {"action": "create_radius_account", "data": data},
+                "DRY RUN (POST rest/radiusaccount): Set confirm=True to execute.",
             )
         client = await _get_client()
-        effective_site = site or UNIFI_SITE
-        result = await client.request("PUT", "/v2/api/site/{site}/trafficroutes/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
-        return _format_response(result, "Updated traffic_route")
+        result = await client.request("POST", "rest/radiusaccount", json_data=data, site=site or None)
+        return _format_response(result, "Created radius_account")
+
+
+    @mcp.tool()
+    async def unifi_update_radius_account(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing radius_account.
+
+        Args:
+            id: The _id of the radius_account to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_radius_account", "id": id, "data": data},
+                "DRY RUN (PUT rest/radiusaccount/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/radiusaccount/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated radius_account")
+
+
+    @mcp.tool()
+    async def unifi_delete_radius_account(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a radius_account.
+
+        Args:
+            id: The _id of the radius_account to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_radius_account", "id": id},
+                "DRY RUN (DELETE rest/radiusaccount/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/radiusaccount/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted radius_account")
+
+
+
+    # --- Radius_profile CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_radius_profiles(site: str = "") -> str:
+        """List all radius_profiles.
+
+        Key fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/radiusprofile", site=site or None)
+        return _format_response(data, f"Found {len(data)} radius_profiles")
+
+
+    @mcp.tool()
+    async def unifi_get_radius_profile(id: str, site: str = "") -> str:
+        """Get a single radius_profile by ID.
+
+        Args:
+            id: The _id of the radius_profile.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/radiusprofile/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_radius_profile(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new radius_profile.
+
+        Args:
+            data: Radius_profile configuration.
+                Fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_radius_profile", "data": data},
+                "DRY RUN (POST rest/radiusprofile): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/radiusprofile", json_data=data, site=site or None)
+        return _format_response(result, "Created radius_profile")
+
+
+    @mcp.tool()
+    async def unifi_update_radius_profile(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing radius_profile.
+
+        Args:
+            id: The _id of the radius_profile to update.
+            data: Fields to update.
+                Fields: acct_servers (list), auth_servers (list), external_id (str), name (str), use_usg_auth_server (bool)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Tip: Reference this profile's _id as radiusprofile_id when configuring WLANs with 802.1X authentication.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_radius_profile", "id": id, "data": data},
+                "DRY RUN (PUT rest/radiusprofile/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/radiusprofile/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated radius_profile")
+
+
+    @mcp.tool()
+    async def unifi_delete_radius_profile(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a radius_profile.
+
+        Args:
+            id: The _id of the radius_profile to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_radius_profile", "id": id},
+                "DRY RUN (DELETE rest/radiusprofile/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/radiusprofile/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted radius_profile")
+
+
+
+    @mcp.tool()
+    async def unifi_list_payments(site: str = "") -> str:
+        """List payments statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/payment", site=site or None)
+        return _format_response(data, f"Found {len(data)} payments records")
+
+
+
+    @mcp.tool()
+    async def unifi_list_vouchers(site: str = "") -> str:
+        """List vouchers statistics.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "stat/voucher", site=site or None)
+        return _format_response(data, f"Found {len(data)} vouchers records")
+
+
+
+    @mcp.tool()
+    async def unifi_hotspot_authorize_guest(
+        mac: str,
+        minutes: int,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'authorize-guest' via hotspot.
+
+        Args:
+            mac: mac parameter (str).
+        Args:
+            minutes: minutes parameter (int).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "hotspot_authorize_guest", "cmd": "authorize-guest"}
+            preview["mac"] = mac
+            preview["minutes"] = minutes
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
+            )
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
+        payload: dict[str, Any] = {"cmd": "authorize-guest"}
+        payload["mac"] = mac
+        payload["minutes"] = minutes
+        client = await _get_client()
+        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
+        return _format_response(result, "Executed authorize-guest")
+
+
+
+    @mcp.tool()
+    async def unifi_create_voucher(
+        expire: int,
+        n: int,
+        quota: int,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'create-voucher' via hotspot.
+
+        Args:
+            expire: expire parameter (int).
+        Args:
+            n: n parameter (int).
+        Args:
+            quota: quota parameter (int).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "create_voucher", "cmd": "create-voucher"}
+            preview["expire"] = expire
+            preview["n"] = n
+            preview["quota"] = quota
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "create-voucher"}
+        payload["expire"] = expire
+        payload["n"] = n
+        payload["quota"] = quota
+        client = await _get_client()
+        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
+        return _format_response(result, "Executed create-voucher")
+
+
+
+    @mcp.tool()
+    async def unifi_revoke_voucher(
+        _id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'revoke-voucher' via hotspot.
+
+        Args:
+            _id: _id parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "revoke_voucher", "cmd": "revoke-voucher"}
+            preview["_id"] = _id
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "revoke-voucher"}
+        payload["_id"] = _id
+        client = await _get_client()
+        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
+        return _format_response(result, "Executed revoke-voucher")
+
+
+
+    @mcp.tool()
+    async def unifi_extend_guest_validity(
+        _id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'extend-guest-validity' via hotspot.
+
+        Args:
+            _id: _id parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "extend_guest_validity", "cmd": "extend-guest-validity"}
+            preview["_id"] = _id
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "extend-guest-validity"}
+        payload["_id"] = _id
+        client = await _get_client()
+        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
+        return _format_response(result, "Executed extend-guest-validity")
+
+
+
+    @mcp.tool()
+    async def unifi_delete_voucher(
+        _id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Execute 'delete-voucher' via hotspot.
+
+        Args:
+            _id: _id parameter (str).
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name override (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            preview = {"action": "delete_voucher", "cmd": "delete-voucher"}
+            preview["_id"] = _id
+            return _format_response(
+                preview,
+                "DRY RUN (POST cmd/hotspot): Set confirm=True to execute.",
+            )
+        payload: dict[str, Any] = {"cmd": "delete-voucher"}
+        payload["_id"] = _id
+        client = await _get_client()
+        result = await client.request("POST", "cmd/hotspot", json_data=payload, site=site or None)
+        return _format_response(result, "Executed delete-voucher")
+
+
+
+if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+    # ===========================================================================
+    # Module: advanced
+    # ===========================================================================
+
+    # --- Broadcast_group CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_broadcast_groups(site: str = "") -> str:
+        """List all broadcast_groups.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/broadcastgroup", site=site or None)
+        return _format_response(data, f"Found {len(data)} broadcast_groups")
+
+
+    @mcp.tool()
+    async def unifi_get_broadcast_group(id: str, site: str = "") -> str:
+        """Get a single broadcast_group by ID.
+
+        Args:
+            id: The _id of the broadcast_group.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/broadcastgroup/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_broadcast_group(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new broadcast_group.
+
+        Args:
+            data: Broadcast_group configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_broadcast_group", "data": data},
+                "DRY RUN (POST rest/broadcastgroup): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/broadcastgroup", json_data=data, site=site or None)
+        return _format_response(result, "Created broadcast_group")
+
+
+    @mcp.tool()
+    async def unifi_update_broadcast_group(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing broadcast_group.
+
+        Args:
+            id: The _id of the broadcast_group to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_broadcast_group", "id": id, "data": data},
+                "DRY RUN (PUT rest/broadcastgroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/broadcastgroup/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated broadcast_group")
+
+
+    @mcp.tool()
+    async def unifi_delete_broadcast_group(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a broadcast_group.
+
+        Args:
+            id: The _id of the broadcast_group to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_broadcast_group", "id": id},
+                "DRY RUN (DELETE rest/broadcastgroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/broadcastgroup/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted broadcast_group")
+
+
+
+    # --- Dpi_app CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_dpi_apps(site: str = "") -> str:
+        """List all dpi_apps.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dpiapp", site=site or None)
+        return _format_response(data, f"Found {len(data)} dpi_apps")
+
+
+    @mcp.tool()
+    async def unifi_get_dpi_app(id: str, site: str = "") -> str:
+        """Get a single dpi_app by ID.
+
+        Args:
+            id: The _id of the dpi_app.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dpiapp/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_dpi_app(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new dpi_app.
+
+        Args:
+            data: Dpi_app configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_dpi_app", "data": data},
+                "DRY RUN (POST rest/dpiapp): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/dpiapp", json_data=data, site=site or None)
+        return _format_response(result, "Created dpi_app")
+
+
+    @mcp.tool()
+    async def unifi_update_dpi_app(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing dpi_app.
+
+        Args:
+            id: The _id of the dpi_app to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_dpi_app", "id": id, "data": data},
+                "DRY RUN (PUT rest/dpiapp/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/dpiapp/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated dpi_app")
+
+
+    @mcp.tool()
+    async def unifi_delete_dpi_app(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a dpi_app.
+
+        Args:
+            id: The _id of the dpi_app to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_dpi_app", "id": id},
+                "DRY RUN (DELETE rest/dpiapp/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/dpiapp/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted dpi_app")
+
+
+
+    # --- Dpi_group CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_dpi_groups(site: str = "") -> str:
+        """List all dpi_groups.
+
+        Key fields: name (str)
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dpigroup", site=site or None)
+        return _format_response(data, f"Found {len(data)} dpi_groups")
+
+
+    @mcp.tool()
+    async def unifi_get_dpi_group(id: str, site: str = "") -> str:
+        """Get a single dpi_group by ID.
+
+        Args:
+            id: The _id of the dpi_group.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/dpigroup/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_dpi_group(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new dpi_group.
+
+        Args:
+            data: Dpi_group configuration.
+                Fields: name (str)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_dpi_group", "data": data},
+                "DRY RUN (POST rest/dpigroup): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/dpigroup", json_data=data, site=site or None)
+        return _format_response(result, "Created dpi_group")
+
+
+    @mcp.tool()
+    async def unifi_update_dpi_group(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing dpi_group.
+
+        Args:
+            id: The _id of the dpi_group to update.
+            data: Fields to update.
+                Fields: name (str)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_dpi_group", "id": id, "data": data},
+                "DRY RUN (PUT rest/dpigroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/dpigroup/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated dpi_group")
+
+
+    @mcp.tool()
+    async def unifi_delete_dpi_group(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a dpi_group.
+
+        Args:
+            id: The _id of the dpi_group to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_dpi_group", "id": id},
+                "DRY RUN (DELETE rest/dpigroup/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/dpigroup/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted dpi_group")
+
+
+
+    # --- Heatmap CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_heatmaps(site: str = "") -> str:
+        """List all heatmaps.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/heatmap", site=site or None)
+        return _format_response(data, f"Found {len(data)} heatmaps")
+
+
+    @mcp.tool()
+    async def unifi_get_heatmap(id: str, site: str = "") -> str:
+        """Get a single heatmap by ID.
+
+        Args:
+            id: The _id of the heatmap.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/heatmap/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_heatmap(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new heatmap.
+
+        Args:
+            data: Heatmap configuration.
+                Required: name (str), map_id (str, _id from unifi_list_maps)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_heatmap", "data": data},
+                "DRY RUN (POST rest/heatmap): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/heatmap", json_data=data, site=site or None)
+        return _format_response(result, "Created heatmap")
+
+
+    @mcp.tool()
+    async def unifi_update_heatmap(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing heatmap.
+
+        Args:
+            id: The _id of the heatmap to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_heatmap", "id": id, "data": data},
+                "DRY RUN (PUT rest/heatmap/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/heatmap/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated heatmap")
+
+
+    @mcp.tool()
+    async def unifi_delete_heatmap(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a heatmap.
+
+        Args:
+            id: The _id of the heatmap to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_heatmap", "id": id},
+                "DRY RUN (DELETE rest/heatmap/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/heatmap/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted heatmap")
+
+
+
+    # --- Heatmap_point CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_heatmap_points(site: str = "") -> str:
+        """List all heatmap_points.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/heatmappoint", site=site or None)
+        return _format_response(data, f"Found {len(data)} heatmap_points")
+
+
+    @mcp.tool()
+    async def unifi_get_heatmap_point(id: str, site: str = "") -> str:
+        """Get a single heatmap_point by ID.
+
+        Args:
+            id: The _id of the heatmap_point.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/heatmappoint/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_heatmap_point(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new heatmap_point.
+
+        Args:
+            data: Heatmap_point configuration.
+                Required: heatmap_id (str, _id from unifi_list_heatmaps), x (float, 0.0–1.0), y (float, 0.0–1.0)
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_heatmap_point", "data": data},
+                "DRY RUN (POST rest/heatmappoint): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/heatmappoint", json_data=data, site=site or None)
+        return _format_response(result, "Created heatmap_point")
+
+
+    @mcp.tool()
+    async def unifi_update_heatmap_point(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing heatmap_point.
+
+        Args:
+            id: The _id of the heatmap_point to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_heatmap_point", "id": id, "data": data},
+                "DRY RUN (PUT rest/heatmappoint/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/heatmappoint/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated heatmap_point")
+
+
+    @mcp.tool()
+    async def unifi_delete_heatmap_point(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a heatmap_point.
+
+        Args:
+            id: The _id of the heatmap_point to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_heatmap_point", "id": id},
+                "DRY RUN (DELETE rest/heatmappoint/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/heatmappoint/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted heatmap_point")
+
+
+
+    # --- Map CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_maps(site: str = "") -> str:
+        """List all maps.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/map", site=site or None)
+        return _format_response(data, f"Found {len(data)} maps")
+
+
+    @mcp.tool()
+    async def unifi_get_map(id: str, site: str = "") -> str:
+        """Get a single map by ID.
+
+        Args:
+            id: The _id of the map.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/map/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_map(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new map.
+
+        Args:
+            data: Map configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_map", "data": data},
+                "DRY RUN (POST rest/map): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/map", json_data=data, site=site or None)
+        return _format_response(result, "Created map")
+
+
+    @mcp.tool()
+    async def unifi_update_map(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing map.
+
+        Args:
+            id: The _id of the map to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_map", "id": id, "data": data},
+                "DRY RUN (PUT rest/map/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/map/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated map")
+
+
+    @mcp.tool()
+    async def unifi_delete_map(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a map.
+
+        Args:
+            id: The _id of the map to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_map", "id": id},
+                "DRY RUN (DELETE rest/map/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/map/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted map")
+
+
+
+    # --- Media_file CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_media_files(site: str = "") -> str:
+        """List all media_files.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/mediafile", site=site or None)
+        return _format_response(data, f"Found {len(data)} media_files")
+
+
+    @mcp.tool()
+    async def unifi_get_media_file(id: str, site: str = "") -> str:
+        """Get a single media_file by ID.
+
+        Args:
+            id: The _id of the media_file.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/mediafile/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_media_file(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new media_file.
+
+        Args:
+            data: Media_file configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_media_file", "data": data},
+                "DRY RUN (POST rest/mediafile): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/mediafile", json_data=data, site=site or None)
+        return _format_response(result, "Created media_file")
+
+
+    @mcp.tool()
+    async def unifi_update_media_file(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing media_file.
+
+        Args:
+            id: The _id of the media_file to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_media_file", "id": id, "data": data},
+                "DRY RUN (PUT rest/mediafile/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/mediafile/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated media_file")
+
+
+    @mcp.tool()
+    async def unifi_delete_media_file(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a media_file.
+
+        Args:
+            id: The _id of the media_file to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_media_file", "id": id},
+                "DRY RUN (DELETE rest/mediafile/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/mediafile/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted media_file")
+
+
+
+    # --- Known_rogue_ap (read-only) ---
+
+    @mcp.tool()
+    async def unifi_list_known_rogue_aps(site: str = "") -> str:
+        """List all known_rogue_aps.
+
+        Returns known_rogue_aps from the UniFi controller.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/rogueknown", site=site or None)
+        return _format_response(data, f"Found {len(data)} known_rogue_aps")
+
+
+
+    # --- Schedule_task CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_schedule_tasks(site: str = "") -> str:
+        """List all schedule_tasks.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/scheduletask", site=site or None)
+        return _format_response(data, f"Found {len(data)} schedule_tasks")
+
+
+    @mcp.tool()
+    async def unifi_get_schedule_task(id: str, site: str = "") -> str:
+        """Get a single schedule_task by ID.
+
+        Args:
+            id: The _id of the schedule_task.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/scheduletask/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_schedule_task(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new schedule_task.
+
+        Args:
+            data: Schedule_task configuration.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_schedule_task", "data": data},
+                "DRY RUN (POST rest/scheduletask): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/scheduletask", json_data=data, site=site or None)
+        return _format_response(result, "Created schedule_task")
+
+
+    @mcp.tool()
+    async def unifi_update_schedule_task(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing schedule_task.
+
+        Args:
+            id: The _id of the schedule_task to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        Note: This resource requires sending the FULL object on update, not just changed fields.
+        First GET the current object, modify the fields you want, then send the complete object.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_schedule_task", "id": id, "data": data},
+                "DRY RUN (PUT rest/scheduletask/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/scheduletask/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated schedule_task")
+
+
+    @mcp.tool()
+    async def unifi_delete_schedule_task(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a schedule_task.
+
+        Args:
+            id: The _id of the schedule_task to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_schedule_task", "id": id},
+                "DRY RUN (DELETE rest/scheduletask/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/scheduletask/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted schedule_task")
+
+
+
+    # --- Spatial_record CRUD ---
+
+    @mcp.tool()
+    async def unifi_list_spatial_records(site: str = "") -> str:
+        """List all spatial_records.
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/spatialrecord", site=site or None)
+        return _format_response(data, f"Found {len(data)} spatial_records")
+
+
+    @mcp.tool()
+    async def unifi_get_spatial_record(id: str, site: str = "") -> str:
+        """Get a single spatial_record by ID.
+
+        Args:
+            id: The _id of the spatial_record.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        client = await _get_client()
+        data = await client.request("GET", "rest/spatialrecord/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+
+
+    @mcp.tool()
+    async def unifi_create_spatial_record(
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Create a new spatial_record.
+
+        Args:
+            data: Spatial_record configuration.
+                Required: name (str), devices (list, device references e.g. []), description (str, e.g. 'Room label')
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "create_spatial_record", "data": data},
+                "DRY RUN (POST rest/spatialrecord): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "rest/spatialrecord", json_data=data, site=site or None)
+        return _format_response(result, "Created spatial_record")
+
+
+    @mcp.tool()
+    async def unifi_update_spatial_record(
+        id: str,
+        data: dict,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Update an existing spatial_record.
+
+        Args:
+            id: The _id of the spatial_record to update.
+            data: Fields to update.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "update_spatial_record", "id": id, "data": data},
+                "DRY RUN (PUT rest/spatialrecord/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "rest/spatialrecord/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated spatial_record")
+
+
+    @mcp.tool()
+    async def unifi_delete_spatial_record(
+        id: str,
+        confirm: bool = False,
+        site: str = "",
+    ) -> str:
+        """Delete a spatial_record.
+
+        Args:
+            id: The _id of the spatial_record to delete.
+            confirm: Must be True to execute. Returns preview if False.
+            site: Site name (default: from env).
+
+        If this tool returns an unexpected error, call unifi_report_issue to report it.
+        """
+        if not confirm:
+            return _format_response(
+                {"action": "delete_spatial_record", "id": id},
+                "DRY RUN (DELETE rest/spatialrecord/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "rest/spatialrecord/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted spatial_record")
+
 
 
 # ===========================================================================
-# Global Endpoint Tools
+# Global Endpoint Tools (always-on)
 # ===========================================================================
 
 @mcp.tool()
@@ -6478,80 +6735,6 @@ async def unifi_system_reboot() -> str:
     client = await _get_client()
     data = await client.request("POST", "/api/system/reboot")
     return _format_response(data)
-
-
-# ===========================================================================
-# Special: Port Override Helper
-# ===========================================================================
-
-@mcp.tool()
-async def unifi_set_port_override(
-    device_id: str,
-    port_idx: int,
-    portconf_id: str = "",
-    name: str = "",
-    native_networkconf_id: str = "",
-    forward: str = "",
-    poe_mode: str = "",
-    confirm: bool = False,
-    site: str = "",
-) -> str:
-    """Set port override on a device (switch port configuration).
-
-    This updates a specific port on a UniFi switch device.
-
-    Args:
-        device_id: The _id of the device.
-        port_idx: Port number (1-based).
-        portconf_id: Port profile ID to apply (from rest/portconf).
-        name: Custom port name.
-        native_networkconf_id: Network ID for native VLAN.
-        forward: Forward mode ('all', 'customize', 'disabled').
-        poe_mode: PoE mode ('auto', 'off', 'pasv24', 'passthrough').
-        confirm: Must be True to execute. Returns preview if False.
-        site: Site name (default: from env).
-
-    If this tool returns an unexpected error, call unifi_report_issue to report it.
-    """
-    override: dict[str, Any] = {"port_idx": port_idx}
-    if portconf_id:
-        override["portconf_id"] = portconf_id
-    if name:
-        override["name"] = name
-    if native_networkconf_id:
-        override["native_networkconf_id"] = native_networkconf_id
-    if forward:
-        override["forward"] = forward
-    if poe_mode:
-        override["poe_mode"] = poe_mode
-
-    if not confirm:
-        return _format_response(
-            {"action": "set_port_override", "device_id": device_id, "override": override},
-            "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
-        )
-
-    client = await _get_client()
-    # First get current device to preserve existing overrides
-    device_data = await client.request("GET", f"rest/device/{device_id}", site=site or None)
-    if isinstance(device_data, list) and device_data:
-        device_data = device_data[0]
-
-    existing_overrides = []
-    if isinstance(device_data, dict):
-        existing_overrides = device_data.get("port_overrides", [])
-
-    # Replace or append override for this port_idx
-    new_overrides = [o for o in existing_overrides if o.get("port_idx") != port_idx]
-    new_overrides.append(override)
-
-    result = await client.request(
-        "PUT",
-        f"rest/device/{device_id}",
-        json_data={"port_overrides": new_overrides},
-        site=site or None,
-    )
-    return _format_response(result, f"Set port override on port {port_idx}")
 
 
 # ---------------------------------------------------------------------------

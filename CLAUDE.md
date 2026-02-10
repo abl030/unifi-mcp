@@ -93,7 +93,7 @@ A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and 
 - Single `UniFiClient` class handles auth, session management, cookie handling
 - Supports both standalone controllers and UniFi OS (with/without `/proxy/network` prefix)
 - Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`
-- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Set to `v1` on standalone controllers (v2 endpoints don't exist there), or `v2` for v2-only. Global tools and helpers are always registered regardless of this setting.
+- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 123 tools. Global tools (8) and report_issue are always registered.
 - Graceful error handling with clear error messages in tool responses
 
 ### Docker Test Harness

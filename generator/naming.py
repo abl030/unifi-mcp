@@ -515,3 +515,115 @@ WORKFLOW_HINTS: dict[str, str] = {
     "usergroup": "Tip: Assign users to this group by setting usergroup_id when creating or updating users.",
     "user": "Note: To remove a user, use unifi_forget_client with the user's MAC address. REST DELETE is not supported for the user resource.",
 }
+
+# ---------------------------------------------------------------------------
+# Fine-grained module definitions for UNIFI_MODULES toggle
+# ---------------------------------------------------------------------------
+
+MODULE_ORDER = [
+    "device", "client", "wifi", "network", "firewall",
+    "monitor", "admin", "hotspot", "advanced",
+]
+
+# REST resource → module
+REST_MODULES: dict[str, str] = {
+    # device
+    "device": "device", "virtualdevice": "device", "element": "device",
+    # client
+    "user": "client",
+    # wifi
+    "wlanconf": "wifi", "wlangroup": "wifi", "channelplan": "wifi",
+    # network
+    "networkconf": "network", "portconf": "network", "dnsrecord": "network",
+    # firewall
+    "firewallrule": "firewall", "firewallgroup": "firewall", "portforward": "firewall",
+    "routing": "firewall", "dynamicdns": "firewall", "dhcpoption": "firewall",
+    # monitor
+    "alarm": "monitor", "event": "monitor",
+    # admin
+    "setting": "admin", "usergroup": "admin", "tag": "admin", "account": "admin",
+    # hotspot
+    "hotspotop": "hotspot", "hotspotpackage": "hotspot", "hotspot2conf": "hotspot",
+    "radiusprofile": "hotspot", "radiusaccount": "hotspot",
+    # advanced
+    "map": "advanced", "heatmap": "advanced", "heatmappoint": "advanced",
+    "spatialrecord": "advanced", "dpiapp": "advanced", "dpigroup": "advanced",
+    "mediafile": "advanced", "scheduletask": "advanced", "broadcastgroup": "advanced",
+    "rogueknown": "advanced",
+}
+
+# Stat endpoint → module
+STAT_MODULES: dict[str, str] = {
+    # device
+    "device": "device", "device_basic": "device",
+    # client
+    "sta": "client", "alluser": "client", "session": "client", "guest": "client",
+    # wifi
+    "current_channel": "wifi", "ccode": "wifi", "spectrum_scan": "wifi",
+    # monitor (28 endpoints)
+    "health": "monitor", "dashboard": "monitor", "sysinfo": "monitor",
+    "anomalies": "monitor", "ips_event": "monitor", "rogueap": "monitor",
+    "remoteuservpn": "monitor", "sdn": "monitor", "dpi": "monitor",
+    "sitedpi": "monitor", "stadpi": "monitor", "event": "monitor",
+    "alarm": "monitor", "authorization": "monitor", "routing": "monitor",
+    "portforward": "monitor", "dynamicdns": "monitor", "gateway": "monitor",
+    "report": "monitor", "report_archive_speedtest": "monitor",
+    "report_5min_gw": "monitor", "report_hourly_gw": "monitor",
+    "report_daily_gw": "monitor", "report_monthly_site": "monitor",
+    "report_monthly_ap": "monitor", "report_monthly_user": "monitor",
+    "report_monthly_gw": "monitor", "report_5min_ap": "monitor",
+    # hotspot
+    "voucher": "hotspot", "payment": "hotspot",
+}
+
+# (manager, command) → module
+CMD_MODULES: dict[tuple[str, str], str] = {
+    # device — 23 devmgr + 2 sitemgr + 2 system = 27
+    ("devmgr", "adopt"): "device", ("devmgr", "restart"): "device",
+    ("devmgr", "force-provision"): "device", ("devmgr", "power-cycle"): "device",
+    ("devmgr", "speedtest"): "device", ("devmgr", "speedtest-status"): "device",
+    ("devmgr", "set-locate"): "device", ("devmgr", "unset-locate"): "device",
+    ("devmgr", "upgrade"): "device", ("devmgr", "upgrade-external"): "device",
+    ("devmgr", "migrate"): "device", ("devmgr", "cancel-migrate"): "device",
+    ("devmgr", "spectrum-scan"): "device", ("devmgr", "rename"): "device",
+    ("devmgr", "led-override"): "device", ("devmgr", "disable-ap"): "device",
+    ("devmgr", "upgrade-all-devices"): "device", ("devmgr", "advanced-adopt"): "device",
+    ("devmgr", "restart-http-portal"): "device", ("devmgr", "enable"): "device",
+    ("devmgr", "disable"): "device", ("devmgr", "cable-test"): "device",
+    ("devmgr", "set-inform"): "device",
+    ("sitemgr", "move-device"): "device", ("sitemgr", "delete-device"): "device",
+    ("system", "reboot-cloudkey"): "device", ("system", "element-adoption"): "device",
+    # client — 7 stamgr
+    ("stamgr", "block-sta"): "client", ("stamgr", "unblock-sta"): "client",
+    ("stamgr", "kick-sta"): "client", ("stamgr", "forget-sta"): "client",
+    ("stamgr", "unauthorize-guest"): "client", ("stamgr", "authorize-guest"): "client",
+    ("stamgr", "reconnect-sta"): "client",
+    # monitor — evtmgr + alarm + stat
+    ("evtmgr", "archive-all-alarms"): "monitor", ("evtmgr", "archive-alarm"): "monitor",
+    ("alarm", "archive"): "monitor", ("stat", "reset-dpi"): "monitor",
+    # admin — 12 sitemgr + 4 backup + 2 system + 5 devmgr rolling
+    ("sitemgr", "add-site"): "admin", ("sitemgr", "delete-site"): "admin",
+    ("sitemgr", "update-site"): "admin", ("sitemgr", "get-admins"): "admin",
+    ("sitemgr", "site-leds"): "admin", ("sitemgr", "invite-admin"): "admin",
+    ("sitemgr", "assign-existing-admin"): "admin", ("sitemgr", "update-admin"): "admin",
+    ("sitemgr", "revoke-admin"): "admin", ("sitemgr", "grant-super-admin"): "admin",
+    ("sitemgr", "create-admin"): "admin", ("sitemgr", "revoke-super-admin"): "admin",
+    ("backup", "list-backups"): "admin", ("backup", "delete-backup"): "admin",
+    ("backup", "generate-backup"): "admin", ("backup", "generate-backup-site"): "admin",
+    ("system", "backup"): "admin", ("system", "download-backup"): "admin",
+    ("devmgr", "rolling-upgrade"): "admin", ("devmgr", "cancel-rolling-upgrade"): "admin",
+    ("devmgr", "check-firmware-update"): "admin", ("devmgr", "set-rollupgrade"): "admin",
+    ("devmgr", "unset-rollupgrade"): "admin",
+    # hotspot — 5 hotspot commands
+    ("hotspot", "authorize-guest"): "hotspot", ("hotspot", "create-voucher"): "hotspot",
+    ("hotspot", "revoke-voucher"): "hotspot", ("hotspot", "extend-guest-validity"): "hotspot",
+    ("hotspot", "delete-voucher"): "hotspot",
+}
+
+# v2 resource → module
+V2_MODULES: dict[str, str] = {
+    "clients_active": "client", "clients_history": "client",
+    "apgroups": "wifi",
+    "firewall_policies": "firewall", "traffic_rules": "firewall",
+    "trafficroutes": "firewall", "firewall_zones": "firewall",
+}

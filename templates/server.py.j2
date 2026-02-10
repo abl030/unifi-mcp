@@ -192,7 +192,7 @@ def _validate_mac(mac: str) -> str | None:
 
 
 # ===========================================================================
-# Error Reporting Tool
+# Error Reporting Tool (always-on)
 # ===========================================================================
 
 
@@ -240,13 +240,10 @@ async def unifi_report_issue(
         f"--body '{escaped_body}'"
     )
 
-
-if "v1" in UNIFI_MODULES:
-{% filter indent(4, first=True) %}
-# ===========================================================================
-# REST Endpoint Tools
-# ===========================================================================
-{% for tool in rest_tools %}
+{# ======================================================================= #}
+{# MACROS: Per-tool rendering for each tool type                           #}
+{# ======================================================================= #}
+{% macro render_rest_tool(tool) %}
 {% if tool.is_setting %}
 
 # --- Settings (special handling: keyed by 'key' field) ---
@@ -458,12 +455,8 @@ async def unifi_delete_{{ tool.singular }}(
 
 {% endif %}
 {% endif %}
-{% endfor %}
-
-# ===========================================================================
-# Stat Endpoint Tools
-# ===========================================================================
-{% for tool in stat_tools %}
+{% endmacro %}
+{% macro render_stat_tool(tool) %}
 {% if tool.resource == "report" %}
 
 @mcp.tool()
@@ -513,12 +506,8 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
     return _format_response(data, f"Found {len(data)} {{ tool.display_name }} records")
 
 {% endif %}
-{% endfor %}
-
-# ===========================================================================
-# Command Tools
-# ===========================================================================
-{% for tool in cmd_tools %}
+{% endmacro %}
+{% macro render_cmd_tool(tool) %}
 
 @mcp.tool()
 async def unifi_{{ tool.tool_name }}(
@@ -583,15 +572,8 @@ async def unifi_{{ tool.tool_name }}(
     result = await client.request("POST", "{{ tool.path }}", json_data=payload, site=site or None)
     return _format_response(result, "Executed {{ tool.command }}")
 
-{% endfor %}
-{% endfilter %}
-
-if "v2" in UNIFI_MODULES:
-{% filter indent(4, first=True) %}
-# ===========================================================================
-# v2 Endpoint Tools
-# ===========================================================================
-{% for tool in v2_tools %}
+{% endmacro %}
+{% macro render_v2_tool(tool) %}
 
 # --- v2: {{ tool.singular | title }} ---
 {% if "GET" in tool.methods %}
@@ -710,41 +692,30 @@ async def unifi_delete_{{ tool.singular }}(
     return _format_response(result, "Deleted {{ tool.singular }}")
 
 {% endif %}
-{% endfor %}
-{% endfilter %}
+{% endmacro %}
 
+{% for mod in module_order %}
+{% set mod_rest = rest_by_module.get(mod, []) %}
+{% set mod_stat = stat_by_module.get(mod, []) %}
+{% set mod_cmd = cmd_by_module.get(mod, []) %}
+{% set mod_v2 = v2_by_module.get(mod, []) %}
+{% if mod_rest or mod_stat or mod_cmd or mod == "device" %}
+
+if "{{ mod }}" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
+{% filter indent(4, first=True) %}
 # ===========================================================================
-# Global Endpoint Tools
+# Module: {{ mod }}
 # ===========================================================================
-{% for tool in global_tools %}
-
-@mcp.tool()
-async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
-    """{{ tool.name | replace('_', ' ') | title }}.
-{% if not tool.auth %}
-
-    No authentication required.
-{% endif %}
-
-    If this tool returns an unexpected error, call unifi_report_issue to report it.
-    """
-{% if tool.auth %}
-    client = await _get_client()
-    data = await client.request("{{ tool.method }}", "{{ tool.path }}")
-{% else %}
-    # No auth required
-    async with httpx.AsyncClient(
-        base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
-        verify=UNIFI_VERIFY_SSL,
-        timeout=30.0,
-    ) as c:
-        resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
-        resp.raise_for_status()
-        data = resp.json()
-{% endif %}
-    return _format_response(data)
-
+{% for tool in mod_rest %}
+{{ render_rest_tool(tool) }}
 {% endfor %}
+{% for tool in mod_stat %}
+{{ render_stat_tool(tool) }}
+{% endfor %}
+{% for tool in mod_cmd %}
+{{ render_cmd_tool(tool) }}
+{% endfor %}
+{% if mod == "device" %}
 
 # ===========================================================================
 # Special: Port Override Helper
@@ -819,6 +790,52 @@ async def unifi_set_port_override(
     )
     return _format_response(result, f"Set port override on port {port_idx}")
 
+{% endif %}
+{% endfilter %}
+{% endif %}
+{% if mod_v2 %}
+
+if "{{ mod }}" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
+{% filter indent(4, first=True) %}
+{% for tool in mod_v2 %}
+{{ render_v2_tool(tool) }}
+{% endfor %}
+{% endfilter %}
+{% endif %}
+{% endfor %}
+
+# ===========================================================================
+# Global Endpoint Tools (always-on)
+# ===========================================================================
+{% for tool in global_tools %}
+
+@mcp.tool()
+async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
+    """{{ tool.name | replace('_', ' ') | title }}.
+{% if not tool.auth %}
+
+    No authentication required.
+{% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
+    """
+{% if tool.auth %}
+    client = await _get_client()
+    data = await client.request("{{ tool.method }}", "{{ tool.path }}")
+{% else %}
+    # No auth required
+    async with httpx.AsyncClient(
+        base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
+        verify=UNIFI_VERIFY_SSL,
+        timeout=30.0,
+    ) as c:
+        resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
+        resp.raise_for_status()
+        data = resp.json()
+{% endif %}
+    return _format_response(data)
+
+{% endfor %}
 
 # ---------------------------------------------------------------------------
 # Entry point
