@@ -87,8 +87,9 @@ def count_from_spec() -> dict:
 
     global_tools = global_count  # 1 tool per global endpoint
     port_override = 1  # port override helper
+    report_issue = 1  # error reporting helper
 
-    total_tools = rest_tools + stat_tools + cmd_tools + v2_tools + global_tools + port_override
+    total_tools = rest_tools + stat_tools + cmd_tools + v2_tools + global_tools + port_override + report_issue
 
     return {
         "endpoints": {
@@ -110,6 +111,7 @@ def count_from_spec() -> dict:
             "v2": v2_tools,
             "global": global_tools,
             "port_override": port_override,
+            "report_issue": report_issue,
             "total": total_tools,
         },
         "rest_detail": rest_detail,
@@ -174,6 +176,7 @@ def main():
         print(f"    {name:25s} → {n} tools")
     print(f"  Global tools:        {t['global']}")
     print(f"  Port override:       {t['port_override']}")
+    print(f"  Report issue:        {t['report_issue']}")
     print(f"  TOTAL tools:         {t['total']}")
 
     if actual is not None:

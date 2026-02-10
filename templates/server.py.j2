@@ -189,6 +189,56 @@ def _validate_mac(mac: str) -> str | None:
 
 
 # ===========================================================================
+# Error Reporting Tool
+# ===========================================================================
+
+
+@mcp.tool()
+async def unifi_report_issue(
+    tool_name: str,
+    error_message: str,
+    parameters_used: dict[str, Any],
+    notes: str = "",
+) -> str:
+    """Report an unexpected UniFi MCP tool error by composing a GitHub issue command.
+
+    This tool does NOT make any HTTP calls. It returns a ready-to-paste
+    `gh issue create` command that the user can review and run to file a bug report.
+
+    Args:
+        tool_name: The MCP tool that produced the error (e.g. unifi_create_network).
+        error_message: The error message or response body returned by the tool.
+        parameters_used: The parameters that were passed to the failing tool call.
+        notes: Any additional context about what you were trying to accomplish.
+    """
+    import json as _json
+
+    params_block = _json.dumps(parameters_used, indent=2, default=str)
+    notes_section = f"\n\n## Notes\n\n{notes}" if notes else ""
+
+    body = (
+        f"## Tool\n\n`{tool_name}`\n\n"
+        f"## Error\n\n```\n{error_message}\n```\n\n"
+        f"## Parameters\n\n```json\n{params_block}\n```\n\n"
+        f"## Repro Steps\n\n"
+        f"1. Call `{tool_name}` with the parameters above\n"
+        f"2. Observe the error response"
+        f"{notes_section}"
+    )
+
+    escaped_body = body.replace("'", "'\\''")
+    escaped_title = f"Bug: {tool_name} returns unexpected error".replace("'", "'\\''")
+
+    return (
+        f"Run this command to file the issue:\n\n"
+        f"gh issue create --repo abl030/unifi-mcp "
+        f"--label bug --label mcp-reported "
+        f"--title '{escaped_title}' "
+        f"--body '{escaped_body}'"
+    )
+
+
+# ===========================================================================
 # REST Endpoint Tools
 # ===========================================================================
 {% for tool in rest_tools %}
@@ -198,7 +248,10 @@ def _validate_mac(mac: str) -> str | None:
 
 @mcp.tool()
 async def unifi_list_settings(site: str = "") -> str:
-    """List all site settings. Returns all setting categories."""
+    """List all site settings. Returns all setting categories.
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
+    """
     client = await _get_client()
     data = await client.request("GET", "rest/setting", site=site or None)
     return _format_response(data, f"Found {len(data)} setting categories")
@@ -211,6 +264,8 @@ async def unifi_get_setting(key: str, site: str = "") -> str:
     Args:
         key: The setting key to retrieve.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "rest/setting", site=site or None)
@@ -234,6 +289,8 @@ async def unifi_update_setting(
         data: Fields to update. Read current values first with unifi_get_setting.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -253,6 +310,8 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
     """List all {{ tool.plural }}.
 
     Returns {{ tool.plural }} from the UniFi controller.
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
@@ -269,6 +328,8 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
@@ -282,6 +343,8 @@ async def unifi_get_{{ tool.singular }}(id: str, site: str = "") -> str:
     Args:
         id: The _id of the {{ tool.singular }}.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}/{id}".format(id=id), site=site or None)
@@ -311,6 +374,8 @@ async def unifi_create_{{ tool.singular }}(
 
     {{ tool.workflow_hint }}
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -348,6 +413,8 @@ async def unifi_update_{{ tool.singular }}(
 
     {{ tool.workflow_hint }}
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -372,6 +439,8 @@ async def unifi_delete_{{ tool.singular }}(
         id: The _id of the {{ tool.singular }} to delete.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -406,6 +475,8 @@ async def unifi_list_report(
         site: Site name (default: from env).
 
     Note: {{ tool.note }}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     path = f"stat/report/{interval}.{report_type}"
@@ -425,6 +496,8 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
 
     Key fields: {{ tool.sample_fields | join(', ') }}
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
 {% if tool.method == "POST" %}
@@ -470,6 +543,8 @@ async def unifi_{{ tool.tool_name }}(
         confirm: Must be True to execute. Returns preview if False.
 {% endif %}
         site: Site name override (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
 {% if tool.is_mutation %}
     if not confirm:
@@ -520,6 +595,8 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     effective_site = site or UNIFI_SITE
@@ -548,6 +625,8 @@ async def unifi_create_{{ tool.singular }}(
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -581,6 +660,8 @@ async def unifi_update_{{ tool.singular }}(
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -607,6 +688,8 @@ async def unifi_delete_{{ tool.singular }}(
         id: The ID of the {{ tool.singular }} to delete.
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     if not confirm:
         return _format_response(
@@ -633,6 +716,8 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 
     No authentication required.
 {% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
 {% if tool.auth %}
     client = await _get_client()
@@ -682,6 +767,8 @@ async def unifi_set_port_override(
         poe_mode: PoE mode ('auto', 'off', 'pasv24', 'passthrough').
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     override: dict[str, Any] = {"port_idx": port_idx}
     if portconf_id:

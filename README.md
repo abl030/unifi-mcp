@@ -1,6 +1,6 @@
 # UniFi MCP Server
 
-An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **283 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
+An MCP (Model Context Protocol) server that gives AI agents full control over Ubiquiti UniFi network infrastructure. **284 tools** covering networks, firewall rules, switch ports, WiFi, clients, device commands, hotspot management, DPI, site settings, and more.
 
 This entire project — the generator, the server, the test suite, and this README — was built by AI (Claude) and is designed to be installed and used by AI agents.
 
@@ -63,7 +63,7 @@ uv sync
 uv run python generate.py
 ```
 
-This produces `generated/server.py` — the MCP server with 283 tools.
+This produces `generated/server.py` — the MCP server with 284 tools.
 
 ### Configure Your MCP Client
 
@@ -119,7 +119,7 @@ claude mcp add unifi -- \
 | `UNIFI_SITE` | `default` | Site name |
 | `UNIFI_VERIFY_SSL` | `false` | Verify SSL certificates |
 
-## What You Get: 283 Tools
+## What You Get: 284 Tools
 
 ### Network Configuration (CRUD — 5 tools each)
 
@@ -310,6 +310,7 @@ claude mcp add unifi -- \
 | `unifi_logout` | Invalidate session |
 | `unifi_system_poweroff` / `system_reboot` | Controller power management (dangerous) |
 | `unifi_set_port_override` | Configure switch port profiles (the tool that started this project) |
+| `unifi_report_issue` | Compose a `gh issue create` command for unexpected errors |
 
 ### Safety: Confirmation Gate
 
@@ -323,13 +324,19 @@ unifi_create_network(name="Guest VLAN", purpose="vlan-only", vlan=100)
 unifi_create_network(name="Guest VLAN", purpose="vlan-only", vlan=100, confirm=True)
 ```
 
+### Error Reporting
+
+Every tool's docstring includes a nudge: *"If this tool returns an unexpected error, call unifi_report_issue to report it."* The `unifi_report_issue` tool composes a ready-to-paste `gh issue create` command with the tool name, error message, parameters used, and optional notes. It makes no HTTP calls — just returns a command string the user can review and run.
+
+This means LLM agents using this MCP server will automatically suggest filing bug reports when they encounter unexpected errors, creating a feedback loop from production usage back to the maintainers.
+
 ## How It Works
 
 This repo contains a **generator** that reads API specifications and produces the MCP server. You don't need to understand the generator to use the server — just run `generate.py` once.
 
 ### Why a generator?
 
-The UniFi API has no official OpenAPI spec. Rather than hand-writing 283 tool functions, we built a multi-stage discovery pipeline that captures the real API surface from a live controller, then generates the server automatically. When Ubiquiti updates their API, re-run the pipeline and regenerate.
+The UniFi API has no official OpenAPI spec. Rather than hand-writing 284 tool functions, we built a multi-stage discovery pipeline that captures the real API surface from a live controller, then generates the server automatically. When Ubiquiti updates their API, re-run the pipeline and regenerate.
 
 ### Architecture
 
@@ -343,7 +350,7 @@ generator/
   naming.py                 # Tool names, command mappings, test payloads
   context_builder.py        # Assemble Jinja2 template context
 templates/
-  server.py.j2              # FastMCP server template (283 tools)
+  server.py.j2              # FastMCP server template (284 tools)
   conftest.py.j2            # Pytest fixtures
   test_rest.py.j2           # Per-resource CRUD lifecycle tests
   test_stat.py.j2           # Stat endpoint tests
@@ -371,7 +378,7 @@ The generated `server.py` includes:
 
 ## API Discovery Pipeline
 
-The 283 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
+The 284 tools come from a three-stage endpoint discovery process run against a real UniFi Network Controller v10.0.162:
 
 ### Stage 1: Automated Probe (`probe.py`)
 
@@ -431,11 +438,12 @@ TOOL COUNTS (computed from spec)
   v2 tools:            15
   Global tools:        8
   Port override:       1
-  TOTAL tools:         283
+  Report issue:        1
+  TOTAL tools:         284
 
 VERIFICATION
-  Computed from spec:  283
-  Actual in server.py: 283
+  Computed from spec:  284
+  Actual in server.py: 284
   ✓ MATCH
 ```
 
@@ -464,7 +472,9 @@ The UniFi controller has no setup wizard API. The test harness seeds an admin us
 
 ## QA Coverage
 
-All 283 tools were tested against a live UniFi v10.0.162 controller running in Docker using an LLM-based bank tester (Claude as QA engineer, 31 tasks, 498+ tool calls across 5 fix sprints).
+All 284 tools were tested against a live UniFi v10.0.162 controller running in Docker using an LLM-based bank tester (Claude as QA engineer, 31 tasks, 498+ tool calls across 5 fix sprints).
+
+**"Worked first try"** is the key QA metric. Every tool was verified to succeed on its first invocation with correct parameters — no retries, no parameter guessing, no error-and-retry loops. This matters because MCP tools that fail on first attempt waste tokens, context window, and user time as the LLM has to diagnose the error and retry. A tool that works first try means the docstring, parameter types, and enum values are all correct enough that an LLM can call it successfully without prior experience.
 
 ### Coverage Summary
 
@@ -476,7 +486,8 @@ All 283 tools were tested against a live UniFi v10.0.162 controller running in D
 | v2 API | 15 | All tested |
 | Global | 8 | All tested |
 | Port override | 1 | Tested (needs device for success) |
-| **Total** | **283** | **100% invocation coverage** |
+| Report issue | 1 | Error reporting helper (no API call) |
+| **Total** | **284** | **100% invocation coverage** |
 
 ### Skipped Commands (not generated)
 

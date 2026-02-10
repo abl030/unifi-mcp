@@ -217,6 +217,7 @@ def build_context(inventory: APIInventory) -> dict:
         )
         + len(ctx["global_tools"])
         + 1  # port override helper
+        + 1  # report issue helper
     )
 
     return ctx

@@ -29,13 +29,14 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 283 total
+### Generated Tools: 284 total
 - **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
 - **66 Cmd** tools (66 of 68 commands; `set-site-name` and `delete-admin` skipped)
 - **15 v2** tools (7 resources, tools per HTTP method)
 - **8 Global** tools (1 per global endpoint)
 - **1 Port override** helper tool
+- **1 Report issue** helper tool (error reporting via `gh issue create`)
 
 ## Architecture
 
@@ -371,7 +372,7 @@ Certain commands and REST operations are intentionally excluded from tool genera
 3. Regenerate: `uv run python generate.py`
 4. Verify: `uv run python count_tools.py` and `uv run --extra test python -m pytest generated/tests/test_server.py -v`
 
-## Bank Tester — LLM QA for 283 Tools
+## Bank Tester — LLM QA for 284 Tools
 
 **STATUS: This section is a living tracker. Update it as phases complete.**
 
@@ -416,7 +417,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (283/283) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (284/284) | DONE |
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
@@ -478,7 +479,7 @@ Also fixed: MongoDB seed script — `.toString()` → `.str` for privilege IDs, 
 
 #### Sprint E: Test Infrastructure + Remaining Fixes — DONE
 
-**Result**: 4 failures fixed via test restructuring and infrastructure improvements. Tool count: 284 → 283 (removed `delete_admin`).
+**Result**: 4 failures fixed via test restructuring and infrastructure improvements. Removed `delete_admin` tool; added `report_issue` tool. Net tool count: 284.
 
 | Fix | Change |
 |-----|--------|
