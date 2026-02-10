@@ -274,6 +274,11 @@ def _validate_mac(mac: str) -> str | None:
     return None
 
 
+def _tool_error(msg: str | Exception) -> dict:
+    """Return a structured error response (non-raising, MCP-safe)."""
+    return {"error": True, "message": str(msg)}
+
+
 # ===========================================================================
 # Error Reporting Tool (always-on)
 # ===========================================================================
@@ -348,11 +353,14 @@ async def unifi_list_settings(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    data = await client.request("GET", "rest/setting", site=site or None)
-    total = len(data)
-    data, missing = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} setting categories", missing_fields=missing)
+    try:
+        client = await _get_client()
+        data = await client.request("GET", "rest/setting", site=site or None)
+        total = len(data)
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} setting categories", missing_fields=missing)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 
 @mcp.tool()
@@ -365,12 +373,15 @@ async def unifi_get_setting(key: str, site: str = "") -> dict:
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    data = await client.request("GET", "rest/setting", site=site or None)
-    for item in data:
-        if isinstance(item, dict) and item.get("key") == key:
-            return _format_response(item)
-    return _format_response(None, f"Setting '{key}' not found")
+    try:
+        client = await _get_client()
+        data = await client.request("GET", "rest/setting", site=site or None)
+        for item in data:
+            if isinstance(item, dict) and item.get("key") == key:
+                return _format_response(item)
+        return _format_response(None, f"Setting '{key}' not found")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 if not UNIFI_READ_ONLY:
 {% filter indent(4, first=True) %}
@@ -392,14 +403,17 @@ async def unifi_update_setting(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "update_setting", "key": key, "data": data},
-            "DRY RUN (PUT set/setting/{key}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
-    return _format_response(result, f"Updated setting '{key}'")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "update_setting", "key": key, "data": data},
+                "DRY RUN (PUT set/setting/{key}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
+        return _format_response(result, f"Updated setting '{key}'")
+    except RuntimeError as e:
+        return _tool_error(e)
 {% endfilter %}
 
 {% elif tool.is_readonly %}
@@ -429,11 +443,14 @@ async def unifi_list_{{ tool.plural }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    data = await client.request("GET", "{{ tool.path }}", site=site or None)
-    total = len(data)
-    data, missing = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
+    try:
+        client = await _get_client()
+        data = await client.request("GET", "{{ tool.path }}", site=site or None)
+        total = len(data)
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% elif tool.is_crud %}
 
@@ -463,11 +480,14 @@ async def unifi_list_{{ tool.plural }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    data = await client.request("GET", "{{ tool.path }}", site=site or None)
-    total = len(data)
-    data, missing = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
+    try:
+        client = await _get_client()
+        data = await client.request("GET", "{{ tool.path }}", site=site or None)
+        total = len(data)
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 
 @mcp.tool()
@@ -480,11 +500,14 @@ async def unifi_get_{{ tool.singular }}(id: str, site: str = "") -> dict:
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    data = await client.request("GET", "{{ tool.path }}/{id}".format(id=id), site=site or None)
-    if isinstance(data, list) and len(data) == 1:
-        return _format_response(data[0])
-    return _format_response(data)
+    try:
+        client = await _get_client()
+        data = await client.request("GET", "{{ tool.path }}/{id}".format(id=id), site=site or None)
+        if isinstance(data, list) and len(data) == 1:
+            return _format_response(data[0])
+        return _format_response(data)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 if not UNIFI_READ_ONLY:
 {% filter indent(4, first=True) %}
@@ -515,14 +538,17 @@ async def unifi_create_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "create_{{ tool.singular }}", "data": data},
-            "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    result = await client.request("POST", "{{ tool.path }}", json_data=data, site=site or None)
-    return _format_response(result, "Created {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "create_{{ tool.singular }}", "data": data},
+                "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("POST", "{{ tool.path }}", json_data=data, site=site or None)
+        return _format_response(result, "Created {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 
 @mcp.tool()
@@ -556,14 +582,17 @@ async def unifi_update_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "update_{{ tool.singular }}", "id": id, "data": data},
-            "DRY RUN (PUT {{ tool.path }}/{id}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    result = await client.request("PUT", "{{ tool.path }}/{id}".format(id=id), json_data=data, site=site or None)
-    return _format_response(result, "Updated {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "update_{{ tool.singular }}", "id": id, "data": data},
+                "DRY RUN (PUT {{ tool.path }}/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("PUT", "{{ tool.path }}/{id}".format(id=id), json_data=data, site=site or None)
+        return _format_response(result, "Updated {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% if not tool.no_rest_delete %}
 
@@ -582,14 +611,17 @@ async def unifi_delete_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "delete_{{ tool.singular }}", "id": id},
-            "DRY RUN (DELETE {{ tool.path }}/{id}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    result = await client.request("DELETE", "{{ tool.path }}/{id}".format(id=id), site=site or None)
-    return _format_response(result, "Deleted {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "delete_{{ tool.singular }}", "id": id},
+                "DRY RUN (DELETE {{ tool.path }}/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        result = await client.request("DELETE", "{{ tool.path }}/{id}".format(id=id), site=site or None)
+        return _format_response(result, "Deleted {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% endfilter %}
@@ -621,12 +653,15 @@ async def unifi_list_report(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    path = f"stat/report/{interval}.{report_type}"
-    data = await client.request("POST", path, json_data={}, site=site or None)
-    total = len(data)
-    data, missing = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} report records", missing_fields=missing)
+    try:
+        client = await _get_client()
+        path = f"stat/report/{interval}.{report_type}"
+        data = await client.request("POST", path, json_data={}, site=site or None)
+        total = len(data)
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} report records", missing_fields=missing)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% else %}
 
@@ -658,15 +693,18 @@ async def unifi_list_{{ tool.display_name }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
+    try:
+        client = await _get_client()
 {% if tool.method == "POST" %}
-    data = await client.request("POST", "{{ tool.path }}", json_data={{ tool.post_body }}, site=site or None)
+        data = await client.request("POST", "{{ tool.path }}", json_data={{ tool.post_body }}, site=site or None)
 {% else %}
-    data = await client.request("GET", "{{ tool.path }}", site=site or None)
+        data = await client.request("GET", "{{ tool.path }}", site=site or None)
 {% endif %}
-    total = len(data)
-    data, missing = _paginate_and_filter(data, limit, offset, fields)
-    return _format_response(data, f"Found {total} {{ tool.display_name }} records", missing_fields=missing)
+        total = len(data)
+        data, missing = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} {{ tool.display_name }} records", missing_fields=missing)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% endmacro %}
@@ -703,37 +741,40 @@ async def unifi_{{ tool.tool_name }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
+    try:
 {% if tool.is_mutation %}
-    if not confirm:
-        preview = {"action": "{{ tool.tool_name }}", "cmd": "{{ tool.command }}"}
+        if not confirm:
+            preview = {"action": "{{ tool.tool_name }}", "cmd": "{{ tool.command }}"}
 {% for pname, ptype in tool.params.items() %}
 {% if pname == "site" %}
-        preview["site"] = target_site
+            preview["site"] = target_site
 {% else %}
-        preview["{{ pname }}"] = {{ pname }}
+            preview["{{ pname }}"] = {{ pname }}
 {% endif %}
 {% endfor %}
-        return _format_response(
-            preview,
-            "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
-        )
+            return _format_response(
+                preview,
+                "DRY RUN (POST {{ tool.path }}): Set confirm=True to execute.",
+            )
 {% endif %}
 {% if "mac" in tool.params %}
-    mac_err = _validate_mac(mac)
-    if mac_err:
-        return _format_response({"error": mac_err}, mac_err)
+        mac_err = _validate_mac(mac)
+        if mac_err:
+            return _format_response({"error": mac_err}, mac_err)
 {% endif %}
-    payload: dict[str, Any] = {"cmd": "{{ tool.command }}"}
+        payload: dict[str, Any] = {"cmd": "{{ tool.command }}"}
 {% for pname, ptype in tool.params.items() %}
 {% if pname == "site" %}
-    payload["site"] = target_site
+        payload["site"] = target_site
 {% else %}
-    payload["{{ pname }}"] = {{ pname }}
+        payload["{{ pname }}"] = {{ pname }}
 {% endif %}
 {% endfor %}
-    client = await _get_client()
-    result = await client.request("POST", "{{ tool.path }}", json_data=payload, site=site or None)
-    return _format_response(result, "Executed {{ tool.command }}")
+        client = await _get_client()
+        result = await client.request("POST", "{{ tool.path }}", json_data=payload, site=site or None)
+        return _format_response(result, "Executed {{ tool.command }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 {% endmacro %}
 {% macro render_cmd_tool(tool) %}
 {% if tool.is_mutation %}
@@ -775,14 +816,17 @@ async def unifi_list_{{ tool.plural }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    effective_site = site or UNIFI_SITE
-    data = await client.request("GET", "/{{ tool.path }}".replace("{site}", effective_site))
-    if isinstance(data, list):
-        total = len(data)
-        data, missing = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
-    return _format_response(data)
+    try:
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        data = await client.request("GET", "/{{ tool.path }}".replace("{site}", effective_site))
+        if isinstance(data, list):
+            total = len(data)
+            data, missing = _paginate_and_filter(data, limit, offset, fields)
+            return _format_response(data, f"Found {total} {{ tool.plural }}", missing_fields=missing)
+        return _format_response(data)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% if "POST" in tool.methods or "PUT" in tool.methods or "DELETE" in tool.methods %}
@@ -813,15 +857,18 @@ async def unifi_create_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "create_{{ tool.singular }}", "data": data},
-            "DRY RUN (POST /{{ tool.path }}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    effective_site = site or UNIFI_SITE
-    result = await client.request("POST", "/{{ tool.path }}".replace("{site}", effective_site), json_data=data)
-    return _format_response(result, "Created {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "create_{{ tool.singular }}", "data": data},
+                "DRY RUN (POST /{{ tool.path }}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("POST", "/{{ tool.path }}".replace("{site}", effective_site), json_data=data)
+        return _format_response(result, "Created {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% if "PUT" in tool.methods %}
@@ -850,15 +897,18 @@ async def unifi_update_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "update_{{ tool.singular }}", "id": id, "data": data},
-            "DRY RUN (PUT /{{ tool.path }}/{id}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    effective_site = site or UNIFI_SITE
-    result = await client.request("PUT", "/{{ tool.path }}/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
-    return _format_response(result, "Updated {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "update_{{ tool.singular }}", "id": id, "data": data},
+                "DRY RUN (PUT /{{ tool.path }}/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("PUT", "/{{ tool.path }}/{id}".replace("{site}", effective_site).format(id=id), json_data=data)
+        return _format_response(result, "Updated {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% if "DELETE" in tool.methods %}
@@ -878,15 +928,18 @@ async def unifi_delete_{{ tool.singular }}(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    if not confirm:
-        return _format_response(
-            {"action": "delete_{{ tool.singular }}", "id": id},
-            "DRY RUN (DELETE /{{ tool.path }}/{id}): Set confirm=True to execute.",
-        )
-    client = await _get_client()
-    effective_site = site or UNIFI_SITE
-    result = await client.request("DELETE", "/{{ tool.path }}/{id}".replace("{site}", effective_site).format(id=id))
-    return _format_response(result, "Deleted {{ tool.singular }}")
+    try:
+        if not confirm:
+            return _format_response(
+                {"action": "delete_{{ tool.singular }}", "id": id},
+                "DRY RUN (DELETE /{{ tool.path }}/{id}): Set confirm=True to execute.",
+            )
+        client = await _get_client()
+        effective_site = site or UNIFI_SITE
+        result = await client.request("DELETE", "/{{ tool.path }}/{id}".replace("{site}", effective_site).format(id=id))
+        return _format_response(result, "Deleted {{ tool.singular }}")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% endfilter %}
@@ -951,45 +1004,48 @@ async def unifi_set_port_override(
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    override: dict[str, Any] = {"port_idx": port_idx}
-    if portconf_id:
-        override["portconf_id"] = portconf_id
-    if name:
-        override["name"] = name
-    if native_networkconf_id:
-        override["native_networkconf_id"] = native_networkconf_id
-    if forward:
-        override["forward"] = forward
-    if poe_mode:
-        override["poe_mode"] = poe_mode
+    try:
+        override: dict[str, Any] = {"port_idx": port_idx}
+        if portconf_id:
+            override["portconf_id"] = portconf_id
+        if name:
+            override["name"] = name
+        if native_networkconf_id:
+            override["native_networkconf_id"] = native_networkconf_id
+        if forward:
+            override["forward"] = forward
+        if poe_mode:
+            override["poe_mode"] = poe_mode
 
-    if not confirm:
-        return _format_response(
-            {"action": "set_port_override", "device_id": device_id, "override": override},
-            "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
+        if not confirm:
+            return _format_response(
+                {"action": "set_port_override", "device_id": device_id, "override": override},
+                "DRY RUN (PUT rest/device/{device_id}): Set confirm=True to execute.",
+            )
+
+        client = await _get_client()
+        # First get current device to preserve existing overrides
+        device_data = await client.request("GET", f"rest/device/{device_id}", site=site or None)
+        if isinstance(device_data, list) and device_data:
+            device_data = device_data[0]
+
+        existing_overrides = []
+        if isinstance(device_data, dict):
+            existing_overrides = device_data.get("port_overrides", [])
+
+        # Replace or append override for this port_idx
+        new_overrides = [o for o in existing_overrides if o.get("port_idx") != port_idx]
+        new_overrides.append(override)
+
+        result = await client.request(
+            "PUT",
+            f"rest/device/{device_id}",
+            json_data={"port_overrides": new_overrides},
+            site=site or None,
         )
-
-    client = await _get_client()
-    # First get current device to preserve existing overrides
-    device_data = await client.request("GET", f"rest/device/{device_id}", site=site or None)
-    if isinstance(device_data, list) and device_data:
-        device_data = device_data[0]
-
-    existing_overrides = []
-    if isinstance(device_data, dict):
-        existing_overrides = device_data.get("port_overrides", [])
-
-    # Replace or append override for this port_idx
-    new_overrides = [o for o in existing_overrides if o.get("port_idx") != port_idx]
-    new_overrides.append(override)
-
-    result = await client.request(
-        "PUT",
-        f"rest/device/{device_id}",
-        json_data={"port_overrides": new_overrides},
-        site=site or None,
-    )
-    return _format_response(result, f"Set port override on port {port_idx}")
+        return _format_response(result, f"Set port override on port {port_idx}")
+    except RuntimeError as e:
+        return _tool_error(e)
 {% endfilter %}
 
 {% endif %}
@@ -1024,21 +1080,24 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
+    try:
 {% if tool.auth %}
-    client = await _get_client()
-    data = await client.request("{{ tool.method }}", "{{ tool.path }}")
+        client = await _get_client()
+        data = await client.request("{{ tool.method }}", "{{ tool.path }}")
 {% else %}
-    # No auth required
-    async with httpx.AsyncClient(
-        base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
-        verify=UNIFI_VERIFY_SSL,
-        timeout=30.0,
-    ) as c:
-        resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
-        resp.raise_for_status()
-        data = resp.json()
+        # No auth required
+        async with httpx.AsyncClient(
+            base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
+            verify=UNIFI_VERIFY_SSL,
+            timeout=30.0,
+        ) as c:
+            resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
+            resp.raise_for_status()
+            data = resp.json()
 {% endif %}
-    return _format_response(data)
+        return _format_response(data)
+    except RuntimeError as e:
+        return _tool_error(e)
 {% endfilter %}
 {% else %}
 
@@ -1052,21 +1111,24 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
+    try:
 {% if tool.auth %}
-    client = await _get_client()
-    data = await client.request("{{ tool.method }}", "{{ tool.path }}")
+        client = await _get_client()
+        data = await client.request("{{ tool.method }}", "{{ tool.path }}")
 {% else %}
-    # No auth required
-    async with httpx.AsyncClient(
-        base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
-        verify=UNIFI_VERIFY_SSL,
-        timeout=30.0,
-    ) as c:
-        resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
-        resp.raise_for_status()
-        data = resp.json()
+        # No auth required
+        async with httpx.AsyncClient(
+            base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
+            verify=UNIFI_VERIFY_SSL,
+            timeout=30.0,
+        ) as c:
+            resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
+            resp.raise_for_status()
+            data = resp.json()
 {% endif %}
-    return _format_response(data)
+        return _format_response(data)
+    except RuntimeError as e:
+        return _tool_error(e)
 
 {% endif %}
 {% endfor %}
@@ -1089,64 +1151,67 @@ async def unifi_get_overview(site: str = "") -> dict:
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
-    client = await _get_client()
-    s = site or UNIFI_SITE
+    try:
+        client = await _get_client()
+        s = site or UNIFI_SITE
 
-    health = await client.request("GET", "stat/health", site=s)
-    devices = await client.request("GET", "stat/device", site=s)
-    networks = await client.request("GET", "rest/networkconf", site=s)
-    wlans = await client.request("GET", "rest/wlanconf", site=s)
-    clients = await client.request("GET", "stat/sta", site=s)
-    alarms = await client.request("GET", "stat/alarm", site=s)
-    sysinfo = await client.request("GET", "stat/sysinfo", site=s)
+        health = await client.request("GET", "stat/health", site=s)
+        devices = await client.request("GET", "stat/device", site=s)
+        networks = await client.request("GET", "rest/networkconf", site=s)
+        wlans = await client.request("GET", "rest/wlanconf", site=s)
+        clients = await client.request("GET", "stat/sta", site=s)
+        alarms = await client.request("GET", "stat/alarm", site=s)
+        sysinfo = await client.request("GET", "stat/sysinfo", site=s)
 
-    version = ""
-    if sysinfo and isinstance(sysinfo, list) and sysinfo[0]:
-        version = sysinfo[0].get("version", "")
+        version = ""
+        if sysinfo and isinstance(sysinfo, list) and sysinfo[0]:
+            version = sysinfo[0].get("version", "")
 
-    overview = {
-        "controller_version": version,
-        "health": {
-            h.get("subsystem", "?"): h.get("status", "?")
-            for h in health if isinstance(h, dict)
-        },
-        "device_summary": [
-            {
-                "name": d.get("name", ""),
-                "type": d.get("type", ""),
-                "model": d.get("model", ""),
-                "mac": d.get("mac", ""),
-                "status": "connected" if d.get("state") == 1 else "disconnected",
-                "ip": d.get("ip", ""),
-            }
-            for d in devices if isinstance(d, dict)
-        ],
-        "network_summary": [
-            {
-                "name": n.get("name", ""),
-                "purpose": n.get("purpose", ""),
-                "subnet": n.get("ip_subnet", ""),
-                "vlan": n.get("vlan", None),
-                "enabled": n.get("enabled", True),
-            }
-            for n in networks if isinstance(n, dict)
-        ],
-        "wlan_summary": [
-            {
-                "name": w.get("name", ""),
-                "security": w.get("security", ""),
-                "enabled": w.get("enabled", True),
-                "wpa_mode": w.get("wpa_mode", ""),
-            }
-            for w in wlans if isinstance(w, dict)
-        ],
-        "total_clients": len(clients) if isinstance(clients, list) else 0,
-        "active_alarms": len([
-            a for a in alarms
-            if isinstance(a, dict) and not a.get("archived")
-        ]) if isinstance(alarms, list) else 0,
-    }
-    return _format_response(overview, "Network overview")
+        overview = {
+            "controller_version": version,
+            "health": {
+                h.get("subsystem", "?"): h.get("status", "?")
+                for h in health if isinstance(h, dict)
+            },
+            "device_summary": [
+                {
+                    "name": d.get("name", ""),
+                    "type": d.get("type", ""),
+                    "model": d.get("model", ""),
+                    "mac": d.get("mac", ""),
+                    "status": "connected" if d.get("state") == 1 else "disconnected",
+                    "ip": d.get("ip", ""),
+                }
+                for d in devices if isinstance(d, dict)
+            ],
+            "network_summary": [
+                {
+                    "name": n.get("name", ""),
+                    "purpose": n.get("purpose", ""),
+                    "subnet": n.get("ip_subnet", ""),
+                    "vlan": n.get("vlan", None),
+                    "enabled": n.get("enabled", True),
+                }
+                for n in networks if isinstance(n, dict)
+            ],
+            "wlan_summary": [
+                {
+                    "name": w.get("name", ""),
+                    "security": w.get("security", ""),
+                    "enabled": w.get("enabled", True),
+                    "wpa_mode": w.get("wpa_mode", ""),
+                }
+                for w in wlans if isinstance(w, dict)
+            ],
+            "total_clients": len(clients) if isinstance(clients, list) else 0,
+            "active_alarms": len([
+                a for a in alarms
+                if isinstance(a, dict) and not a.get("archived")
+            ]) if isinstance(alarms, list) else 0,
+        }
+        return _format_response(overview, "Network overview")
+    except RuntimeError as e:
+        return _tool_error(e)
 
 
 # ===========================================================================
