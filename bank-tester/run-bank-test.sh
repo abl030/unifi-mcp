@@ -140,15 +140,16 @@ if (!existing) {
         email: 'admin@test.local',
         last_site_name: 'default',
         name: '$USERNAME',
-        x_shadow: '$HASH'
+        x_shadow: '$HASH',
+        is_super: true
     });
     var admin = db.admin.findOne({name: '$USERNAME'});
-    var adminId = admin._id.toString();
+    var adminId = admin._id.str;
     var sites = db.site.find().toArray();
     sites.forEach(function(site) {
         db.privilege.insert({
             admin_id: adminId,
-            site_id: site._id.toString(),
+            site_id: site._id.str,
             role: 'admin',
             permissions: []
         });

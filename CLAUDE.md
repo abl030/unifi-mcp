@@ -396,7 +396,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprint A+B: 39 remaining failures (92.1% adjusted success rate). Full details in `bank-tester/RESEARCH.md`.
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprints A-D: 39 remaining failures — all unfixable (23 hardware-dependent, 6 standalone controller limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial expected). Full details in `bank-tester/RESEARCH.md`.
 
 **RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
 
@@ -434,16 +434,20 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 
 **Reclassified (11 → WORKS):** block_client, unblock_client, authorize_guest, unauthorize_guest, create_user, grant_super_admin, list_firewall_policies, self, sites, stat_sites, stat_admin
 
-**Remaining: 39 failures** (23 hardware, 6 Docker image, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial)
+**Remaining: 39 failures** (23 hardware, 6 standalone limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial)
 
-### Next Sprints
+#### Sprint C: Sonnet Verification of Sprint B Fixes — DONE
 
-#### Sprint C: Sonnet Verification of Sprint B Fixes
+**Result**: 17/17 tool calls, 0 first-attempt failures. All Sprint B reclassifications verified correct.
 
-Verify Sprint B changes with Sonnet: global endpoints (startup race fix), client commands (reclassified to WORKS), create_user, spatial_record CRUD, and confirm `delete_user` no longer exists.
+#### Sprint D: Docker Image Investigation — DONE
 
-#### Sprint D: Docker Image Enhancements (6 failures)
+**Result**: All 6 DOCKER_IMAGE failures investigated manually against live Docker controller. None are fixable — all are standalone controller limitations, reclassified to STANDALONE_LIMITATION.
 
-Investigate and fix the 6 DOCKER_IMAGE failures:
-- `set_site_name` / `delete_site`: MongoDB privilege or auth context enhancement
-- `generate_backup` / `generate_backup_site`: Backup manager initialization
+| Tool | Finding |
+|------|---------|
+| `set_site_name` | Command doesn't exist on v10.0.162 standalone; use `update-site` |
+| `delete_site` (x3) | NoPermission even with `is_super: true`; standalone limitation |
+| `generate_backup` / `generate_backup_site` | Commands don't exist in `cmd/backup`; may be UniFi OS only |
+
+Also fixed: MongoDB seed script — `.toString()` → `.str` for privilege IDs, added `is_super: true` to admin.

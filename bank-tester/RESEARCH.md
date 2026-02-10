@@ -35,7 +35,7 @@
 | **Fixed/reclassified in Sprint B** | **13** |
 | **Remaining first-attempt failures** | **39** |
 | Hardware-dependent failures | 23 |
-| Docker image fixable | 6 |
+| Standalone controller limitations | 6 |
 | API limitation failures | 4 |
 | Test environment failures | 1 |
 | Test config failures | 2 |
@@ -114,18 +114,18 @@ These require adopted devices or connected clients. Not fixable without device s
 | 22 | 17 | `unifi_update_traffic_route` | HTTP 400 | No routes exist, needs gateway (docstring improved in Sprint B) |
 | 23 | 21 | `unifi_set_site_leds` | api.err.NotFound | Needs LED-capable devices |
 
-### Category: DOCKER_IMAGE (6 failures)
+### Category: STANDALONE_LIMITATION (6 failures)
 
-Fixable by enhancing the Docker test setup (MongoDB seeding, config changes).
+These are standalone controller limitations — not fixable via Docker seeding or generator changes. Investigated in Sprint D.
 
 | # | Task | Tool | Error | Notes |
 |---|------|------|-------|-------|
-| 1 | 21 | `unifi_set_site_name` | api.err.NotFound | MongoDB admin may need additional privilege records |
+| 1 | 21 | `unifi_set_site_name` | api.err.NotFound | `set-site-name` command doesn't exist on v10.0.162 standalone; use `update-site` instead |
 | 2 | 21 | `unifi_delete_site` | api.err.IdInvalid | Parameter format unclear |
-| 3 | 21 | `unifi_delete_site` | 403 Forbidden | MongoDB-seeded admin lacks auth context for site deletion |
+| 3 | 21 | `unifi_delete_site` | 403 Forbidden / NoPermission | Standalone controller doesn't support site deletion even with super admin |
 | 4 | 21 | `unifi_delete_site` | api.err.IdInvalid | (retry with different format) |
-| 5 | 24 | `unifi_generate_backup` | api.err.NotFound | Backup manager not initialized in Docker |
-| 6 | 24 | `unifi_generate_backup_site` | api.err.NotFound | Backup manager not initialized in Docker |
+| 5 | 24 | `unifi_generate_backup` | api.err.NotFound | `generate-backup` command doesn't exist in cmd/backup on v10.0.162 standalone |
+| 6 | 24 | `unifi_generate_backup_site` | api.err.NotFound | Same — backup generation may be UniFi OS only |
 
 ### Category: API_LIMITATION (4 failures)
 
@@ -197,6 +197,19 @@ Task 30 adversarial tests are DESIGNED to produce errors. These are error qualit
 |-------|-------------|
 | Startup race (global endpoints fail) | Added `/api/self` readiness poll in `run-bank-test.sh` after login succeeds |
 
+### Sprint D: Docker Investigation (6 DOCKER_IMAGE failures)
+
+All 6 DOCKER_IMAGE failures investigated manually against a live Docker controller. None are fixable — all are standalone controller limitations:
+
+| Tool | Finding |
+|------|---------|
+| `set_site_name` | `set-site-name` command doesn't exist on v10.0.162. `update-site` is the working alternative. |
+| `delete_site` (x3) | Returns NoPermission/403 even with `is_super: true` + owner role. Standalone limitation. |
+| `generate_backup` | `generate-backup` command doesn't exist in `cmd/backup`. Only `list-backups` works. |
+| `generate_backup_site` | Same as generate_backup. Backup generation may be UniFi OS only. |
+
+Also fixed: MongoDB seed script privilege records used `.toString()` (returns `ObjectId("hex")`) instead of `.str` (returns `"hex"`). Added `is_super: true` to admin document.
+
 ### Reclassifications (Sprint B)
 
 | Tool | Old Category | New Category | Reason |
@@ -211,10 +224,10 @@ Task 30 adversarial tests are DESIGNED to produce errors. These are error qualit
 | `self/sites/stat_sites/stat_admin` | TEST_ENV | WORKS | Startup race fixed by Docker readiness poll |
 | `delete_user` | TEST_CONFIG | FIXED | Tool removed; use `forget_client` instead |
 | `create_spatial_record` | GENERATOR_FIXABLE | VERIFIED | Opus confirmed: works with name + devices + description |
-| `set_site_name` | API_LIMITATION | DOCKER_IMAGE | Needs MongoDB privilege enhancement |
-| `delete_site` (x3) | API_LIMITATION | DOCKER_IMAGE | MongoDB-seeded admin lacks auth context |
-| `generate_backup` | HARDWARE_DEPENDENT | DOCKER_IMAGE | Backup manager not initialized |
-| `generate_backup_site` | HARDWARE_DEPENDENT | DOCKER_IMAGE | Same as generate_backup |
+| `set_site_name` | API_LIMITATION | STANDALONE_LIMITATION | Command doesn't exist on v10.0.162 standalone; use `update-site` |
+| `delete_site` (x3) | API_LIMITATION | STANDALONE_LIMITATION | Standalone controller doesn't support site deletion |
+| `generate_backup` | HARDWARE_DEPENDENT | STANDALONE_LIMITATION | Command doesn't exist in cmd/backup on standalone |
+| `generate_backup_site` | HARDWARE_DEPENDENT | STANDALONE_LIMITATION | Same as generate_backup |
 | `hotspot_package` | API_LIMITATION | API_LIMITATION | Confirmed by Opus: needs payment gateway |
 | `dhcp_option` | API_LIMITATION | API_LIMITATION | Confirmed by Opus: needs DHCP gateway |
 
