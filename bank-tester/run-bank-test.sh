@@ -161,6 +161,52 @@ if (!existing) {
 }
 "
 
+# --- Configure SMTP to use mailpit container ---
+log "Configuring SMTP settings via MongoDB (mailpit on port 1025)..."
+# Get the mailpit container IP on the docker network
+MAILPIT_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' unifi-test-mailpit 2>/dev/null || echo "")
+if [[ -z "$MAILPIT_IP" ]]; then
+    log "WARNING: Could not determine mailpit IP, trying 'mailpit' hostname"
+    MAILPIT_IP="mailpit"
+fi
+log "  Mailpit address: ${MAILPIT_IP}:1025"
+
+docker exec "$CONTAINER" $MONGO_CMD --port 27117 --quiet ace --eval "
+var site = db.site.findOne({name: 'default'});
+var siteId = site._id.str;
+// Upsert super_smtp setting
+db.setting.update(
+    {key: 'super_smtp', site_id: siteId},
+    {\$set: {
+        key: 'super_smtp',
+        site_id: siteId,
+        enabled: true,
+        host: '${MAILPIT_IP}',
+        port: 1025,
+        use_ssl: false,
+        use_auth: false,
+        sender: 'unifi@test.local'
+    }},
+    {upsert: true}
+);
+// Upsert super_mail setting (some versions use this)
+db.setting.update(
+    {key: 'super_mail', site_id: siteId},
+    {\$set: {
+        key: 'super_mail',
+        site_id: siteId,
+        enabled: true,
+        host: '${MAILPIT_IP}',
+        port: 1025,
+        use_ssl: false,
+        use_auth: false,
+        sender: 'unifi@test.local'
+    }},
+    {upsert: true}
+);
+print('  SMTP configured: ${MAILPIT_IP}:1025');
+"
+
 # --- Wait for login to work ---
 log "Waiting for login API..."
 for i in $(seq 1 30); do

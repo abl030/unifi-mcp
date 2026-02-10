@@ -23,6 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from generator.naming import (
+    NO_REST_DELETE,
     RESOURCE_NAMES,
     READ_ONLY_REST,
 )
@@ -60,7 +61,8 @@ def resource_to_tools(resource: str) -> dict[str, str]:
     if resource not in READ_ONLY_REST:
         tools["create"] = f"unifi_create_{singular}"
         tools["update"] = f"unifi_update_{singular}"
-        tools["delete"] = f"unifi_delete_{singular}"
+        if resource not in NO_REST_DELETE:
+            tools["delete"] = f"unifi_delete_{singular}"
     return tools
 
 

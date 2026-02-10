@@ -29,10 +29,10 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 284 total
+### Generated Tools: 283 total
 - **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
-- **67 Cmd** tools (67 of 68 commands; `set-site-name` skipped — doesn't exist on standalone)
+- **66 Cmd** tools (66 of 68 commands; `set-site-name` and `delete-admin` skipped)
 - **15 v2** tools (7 resources, tools per HTTP method)
 - **8 Global** tools (1 per global endpoint)
 - **1 Port override** helper tool
@@ -392,11 +392,11 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (284/284) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (283/283) | DONE |
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprints A-D: 38 remaining failures — all unfixable (23 hardware-dependent, 5 standalone controller limitation, 4 API limitation, 1 test-env, 2 test-config, 3 adversarial expected). Full details in `bank-tester/RESEARCH.md`.
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). After Sprints A-E: 34 remaining failures (23 hardware-dependent, 5 standalone controller limitation, 3 API limitation, 3 adversarial expected). Full details in `bank-tester/RESEARCH.md`.
 
 **RULE**: `bank-tester/RESEARCH.md` is a record of **open** first-attempt failures only. When a failure is fixed and verified (0 first-attempt failures on re-test), remove it from RESEARCH.md immediately. The document should shrink to zero as issues are resolved.
 
@@ -451,3 +451,18 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | `generate_backup` / `generate_backup_site` | Commands don't exist in `cmd/backup`; may be UniFi OS only |
 
 Also fixed: MongoDB seed script — `.toString()` → `.str` for privilege IDs, added `is_super: true` to admin.
+
+#### Sprint E: Test Infrastructure + Remaining Fixes — DONE
+
+**Result**: 4 failures fixed via test restructuring and infrastructure improvements. Tool count: 284 → 283 (removed `delete_admin`).
+
+| Fix | Change |
+|-----|--------|
+| `delete_admin` tool removed | Added to SKIP_COMMANDS; `revoke_admin` already fully deletes admin objects |
+| `revoke_super_admin` CannotRevokeSelf | Restructured task 22: create 2nd admin → grant super → revoke *that* admin |
+| `invite_admin` SmtpNotEnabled | Added mailpit container to docker-compose; SMTP configured via MongoDB seed |
+| `assign_existing_admin` NotFound | Restructured task 22: create 2nd site → assign existing admin across sites |
+
+Also fixed: `generate-tasks.py` now respects `NO_REST_DELETE` (was generating stale `delete_user` refs). Removed stale `set_site_name` from task 21 config.
+
+**Remaining: 34 failures** (23 hardware, 5 standalone limitation, 3 API limitation, 3 adversarial)

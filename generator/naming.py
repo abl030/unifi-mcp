@@ -414,6 +414,7 @@ FULL_OBJECT_UPDATE_REST: set[str] = {
 # These commands don't exist on standalone controllers or are vestigial.
 SKIP_COMMANDS: set[tuple[str, str]] = {
     ("sitemgr", "set-site-name"),  # Doesn't exist on v10.0.162 standalone; use update-site instead
+    ("sitemgr", "delete-admin"),  # Vestigial; revoke-admin already fully deletes the admin object
 }
 
 # REST resources that don't support DELETE via the REST API.

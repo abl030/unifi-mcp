@@ -4,13 +4,12 @@
 
 **Objective**: Exercise all tools in the special subsystem.
 
-**Tools to exercise** (6):
+**Tools to exercise** (5):
 - `unifi_set_port_override`
 - `unifi_create_user`
 - `unifi_list_users`
 - `unifi_get_user`
 - `unifi_update_user`
-- `unifi_delete_user`
 
 **Steps**:
 1. **Execute** `unifi_set_port_override` with `confirm=True` **[Hardware-dependent — expect error]** (Requires a device _id and port_overrides array. Expect error without devices)
@@ -23,6 +22,6 @@
 6. **Get** again using `unifi_get_user` — verify `name` was updated
 
 **Cleanup** (reverse order):
-- Delete using `unifi_delete_user` with `confirm=True` (ID from create step)
+- No cleanup needed (read-only / settings restored)
 
-**Expected outcome**: All 6 tools exercised successfully.
+**Expected outcome**: All 5 tools exercised successfully.

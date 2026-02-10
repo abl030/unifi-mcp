@@ -4,11 +4,10 @@
 
 **Objective**: Exercise all tools in the commands subsystem.
 
-**Tools to exercise** (11):
+**Tools to exercise** (10):
 - `unifi_create_user`
 - `unifi_list_users`
 - `unifi_get_user`
-- `unifi_delete_user`
 - `unifi_block_client`
 - `unifi_unblock_client`
 - `unifi_kick_client`
@@ -40,6 +39,6 @@
     - `macs`: `['00:11:22:33:44:55']`
 
 **Cleanup** (reverse order):
-- Delete using `unifi_delete_user` with `confirm=True` (ID from create step)
+- No cleanup needed (read-only / settings restored)
 
-**Expected outcome**: All 11 tools exercised successfully.
+**Expected outcome**: All 10 tools exercised successfully.

@@ -1,0 +1,39 @@
+[14:01:43] === Task 1/1: 22-admin-management-commands ===
+[14:01:43]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-140135/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[14:01:43]   task file: bank-tester/tasks/22-admin-management-commands.md (2164 bytes)
+---TASK-REPORT-START---
+task_id: 22-admin-management-commands
+status: success
+total_tool_calls: 8
+first_attempt_failures: 0
+details: []
+cleanup_complete: true
+notes: |
+  All 8 admin management command tools executed successfully on first attempt.
+  
+  Key observations:
+  - unifi_create_admin: Created admin successfully with required fields (name, email, x_password, role)
+  - unifi_add_site: Second site created for cross-site admin assignment test
+  - unifi_assign_existing_admin: Successfully assigned existing admin to second site
+  - unifi_invite_admin: Email invitation sent successfully (mailpit SMTP configured)
+  - unifi_update_admin: Role change from admin to readonly worked correctly
+  - unifi_grant_super_admin: Super admin privileges granted successfully
+  - unifi_revoke_super_admin: Super admin privileges revoked successfully (on different admin, not self)
+  - unifi_revoke_admin: Admin fully deleted (cleanup handled by final revoke)
+  
+  Tool discoverability: All tools had clear names and complete docstrings.
+  confirm=True pattern: Worked as expected for all mutations.
+  No friction points encountered.
+
+tools_invoked:
+  - unifi_create_admin
+  - unifi_add_site
+  - unifi_assign_existing_admin
+  - unifi_invite_admin
+  - unifi_update_admin
+  - unifi_grant_super_admin
+  - unifi_revoke_super_admin
+  - unifi_revoke_admin
+---TASK-REPORT-END---
+[14:01:58]   PASS (exit 0, 15s, output=1365B, stderr=0B)
+

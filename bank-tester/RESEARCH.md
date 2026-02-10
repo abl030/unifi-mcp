@@ -5,7 +5,7 @@
 **Date**: 2026-02-10
 **Controller**: UniFi v10.0.162 (jacobalberty/unifi:latest, bare Docker, no adopted devices)
 **Model**: Sonnet (claude -p), Opus for diagnosis
-**Total tools**: 284
+**Total tools**: 283
 
 ## Combined Results (All Runs)
 
@@ -33,12 +33,13 @@
 | First-attempt failures (original) | 70 |
 | **Fixed in Sprint A** | **18** |
 | **Fixed/reclassified in Sprint B** | **13** |
-| **Remaining first-attempt failures** | **38** |
+| **Fixed/restructured in Sprint E** | **4** |
+| **Remaining first-attempt failures** | **34** |
 | Hardware-dependent failures | 23 |
 | Standalone controller limitations | 5 |
-| API limitation failures | 4 |
-| Test environment failures | 1 |
-| Test config failures | 2 |
+| API limitation failures | 3 |
+| Test environment failures | 0 |
+| Test config failures | 0 |
 | Adversarial expected failures | 3 |
 
 ### Sprint A Results (task 31)
@@ -126,29 +127,15 @@ These are standalone controller limitations — not fixable via Docker seeding o
 | 4 | 24 | `unifi_generate_backup` | api.err.NotFound | `generate-backup` command doesn't exist in cmd/backup on v10.0.162 standalone |
 | 5 | 24 | `unifi_generate_backup_site` | api.err.NotFound | Same — backup generation may be UniFi OS only |
 
-### Category: API_LIMITATION (4 failures)
+### Category: API_LIMITATION (3 failures)
 
 Issues in the UniFi API itself on v10.0.162 — cannot fix in generator or Docker setup.
 
 | # | Task | Tool | Error | Notes |
 |---|------|------|-------|-------|
-| 1 | 22 | `unifi_revoke_super_admin` | api.err.CannotRevokeSelf | Cannot revoke own super admin (safety feature) |
-| 2 | 25 | `unifi_revoke_voucher` | api.err.NotFound | Requires hotspot portal for voucher revocation |
-| 3 | 07 | `unifi_create_hotspot_package` | api.err.InvalidPayload | Requires hotspot payment gateway infrastructure |
-| 4 | 19 | `unifi_create_dhcp_option` | api.err.Invalid | Requires DHCP gateway device |
-
-### Category: TEST_ENV (1 failure)
-
-| # | Task | Tool | Error | Notes |
-|---|------|------|-------|-------|
-| 1 | 22 | `unifi_invite_admin` | api.err.SmtpNotEnabled | No SMTP configured in Docker (UNFIXABLE) |
-
-### Category: TEST_CONFIG (2 failures)
-
-| # | Task | Tool | Error | Notes |
-|---|------|------|-------|-------|
-| 1 | 22 | `unifi_assign_existing_admin` | api.err.NotFound | Needs multi-site setup; admin already has access to only site |
-| 2 | 22 | `unifi_delete_admin` | api.err.NotFound | Command broken/vestigial; use `revoke_admin` instead |
+| 1 | 25 | `unifi_revoke_voucher` | api.err.NotFound | Requires hotspot portal for voucher revocation |
+| 2 | 07 | `unifi_create_hotspot_package` | api.err.InvalidPayload | Requires hotspot payment gateway infrastructure |
+| 3 | 19 | `unifi_create_dhcp_option` | api.err.Invalid | Requires DHCP gateway device |
 
 ### Category: ADVERSARIAL_EXPECTED (3 failures)
 
@@ -229,6 +216,29 @@ Also fixed: MongoDB seed script privilege records used `.toString()` (returns `O
 | `generate_backup_site` | HARDWARE_DEPENDENT | STANDALONE_LIMITATION | Same as generate_backup |
 | `hotspot_package` | API_LIMITATION | API_LIMITATION | Confirmed by Opus: needs payment gateway |
 | `dhcp_option` | API_LIMITATION | API_LIMITATION | Confirmed by Opus: needs DHCP gateway |
+
+## Sprint E Fix Log
+
+### Generator Fixes (1)
+
+| Issue | Fix Applied |
+|-------|-------------|
+| `delete_admin` vestigial command | Added to SKIP_COMMANDS; `revoke_admin` already fully deletes admin objects |
+
+### Test Infrastructure Fixes (3)
+
+| Issue | Fix Applied |
+|-------|-------------|
+| `revoke_super_admin` CannotRevokeSelf | Restructured task 22: create 2nd admin → grant super → revoke *that* admin (not self) |
+| `invite_admin` SmtpNotEnabled | Added mailpit container to docker-compose.test.yml; SMTP configured via MongoDB seed |
+| `assign_existing_admin` NotFound | Restructured task 22: create 2nd site → assign existing admin across sites |
+
+### Task Config Fixes (2)
+
+| Issue | Fix Applied |
+|-------|-------------|
+| `set_site_name` referenced in task 21 | Removed (tool was already deleted in Sprint D) |
+| `delete_user` generated for user CRUD | Fixed `generate-tasks.py` to respect NO_REST_DELETE |
 
 ---
 

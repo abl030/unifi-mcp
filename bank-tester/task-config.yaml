@@ -550,12 +550,6 @@ tasks:
         params:
           desc: bt_sys21_site
         notes: "Creates a new site. Requires confirm=True"
-      - tool: unifi_set_site_name
-        cmd: true
-        mutation: true
-        params:
-          desc: bt_sys21_renamed
-        notes: "Renames current site. Requires confirm=True"
       - tool: unifi_set_site_leds
         cmd: true
         mutation: true
@@ -579,6 +573,7 @@ tasks:
     title: "Admin Management Commands"
     subsystem: commands
     endpoints:
+      # Step 1: Create a secondary admin
       - tool: unifi_create_admin
         cmd: true
         mutation: true
@@ -587,14 +582,23 @@ tasks:
           email: bt_sys22@test.local
           x_password: TestPassword123!
           role: admin
-        notes: "Creates a new admin. Requires confirm=True"
+        notes: "Creates a new admin. Save the returned _id as <admin_id>. Requires confirm=True"
+      # Step 2: Create a second site so we can assign the admin across sites
+      - tool: unifi_add_site
+        cmd: true
+        mutation: true
+        params:
+          desc: bt_sys22_site
+        notes: "Create a second site for the assign_existing_admin test. Requires confirm=True"
+      # Step 3: Assign the created admin to the second site
       - tool: unifi_assign_existing_admin
         cmd: true
         mutation: true
         params:
-          admin: "<admin_id_from_create>"
+          admin: "<admin_id>"
           role: admin
-        notes: "Assign an existing admin to this site. Requires confirm=True"
+        notes: "Assign the admin created in step 1 to bt_sys22_site. Use site='bt_sys22_site'. Requires confirm=True"
+      # Step 4: Invite an admin via email (SMTP configured to mailpit)
       - tool: unifi_invite_admin
         cmd: true
         mutation: true
@@ -602,38 +606,36 @@ tasks:
           email: bt_sys22_invite@test.local
           name: bt_sys22_invited
           role: admin
-        notes: "Invite an admin. Requires confirm=True"
+        notes: "Invite an admin via email. SMTP is configured (mailpit). Requires confirm=True"
+      # Step 5: Update admin role
       - tool: unifi_update_admin
         cmd: true
         mutation: true
         params:
-          admin: "<admin_id_from_create>"
+          admin: "<admin_id>"
           role: readonly
-        notes: "Update admin role. Requires confirm=True. Use _id from create step"
-      - tool: unifi_revoke_admin
-        cmd: true
-        mutation: true
-        params:
-          admin: "<admin_id_from_create>"
-        notes: "Revoke admin access. Requires confirm=True"
+        notes: "Update admin role. Use _id from step 1. Requires confirm=True"
+      # Step 6: Grant super admin to the secondary admin (NOT to self)
       - tool: unifi_grant_super_admin
         cmd: true
         mutation: true
         params:
           admin: "<admin_id>"
-        notes: "Grant super admin. Requires confirm=True. May fail without CloudKey"
+        notes: "Grant super admin to the admin from step 1 (NOT yourself). Requires confirm=True"
+      # Step 7: Revoke super admin from the secondary admin (NOT from self)
       - tool: unifi_revoke_super_admin
         cmd: true
         mutation: true
         params:
           admin: "<admin_id>"
-        notes: "Revoke super admin. Requires confirm=True"
-      - tool: unifi_delete_admin
+        notes: "Revoke super admin from the admin from step 1 (NOT yourself — revoking self will fail with CannotRevokeSelf). Requires confirm=True"
+      # Step 8: Revoke the secondary admin (cleanup — this fully deletes the admin)
+      - tool: unifi_revoke_admin
         cmd: true
         mutation: true
         params:
-          admin: "<admin_id_from_create>"
-        notes: "Delete admin. Requires confirm=True. Run LAST."
+          admin: "<admin_id>"
+        notes: "Revoke admin access. This fully deletes the admin object. Requires confirm=True. Run LAST."
 
   - number: 23
     title: "Client Commands"

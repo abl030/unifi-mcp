@@ -17,6 +17,16 @@ services:
       retries: 18
       start_period: 30s
     restart: unless-stopped
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: unifi-test-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   unifi-data:
