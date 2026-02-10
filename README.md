@@ -499,6 +499,22 @@ uv run pytest generated/tests/ -v
 docker compose -f docker-compose.test.yml down -v
 ```
 
+### Module toggle tests (no controller needed)
+
+`test_modules_toggle.py` validates that every `UNIFI_MODULES` configuration loads exactly the right tools. All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` — zero hardcoded numbers. When the API surface changes, these tests auto-adapt.
+
+```bash
+uv run --extra test python -m pytest test_modules_toggle.py -v   # 44 tests
+```
+
+**What it covers (44 tests):**
+- Tool counts for every configuration: `v1,v2`, `v1`, `v2`, empty, whitespace, each of the 9 sub-modules individually, all-modules combo, multi-module combos, `v2+module`
+- Tool presence: always-on tools present everywhere, each module's tools present when loaded
+- Mutual exclusivity: loading one module does NOT leak tools from other modules
+- v2 dual-guard: v2 tools accessible via both their parent sub-module and the `v2` flag
+- No duplicates in any configuration
+- Port override in device module only
+
 ### Test philosophy
 
 The tests run against a controller with no adopted devices. Rather than skipping tests that need hardware, we assert the correct error responses — proving the endpoints are reachable, validate input correctly, and return the right errors. A test that asserts "this endpoint returns 400 UnknownDevice for a dummy MAC" proves the endpoint works just as well as a happy-path test. See the test templates for details.

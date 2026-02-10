@@ -104,6 +104,12 @@ The test suite is fully self-contained:
 - No external dependencies — `pytest` does everything
 - Tests are idempotent and isolated (each test creates/cleans its own resources)
 
+### Module Toggle Tests (`test_modules_toggle.py`)
+
+Validates that every `UNIFI_MODULES` configuration registers exactly the right tools. Run: `uv run --extra test python -m pytest test_modules_toggle.py -v` (44 tests, no controller needed).
+
+All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` via `count_from_spec()` and `count_module_breakdown()` from `count_tools.py`. Zero hardcoded numbers or tool name lists — when the API surface changes (new endpoints, new module mappings), these tests auto-adapt. Each test spawns a subprocess with a specific `UNIFI_MODULES` value and inspects registered tools via FastMCP's internal `_tool_manager._tools`.
+
 ## API Pattern Reference
 
 ### Authentication
