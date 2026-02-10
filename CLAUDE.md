@@ -92,8 +92,9 @@ A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and 
 - Uses **FastMCP** (same framework as the current hand-maintained server)
 - Single `UniFiClient` class handles auth, session management, cookie handling
 - Supports both standalone controllers and UniFi OS (with/without `/proxy/network` prefix)
-- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`
+- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`, `UNIFI_READ_ONLY`
 - `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 123 tools. Global tools (8) and report_issue are always registered.
+- `UNIFI_READ_ONLY=true` strips all mutating tools at registration time (default: `false`). Only list/get/stat tools and non-mutation commands remain (284 → 123 tools). Composes with `UNIFI_MODULES`. Example: `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` → 50 tools.
 - Graceful error handling with clear error messages in tool responses
 
 ### Docker Test Harness
@@ -106,9 +107,9 @@ The test suite is fully self-contained:
 
 ### Module Toggle Tests (`test_modules_toggle.py`)
 
-Validates that every `UNIFI_MODULES` configuration registers exactly the right tools. Run: `uv run --extra test python -m pytest test_modules_toggle.py -v` (44 tests, no controller needed).
+Validates that every `UNIFI_MODULES` and `UNIFI_READ_ONLY` configuration registers exactly the right tools. Run: `uv run --extra test python -m pytest test_modules_toggle.py -v` (62 tests, no controller needed).
 
-All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` via `count_from_spec()` and `count_module_breakdown()` from `count_tools.py`. Zero hardcoded numbers or tool name lists — when the API surface changes (new endpoints, new module mappings), these tests auto-adapt. Each test spawns a subprocess with a specific `UNIFI_MODULES` value and inspects registered tools via FastMCP's internal `_tool_manager._tools`.
+All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` via `count_from_spec()`, `count_module_breakdown()`, and `count_readonly_breakdown()` from `count_tools.py`. Zero hardcoded numbers or tool name lists — when the API surface changes (new endpoints, new module mappings), these tests auto-adapt. Each test spawns a subprocess with a specific `UNIFI_MODULES`/`UNIFI_READ_ONLY` value and inspects registered tools via FastMCP's internal `_tool_manager._tools`.
 
 ## API Pattern Reference
 

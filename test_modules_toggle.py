@@ -17,12 +17,14 @@ from pathlib import Path
 
 import pytest
 
-from count_tools import count_from_spec, count_module_breakdown
+from count_tools import count_from_spec, count_module_breakdown, count_readonly_breakdown
 from generator.naming import (
     CMD_MODULES,
     COMMAND_TOOL_NAMES,
     CRUD_REST,
     MODULE_ORDER,
+    MUTATING_GLOBALS,
+    MUTATION_COMMANDS,
     NO_REST_DELETE,
     READ_ONLY_REST,
     RESOURCE_NAMES,
@@ -50,6 +52,79 @@ _MODULE_EXPECTED = {
     mod: _MODULES[mod]["v1"] + _MODULES[mod]["v2"] + _ALWAYS_ON
     for mod in MODULE_ORDER
 }
+
+
+# --- Read-only derived values (zero hardcoded numbers) ---
+_RO = count_readonly_breakdown()
+_RO_TOTAL = _RO["readonly"]  # all read-only tools in v1,v2 mode
+
+# Read-only always-on: non-mutating globals + report_issue
+_raw_for_ro = json.loads(Path("endpoint-inventory.json").read_text())
+_RO_ALWAYS_ON = (
+    len([n for n in _raw_for_ro["global_endpoints"] if n not in MUTATING_GLOBALS])
+    + 1  # report_issue
+)
+
+# Per-module read-only expected count when loaded alone
+_RO_MODULE_EXPECTED = {
+    mod: _MODULES[mod]["v1_ro"] + _MODULES[mod]["v2_ro"] + _RO_ALWAYS_ON
+    for mod in MODULE_ORDER
+}
+
+_RO_V1_TOTAL = sum(_MODULES[m]["v1_ro"] for m in MODULE_ORDER) + _RO_ALWAYS_ON
+_RO_V2_TOTAL = sum(_MODULES[m]["v2_ro"] for m in MODULE_ORDER) + _RO_ALWAYS_ON
+
+
+def _derive_mutating_tools() -> set[str]:
+    """Derive ALL mutating tool names from spec + naming data."""
+    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    mutating: set[str] = set()
+
+    # REST CRUD: create_*, update_*, delete_*
+    for name in raw.get("rest_endpoints", {}):
+        if name not in RESOURCE_NAMES:
+            continue
+        singular, plural = RESOURCE_NAMES[name]
+        if name == "setting":
+            mutating.add("unifi_update_setting")
+        elif name in CRUD_REST:
+            mutating.add(f"unifi_create_{singular}")
+            mutating.add(f"unifi_update_{singular}")
+            if name not in NO_REST_DELETE:
+                mutating.add(f"unifi_delete_{singular}")
+
+    # Cmd: mutation commands only
+    for mgr, ep in raw.get("cmd_endpoints", {}).items():
+        for cmd in ep.get("commands", []):
+            key = (mgr, cmd)
+            if key in SKIP_COMMANDS:
+                continue
+            if key in MUTATION_COMMANDS:
+                tool_name = COMMAND_TOOL_NAMES.get(key, f"{cmd.replace('-', '_')}_{mgr}")
+                mutating.add(f"unifi_{tool_name}")
+
+    # v2: POST/PUT/DELETE
+    for name, ep in raw.get("v2_endpoints", {}).items():
+        singular, plural = V2_RESOURCE_NAMES.get(name, (name, name + "s"))
+        methods = ep.get("methods", ["GET"])
+        if "POST" in methods:
+            mutating.add(f"unifi_create_{singular}")
+        if "PUT" in methods:
+            mutating.add(f"unifi_update_{singular}")
+        if "DELETE" in methods:
+            mutating.add(f"unifi_delete_{singular}")
+
+    # Mutating globals
+    for name in MUTATING_GLOBALS:
+        mutating.add(f"unifi_{name}")
+
+    # Port override
+    mutating.add("unifi_set_port_override")
+
+    return mutating
+
+
+_MUTATING_TOOLS = _derive_mutating_tools()
 
 
 def _derive_always_on_tools() -> set[str]:
@@ -153,6 +228,8 @@ for _mod in MODULE_ORDER:
 _HELPER = """\
 import os, sys, json
 os.environ["UNIFI_MODULES"] = sys.argv[1]
+if len(sys.argv) > 2 and sys.argv[2] == "readonly":
+    os.environ["UNIFI_READ_ONLY"] = "true"
 sys.path.insert(0, "generated")
 import server as srv
 tools = srv.mcp._tool_manager._tools
@@ -161,16 +238,22 @@ print(json.dumps({"count": len(names), "names": names}))
 """
 
 
-def _run(modules_str: str) -> dict:
+def _run(modules_str: str, *, read_only: bool = False) -> dict:
     """Run helper with given UNIFI_MODULES, return {"count": N, "names": [...]}."""
     env = os.environ.copy()
     env.pop("UNIFI_MODULES", None)
+    env.pop("UNIFI_READ_ONLY", None)
+    args = [sys.executable, "-c", _HELPER, modules_str]
+    if read_only:
+        args.append("readonly")
     result = subprocess.run(
-        [sys.executable, "-c", _HELPER, modules_str],
+        args,
         capture_output=True, text=True, env=env,
         cwd=os.path.dirname(os.path.abspath(__file__)),
     )
-    assert result.returncode == 0, f"Failed with UNIFI_MODULES={modules_str!r}:\n{result.stderr}"
+    assert result.returncode == 0, (
+        f"Failed with UNIFI_MODULES={modules_str!r} read_only={read_only}:\n{result.stderr}"
+    )
     return json.loads(result.stdout)
 
 
@@ -276,3 +359,70 @@ class TestModuleToolPresence:
         """Port override is in device module, not always-on."""
         assert "unifi_set_port_override" in _run("device")["names"]
         assert "unifi_set_port_override" not in _run("")["names"]
+
+
+class TestReadOnly:
+    """Verify UNIFI_READ_ONLY=true strips all mutating tools."""
+
+    def test_readonly_default(self):
+        """v1,v2 + read-only → correct read-only count."""
+        assert _run("v1,v2", read_only=True)["count"] == _RO_TOTAL
+
+    def test_readonly_v1(self):
+        """v1 + read-only → only v1 read-only tools."""
+        assert _run("v1", read_only=True)["count"] == _RO_V1_TOTAL
+
+    def test_readonly_v2(self):
+        """v2 + read-only → only v2 read-only tools."""
+        assert _run("v2", read_only=True)["count"] == _RO_V2_TOTAL
+
+    def test_readonly_empty(self):
+        """Empty + read-only → only read-only always-on tools."""
+        assert _run("", read_only=True)["count"] == _RO_ALWAYS_ON
+
+    @pytest.mark.parametrize("mod", MODULE_ORDER)
+    def test_readonly_per_module(self, mod):
+        """Each module individually + read-only → correct count."""
+        info = _run(mod, read_only=True)
+        assert info["count"] == _RO_MODULE_EXPECTED[mod], (
+            f"{mod}: expected {_RO_MODULE_EXPECTED[mod]}, got {info['count']}"
+        )
+
+    def test_readonly_no_mutating_tools(self):
+        """No mutating tool name appears in v1,v2 read-only config."""
+        names = set(_run("v1,v2", read_only=True)["names"])
+        leaked = _MUTATING_TOOLS & names
+        assert not leaked, f"Mutating tools in read-only mode: {leaked}"
+
+    def test_readonly_always_on_present(self):
+        """Read-only always-on tools still present."""
+        names = set(_run("v1,v2", read_only=True)["names"])
+        ro_always_on = (
+            {f"unifi_{n}" for n in _raw_for_ro["global_endpoints"]
+             if n not in MUTATING_GLOBALS}
+            | {"unifi_report_issue"}
+        )
+        missing = ro_always_on - names
+        assert not missing, f"Missing read-only always-on tools: {missing}"
+
+    def test_readonly_composable(self):
+        """device,client,monitor + read-only → correct sum."""
+        combo = ["device", "client", "monitor"]
+        expected = (
+            sum(_MODULES[m]["v1_ro"] + _MODULES[m]["v2_ro"] for m in combo)
+            + _RO_ALWAYS_ON
+        )
+        assert _run(",".join(combo), read_only=True)["count"] == expected
+
+    def test_readonly_no_confirm_param(self):
+        """No tool in read-only mode should require a confirm parameter."""
+        # All tools with confirm are in _MUTATING_TOOLS; verify none are present
+        names = set(_run("v1,v2", read_only=True)["names"])
+        confirm_tools = _MUTATING_TOOLS & names
+        assert not confirm_tools, (
+            f"Tools with confirm param in read-only mode: {confirm_tools}"
+        )
+
+    def test_readonly_off_by_default(self):
+        """Default (no env var) should include all tools."""
+        assert _run("v1,v2")["count"] == _TOTAL

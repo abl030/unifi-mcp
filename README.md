@@ -119,6 +119,7 @@ claude mcp add unifi -- \
 | `UNIFI_SITE` | `default` | Site name |
 | `UNIFI_VERIFY_SSL` | `false` | Verify SSL certificates |
 | `UNIFI_MODULES` | `v1,v2` | Tool groups to register (see below) |
+| `UNIFI_READ_ONLY` | `false` | Strip all mutating tools (see below) |
 
 ### Module Toggle (`UNIFI_MODULES`)
 
@@ -155,6 +156,18 @@ UNIFI_MODULES=device,client,wifi,network,monitor  # 123 tools instead of 284
 ```
 
 No regeneration needed — just set the env var.
+
+### Read-Only Mode (`UNIFI_READ_ONLY`)
+
+Set `UNIFI_READ_ONLY=true` to strip all mutating tools at registration time. Only list, get, and stat tools are registered — no create, update, delete, restart, reboot, or any other state-changing operations exist in the MCP tool list.
+
+| Config | Tools | Use case |
+|--------|-------|----------|
+| `UNIFI_READ_ONLY=false` (default) | 284 | Full access |
+| `UNIFI_READ_ONLY=true` | 123 | Monitoring only — zero mutation risk |
+| `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` | 50 | Focused monitoring |
+
+Composes with `UNIFI_MODULES` — both filters apply independently. Read-only mode is enforced at tool registration time, not runtime: mutating tools don't exist in the MCP tool list, so the LLM cannot call them even if instructed to.
 
 ## What You Get: 284 Tools
 
@@ -504,16 +517,18 @@ docker compose -f docker-compose.test.yml down -v
 `test_modules_toggle.py` validates that every `UNIFI_MODULES` configuration loads exactly the right tools. All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` — zero hardcoded numbers. When the API surface changes, these tests auto-adapt.
 
 ```bash
-uv run --extra test python -m pytest test_modules_toggle.py -v   # 44 tests
+uv run --extra test python -m pytest test_modules_toggle.py -v   # 62 tests
 ```
 
-**What it covers (44 tests):**
+**What it covers (62 tests):**
 - Tool counts for every configuration: `v1,v2`, `v1`, `v2`, empty, whitespace, each of the 9 sub-modules individually, all-modules combo, multi-module combos, `v2+module`
 - Tool presence: always-on tools present everywhere, each module's tools present when loaded
 - Mutual exclusivity: loading one module does NOT leak tools from other modules
 - v2 dual-guard: v2 tools accessible via both their parent sub-module and the `v2` flag
 - No duplicates in any configuration
 - Port override in device module only
+- Read-only mode: correct counts for `v1,v2`, `v1`, `v2`, empty, each sub-module, combos
+- Read-only safety: no mutating tools present, no `confirm` parameter tools, always-on read-only tools preserved
 
 ### Test philosophy
 

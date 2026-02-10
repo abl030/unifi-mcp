@@ -19,6 +19,8 @@ from generator.naming import (
     CMD_MODULES,
     CRUD_REST,
     MODULE_ORDER,
+    MUTATING_GLOBALS,
+    MUTATION_COMMANDS,
     NO_REST_DELETE,
     READ_ONLY_REST,
     REST_MODULES,
@@ -134,15 +136,90 @@ def count_from_spec() -> dict:
     }
 
 
+def count_readonly_breakdown() -> dict[str, int]:
+    """Count read-only vs mutating tools from the spec.
+
+    Returns {"readonly": N, "mutating": N}.
+    """
+    raw = json.loads(INVENTORY_PATH.read_text())
+    rest = raw.get("rest_endpoints", {})
+    stat = raw.get("stat_endpoints", {})
+    cmd = raw.get("cmd_endpoints", {})
+    v2 = raw.get("v2_endpoints", {})
+    glb = raw.get("global_endpoints", {})
+
+    ro = 0
+    mut = 0
+
+    # REST
+    for name in rest:
+        is_setting = name == "setting"
+        is_readonly = name in READ_ONLY_REST
+        is_crud = name in CRUD_REST
+        if is_setting:
+            ro += 2   # list_settings + get_setting
+            mut += 1  # update_setting
+        elif is_readonly:
+            ro += 1   # list_*
+        elif is_crud:
+            ro += 2   # list_* + get_*
+            mut += 2  # create_* + update_*
+            if name not in NO_REST_DELETE:
+                mut += 1  # delete_*
+
+    # Stat: all read-only
+    ro += len(stat)
+
+    # Cmd: split by MUTATION_COMMANDS
+    for mgr, ep in cmd.items():
+        for c in ep.get("commands", []):
+            key = (mgr, c)
+            if key in SKIP_COMMANDS:
+                continue
+            if key in MUTATION_COMMANDS:
+                mut += 1
+            else:
+                ro += 1
+
+    # v2: GET = read-only, POST/PUT/DELETE = mutating
+    for name, ep in v2.items():
+        methods = ep.get("methods", ["GET"])
+        for m in methods:
+            if m == "GET":
+                ro += 1
+            else:
+                mut += 1
+
+    # Global: use MUTATING_GLOBALS
+    for name in glb:
+        if name in MUTATING_GLOBALS:
+            mut += 1
+        else:
+            ro += 1
+
+    # Port override: mutating
+    mut += 1
+
+    # Report issue: read-only
+    ro += 1
+
+    return {"readonly": ro, "mutating": mut}
+
+
 def count_module_breakdown(counts: dict) -> dict[str, dict]:
-    """Compute per-module tool breakdown using the same mappings as the generator."""
+    """Compute per-module tool breakdown using the same mappings as the generator.
+
+    Returns per-module dict with keys: v1, v2, v1_ro, v2_ro.
+    """
     raw = json.loads(INVENTORY_PATH.read_text())
     rest = raw.get("rest_endpoints", {})
     stat = raw.get("stat_endpoints", {})
     cmd = raw.get("cmd_endpoints", {})
     v2 = raw.get("v2_endpoints", {})
 
-    modules: dict[str, dict] = {m: {"v1": 0, "v2": 0} for m in MODULE_ORDER}
+    modules: dict[str, dict] = {
+        m: {"v1": 0, "v2": 0, "v1_ro": 0, "v2_ro": 0} for m in MODULE_ORDER
+    }
 
     # REST tools by module
     for name in rest:
@@ -151,19 +228,24 @@ def count_module_breakdown(counts: dict) -> dict[str, dict]:
         is_crud = name in CRUD_REST
         if is_setting:
             tools = 3
+            ro = 2  # list_settings + get_setting
         elif is_readonly:
             tools = 1
+            ro = 1
         elif is_crud:
             tools = 4 if name in NO_REST_DELETE else 5
+            ro = 2  # list_* + get_*
         else:
             continue
         mod = REST_MODULES.get(name, "advanced")
         modules[mod]["v1"] += tools
+        modules[mod]["v1_ro"] += ro
 
-    # Stat tools by module
+    # Stat tools by module (all read-only)
     for name in stat:
         mod = STAT_MODULES.get(name, "monitor")
         modules[mod]["v1"] += 1
+        modules[mod]["v1_ro"] += 1
 
     # Cmd tools by module
     for mgr, ep in cmd.items():
@@ -173,14 +255,18 @@ def count_module_breakdown(counts: dict) -> dict[str, dict]:
                 continue
             mod = CMD_MODULES.get(key, "admin")
             modules[mod]["v1"] += 1
+            if key not in MUTATION_COMMANDS:
+                modules[mod]["v1_ro"] += 1
 
     # v2 tools by module
     for name, ep in v2.items():
-        methods = len(ep.get("methods", ["GET"]))
+        methods = ep.get("methods", ["GET"])
         mod = V2_MODULES.get(name, "advanced")
-        modules[mod]["v2"] += methods
+        modules[mod]["v2"] += len(methods)
+        # Only GET methods are read-only
+        modules[mod]["v2_ro"] += methods.count("GET")
 
-    # Port override helper → device module
+    # Port override helper → device module (mutating, not read-only)
     modules["device"]["v1"] += 1
 
     return modules
@@ -262,6 +348,26 @@ def main():
     print(f"  {'SUBTOTAL':<12s} {total_v1:>5d} {total_v2:>5d} {total_v1 + total_v2:>7d}")
     print(f"  {'always-on':<12s} {'':>5s} {'':>5s} {always_on:>7d}  (global + report_issue)")
     print(f"  {'GRAND TOTAL':<12s} {'':>5s} {'':>5s} {total_v1 + total_v2 + always_on:>7d}")
+
+    # Read-only breakdown
+    ro = count_readonly_breakdown()
+    print()
+    print("=" * 60)
+    print("READ-ONLY BREAKDOWN")
+    print("=" * 60)
+    print(f"  Read-only tools:     {ro['readonly']}  (UNIFI_READ_ONLY=true)")
+    print(f"  Mutating tools:      {ro['mutating']}  (stripped in read-only mode)")
+    print(f"  Total:               {ro['readonly'] + ro['mutating']}")
+    assert ro["readonly"] + ro["mutating"] == t["total"], "Read-only + mutating != total"
+
+    # Per-module read-only breakdown
+    print()
+    print(f"  {'Module':<12s} {'v1_ro':>6s} {'v2_ro':>6s} {'Total':>7s}")
+    print(f"  {'-'*12:s} {'-'*6:s} {'-'*6:s} {'-'*7:s}")
+    for mod in MODULE_ORDER:
+        m = modules[mod]
+        mod_ro = m["v1_ro"] + m["v2_ro"]
+        print(f"  {mod:<12s} {m['v1_ro']:>6d} {m['v2_ro']:>6d} {mod_ro:>7d}")
 
     if actual is not None:
         print()

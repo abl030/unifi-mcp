@@ -12,6 +12,7 @@ from generator.naming import (
     FULL_OBJECT_UPDATE_REST,
     HARDWARE_DEPENDENT_REST,
     MODULE_ORDER,
+    MUTATING_GLOBALS,
     NO_REST_DELETE,
     REST_MODULES,
     STAT_MODULES,
@@ -207,6 +208,7 @@ def build_context(inventory: APIInventory) -> dict:
             "path": ep.path,
             "auth": ep.auth,
             "skip_test": name in UNTESTABLE_GLOBALS,
+            "is_mutating": name in MUTATING_GLOBALS,
         }
         ctx["global_tools"].append(tool)
 

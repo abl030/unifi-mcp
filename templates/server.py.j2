@@ -31,6 +31,7 @@ UNIFI_VERIFY_SSL = os.environ.get("UNIFI_VERIFY_SSL", "false").lower() == "true"
 UNIFI_MODULES = set(
     m.strip() for m in os.environ.get("UNIFI_MODULES", "v1,v2").split(",") if m.strip()
 )
+UNIFI_READ_ONLY = os.environ.get("UNIFI_READ_ONLY", "false").lower() == "true"
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +277,8 @@ async def unifi_get_setting(key: str, site: str = "") -> str:
             return _format_response(item)
     return _format_response(None, f"Setting '{key}' not found")
 
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
 
 @mcp.tool()
 async def unifi_update_setting(
@@ -302,6 +305,7 @@ async def unifi_update_setting(
     client = await _get_client()
     result = await client.request("PUT", f"set/setting/{key}", json_data=data, site=site or None)
     return _format_response(result, f"Updated setting '{key}'")
+{% endfilter %}
 
 {% elif tool.is_readonly %}
 
@@ -354,6 +358,8 @@ async def unifi_get_{{ tool.singular }}(id: str, site: str = "") -> str:
         return _format_response(data[0])
     return _format_response(data)
 
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
 
 @mcp.tool()
 async def unifi_create_{{ tool.singular }}(
@@ -427,8 +433,8 @@ async def unifi_update_{{ tool.singular }}(
     result = await client.request("PUT", "{{ tool.path }}/{id}".format(id=id), json_data=data, site=site or None)
     return _format_response(result, "Updated {{ tool.singular }}")
 
-
 {% if not tool.no_rest_delete %}
+
 @mcp.tool()
 async def unifi_delete_{{ tool.singular }}(
     id: str,
@@ -454,6 +460,7 @@ async def unifi_delete_{{ tool.singular }}(
     return _format_response(result, "Deleted {{ tool.singular }}")
 
 {% endif %}
+{% endfilter %}
 {% endif %}
 {% endmacro %}
 {% macro render_stat_tool(tool) %}
@@ -507,7 +514,7 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
 
 {% endif %}
 {% endmacro %}
-{% macro render_cmd_tool(tool) %}
+{% macro _render_cmd_body(tool) %}
 
 @mcp.tool()
 async def unifi_{{ tool.tool_name }}(
@@ -571,7 +578,17 @@ async def unifi_{{ tool.tool_name }}(
     client = await _get_client()
     result = await client.request("POST", "{{ tool.path }}", json_data=payload, site=site or None)
     return _format_response(result, "Executed {{ tool.command }}")
+{% endmacro %}
+{% macro render_cmd_tool(tool) %}
+{% if tool.is_mutation %}
 
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
+{{ _render_cmd_body(tool) }}
+{% endfilter %}
+{% else %}
+{{ _render_cmd_body(tool) }}
+{% endif %}
 {% endmacro %}
 {% macro render_v2_tool(tool) %}
 
@@ -596,6 +613,10 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
     return _format_response(data)
 
 {% endif %}
+{% if "POST" in tool.methods or "PUT" in tool.methods or "DELETE" in tool.methods %}
+
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
 {% if "POST" in tool.methods %}
 
 @mcp.tool()
@@ -692,6 +713,8 @@ async def unifi_delete_{{ tool.singular }}(
     return _format_response(result, "Deleted {{ tool.singular }}")
 
 {% endif %}
+{% endfilter %}
+{% endif %}
 {% endmacro %}
 
 {% for mod in module_order %}
@@ -721,6 +744,8 @@ if "{{ mod }}" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 # Special: Port Override Helper
 # ===========================================================================
 
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
 @mcp.tool()
 async def unifi_set_port_override(
     device_id: str,
@@ -789,6 +814,7 @@ async def unifi_set_port_override(
         site=site or None,
     )
     return _format_response(result, f"Set port override on port {port_idx}")
+{% endfilter %}
 
 {% endif %}
 {% endfilter %}
@@ -808,6 +834,37 @@ if "{{ mod }}" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
 # Global Endpoint Tools (always-on)
 # ===========================================================================
 {% for tool in global_tools %}
+{% if tool.is_mutating %}
+
+if not UNIFI_READ_ONLY:
+{% filter indent(4, first=True) %}
+@mcp.tool()
+async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
+    """{{ tool.name | replace('_', ' ') | title }}.
+{% if not tool.auth %}
+
+    No authentication required.
+{% endif %}
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
+    """
+{% if tool.auth %}
+    client = await _get_client()
+    data = await client.request("{{ tool.method }}", "{{ tool.path }}")
+{% else %}
+    # No auth required
+    async with httpx.AsyncClient(
+        base_url=f"https://{UNIFI_HOST}:{UNIFI_PORT}",
+        verify=UNIFI_VERIFY_SSL,
+        timeout=30.0,
+    ) as c:
+        resp = await c.request("{{ tool.method }}", "{{ tool.path }}")
+        resp.raise_for_status()
+        data = resp.json()
+{% endif %}
+    return _format_response(data)
+{% endfilter %}
+{% else %}
 
 @mcp.tool()
 async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path else '' }}) -> str:
@@ -835,6 +892,7 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 {% endif %}
     return _format_response(data)
 
+{% endif %}
 {% endfor %}
 
 # ---------------------------------------------------------------------------

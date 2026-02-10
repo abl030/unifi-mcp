@@ -314,6 +314,13 @@ UNTESTABLE_GLOBALS: set[str] = {
     "system_reboot",    # Would reboot the controller
 }
 
+# Global endpoints that are mutations (excluded in UNIFI_READ_ONLY mode)
+MUTATING_GLOBALS: set[str] = {
+    "logout",           # POST — ends the session
+    "system_poweroff",  # POST — powers off the controller
+    "system_reboot",    # POST — reboots the controller
+}
+
 # Minimal payloads to create REST resources in tests
 MINIMAL_CREATE_PAYLOADS: dict[str, dict] = {
     "networkconf": {
