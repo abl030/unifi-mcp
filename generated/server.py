@@ -420,6 +420,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Note: also POST with macs filter
 
+        Known fields: _uptime, adopt_ip, adopt_url, adoptable_when_upgraded, adopted, adopted_at, adopted_by_client, adoption_completed, anomalies, anon_id, antenna_table, architecture, atf_enabled, bandsteering_mode, ble_caps, board_rev, bytes, bytes-d, bytes-r, cfgversion
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -444,6 +446,8 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List devices_basic statistics.
+
+        Known fields: adopted, disabled, in_gateway_mode, mac, model, name, state, type
 
         Args:
             site: Site name (default: from env).
@@ -1497,6 +1501,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all users.
 
+        Known fields: disconnect_timestamp, first_seen, hostname, is_guest, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, mac, network_members_group_ids, oui, site_id, usergroup_id, wlanconf_id
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -1540,6 +1546,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: User configuration.
+                    Known fields: disconnect_timestamp, first_seen, hostname, is_guest, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, mac, network_members_group_ids, oui, site_id, usergroup_id, wlanconf_id
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -1569,6 +1576,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the user to update.
                 data: Fields to update.
+                    Known fields: disconnect_timestamp, first_seen, hostname, is_guest, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, mac, network_members_group_ids, oui, site_id, usergroup_id, wlanconf_id
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -1595,6 +1603,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List all_users statistics.
+
+        Known fields: disconnect_timestamp, first_seen, hostname, is_guest, is_wired, last_1x_identity, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, mac, network_members_group_ids, oui, site_id, usergroup_id, wlanconf_id
 
         Args:
             site: Site name (default: from env).
@@ -1648,6 +1658,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Note: requires POST with {"type":"all","start":0,"end":9999999999}
 
+        Known fields: ap_mac, assoc_time, duration, gw_mac, hostname, ip, is_guest, is_wired, mac, name, o, oid, roaming_sessions, rx_bytes, satisfaction, satisfaction_avg, sw_mac, sw_port, tx_bytes
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -1672,6 +1684,8 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List clients statistics.
+
+        Known fields: _is_guest_by_uap, _is_guest_by_usw, _last_seen_by_uap, _last_seen_by_usw, _uptime_by_uap, _uptime_by_usw, anomalies, anon_client_id, ap_mac, assoc_time, authorized, bssid, bytes-r, ccq, channel, channelWidth, channel_width, detailed_states, dhcpend_time, disconnect_timestamp
 
         Args:
             site: Site name (default: from env).
@@ -1949,6 +1963,8 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
     ) -> dict:
         """List all active_clients (v2 API).
 
+        Known fields: anomalies, ap_mac, assoc_time, authorized, blocked, bssid, ccq, channel, channel_width, detailed_states, dhcpend_time, display_name, essid, fingerprint, first_seen, hostname, id, idletime, ip, is_allowed_in_visual_programming
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -1978,6 +1994,8 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List all clients_history (v2 API).
+
+        Known fields: blocked, channel, display_name, fingerprint, first_seen, hostname, id, is_allowed_in_visual_programming, is_guest, is_mlo, is_wired, last_connection_network_id, last_connection_network_name, last_ip, last_radio, last_seen, last_uplink_mac, last_uplink_name, last_uplink_remote_port, local_dns_record_enabled
 
         Args:
             site: Site name (default: from env).
@@ -2043,6 +2061,8 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all wlans.
 
+        Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -2086,6 +2106,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Wlan configuration.
+                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2115,6 +2136,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the wlan to update.
                 data: Fields to update.
+                    Known fields: ap_group_ids, ap_group_mode, b_supported, bc_filter_enabled, bc_filter_list, bss_transition, dtim_6e, dtim_mode, dtim_na, dtim_ng, enabled, enhanced_iot, external_id, fast_roaming_enabled, group_rekey, hide_ssid, hotspot2conf_enabled, iapp_enabled, is_guest, l2_isolation
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2665,6 +2687,8 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all port_profiles.
 
+        Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -2708,6 +2732,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Port_profile configuration.
+                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -2737,6 +2762,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the port_profile to update.
                 data: Fields to update.
+                    Known fields: autoneg, dot1x_ctrl, dot1x_idle_timeout, egress_rate_limit_kbps, egress_rate_limit_kbps_enabled, excluded_networkconf_ids, forward, isolation, lldpmed_enabled, lldpmed_notify_enabled, name, native_networkconf_id, op_mode, poe_mode, setting_preference, site_id, stormctrl_bcast_enabled, stormctrl_bcast_rate, stormctrl_mcast_enabled, stormctrl_mcast_rate
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -3904,6 +3930,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Returns alarms from the UniFi controller.
 
+        Known fields: ap, ap_displayName, ap_model, ap_name, archived, datetime, freq, is_negative, key, msg, radar_channel, site_id, subsystem, time
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -3933,6 +3961,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
         Returns events from the UniFi controller.
 
+        Known fields: ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id, subsystem, sw, sw_displayName
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -3957,6 +3987,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List stat_alarms statistics.
+
+        Known fields: ap, ap_displayName, ap_model, ap_name, archived, datetime, freq, is_negative, key, msg, radar_channel, site_id, subsystem, time
 
         Args:
             site: Site name (default: from env).
@@ -3984,6 +4016,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         """List anomalies statistics.
 
         Note: site anomalies (unpoller). Supports ?scale=hourly&end=<timestamp>
+
+        Known fields: anomaly, mac, timestamps
 
         Args:
             site: Site name (default: from env).
@@ -4111,6 +4145,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List stat_events statistics.
+
+        Known fields: admin, ap, ap_displayName, ap_model, ap_name, channel_from, channel_to, datetime, freq, guest, ip, is_admin, is_negative, key, msg, radar_channel, radio, radio_from, radio_to, site_id
 
         Args:
             site: Site name (default: from env).
@@ -4530,6 +4566,8 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         fields: str = "",
     ) -> dict:
         """List rogue_aps statistics.
+
+        Known fields: age, ap_mac, band, bssid, bw, center_freq, channel, essid, freq, is_adhoc, is_rogue, is_ubnt, last_seen, noise, oui, radio, radio_name, report_time, rssi, rssi_age
 
         Args:
             site: Site name (default: from env).
@@ -7437,6 +7475,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all maps.
 
+        Known fields: content_type, filename, filesize, height, last_modified, md5, name, offset_left, offset_top, selected, site_id, type, unit, upp, url, width, zoom
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -7480,6 +7520,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Map configuration.
+                    Known fields: content_type, filename, filesize, height, last_modified, md5, name, offset_left, offset_top, selected, site_id, type, unit, upp, url, width, zoom
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -7507,6 +7548,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the map to update.
                 data: Fields to update.
+                    Known fields: content_type, filename, filesize, height, last_modified, md5, name, offset_left, offset_top, selected, site_id, type, unit, upp, url, width, zoom
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -7710,6 +7752,8 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
     ) -> dict:
         """List all schedule_tasks.
 
+        Known fields: action, cron_expr, execute_only_once, name, site_id, upgrade_targets
+
         Args:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
@@ -7753,6 +7797,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
 
             Args:
                 data: Schedule_task configuration.
+                    Known fields: action, cron_expr, execute_only_once, name, site_id, upgrade_targets
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 
@@ -7780,6 +7825,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             Args:
                 id: The _id of the schedule_task to update.
                 data: Fields to update.
+                    Known fields: action, cron_expr, execute_only_once, name, site_id, upgrade_targets
                 confirm: Must be True to execute. Returns preview if False.
                 site: Site name (default: from env).
 

@@ -408,6 +408,10 @@ async def unifi_list_{{ tool.plural }}(
     """List all {{ tool.plural }}.
 
     Returns {{ tool.plural }} from the UniFi controller.
+{% if tool.known_fields %}
+
+    Known fields: {{ tool.known_fields[:20] | join(', ') }}
+{% endif %}
 
     Args:
         site: Site name (default: from env).
@@ -438,6 +442,9 @@ async def unifi_list_{{ tool.plural }}(
 {% if tool.writable_fields %}
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
+{% elif tool.known_fields %}
+
+    Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
 
     Args:
@@ -488,6 +495,8 @@ async def unifi_create_{{ tool.singular }}(
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
 {% elif tool.required_create_fields %}
             {{ tool.required_create_fields }}
+{% elif tool.known_fields %}
+            Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -522,6 +531,8 @@ async def unifi_update_{{ tool.singular }}(
         data: Fields to update.
 {% if tool.writable_fields %}
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% elif tool.known_fields %}
+            Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -626,6 +637,9 @@ async def unifi_list_{{ tool.display_name }}(
 {% if tool.sample_fields %}
 
     Key fields: {{ tool.sample_fields | join(', ') }}
+{% elif tool.known_fields %}
+
+    Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
 
     Args:
@@ -740,6 +754,9 @@ async def unifi_list_{{ tool.plural }}(
 {% if tool.writable_fields %}
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
+{% elif tool.known_fields %}
+
+    Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
 
     Args:
@@ -780,6 +797,8 @@ async def unifi_create_{{ tool.singular }}(
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
 {% elif tool.create_hint %}
             {{ tool.create_hint }}
+{% elif tool.known_fields %}
+            Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).
@@ -815,6 +834,8 @@ async def unifi_update_{{ tool.singular }}(
             First GET the current object, modify the fields you want, then send the full object.
 {% if tool.writable_fields %}
             Fields: {{ tool.writable_fields[:10] | map(attribute='description') | join(', ') }}
+{% elif tool.known_fields %}
+            Known fields: {{ tool.known_fields[:20] | join(', ') }}
 {% endif %}
         confirm: Must be True to execute. Returns preview if False.
         site: Site name (default: from env).

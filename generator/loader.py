@@ -1,4 +1,4 @@
-"""Load endpoint-inventory.json and api-samples/ into structured data."""
+"""Load spec/ data (endpoint inventory, api-samples, field inventory) into structured data."""
 
 from __future__ import annotations
 
@@ -62,6 +62,7 @@ class APIInventory:
     cmd_endpoints: dict[str, CmdEndpoint] = field(default_factory=dict)
     v2_endpoints: dict[str, V2Endpoint] = field(default_factory=dict)
     global_endpoints: dict[str, GlobalEndpoint] = field(default_factory=dict)
+    field_inventory: dict[str, list[str]] = field(default_factory=dict)
 
 
 def _load_sample(samples_dir: Path, prefix: str, name: str) -> list[dict]:
@@ -80,9 +81,27 @@ def _load_sample(samples_dir: Path, prefix: str, name: str) -> list[dict]:
     return []
 
 
+def load_field_inventory(path: Path) -> dict[str, list[str]]:
+    """Load field-inventory.json → dict mapping endpoint key to sorted field names.
+
+    Keys are like "rest_networkconf", "stat_sta", "v2_clients_active".
+    Values are lists of field names sorted alphabetically.
+    """
+    if not path.exists():
+        return {}
+    raw = json.loads(path.read_text())
+    result: dict[str, list[str]] = {}
+    for key, entry in raw.items():
+        fields = sorted(entry.get("fields", {}).keys())
+        if fields:
+            result[key] = fields
+    return result
+
+
 def load_inventory(
     inventory_path: Path,
     samples_dir: Path,
+    field_inventory_path: Path | None = None,
 ) -> APIInventory:
     """Parse endpoint-inventory.json and load matching samples."""
     raw = json.loads(inventory_path.read_text())
@@ -145,5 +164,9 @@ def load_inventory(
             auth=ep.get("auth", True),
         )
         inv.global_endpoints[name] = glb
+
+    # Field inventory (optional enrichment from production controllers)
+    if field_inventory_path:
+        inv.field_inventory = load_field_inventory(field_inventory_path)
 
     return inv

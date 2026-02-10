@@ -100,6 +100,8 @@ def build_context(inventory: APIInventory) -> dict:
         "global_tools": [],
     }
 
+    fi = inventory.field_inventory
+
     # --- REST endpoints ---
     for name, ep in sorted(inventory.rest_endpoints.items()):
         singular, plural = RESOURCE_NAMES.get(name, (name, name + "s"))
@@ -109,6 +111,14 @@ def build_context(inventory: APIInventory) -> dict:
         is_setting = name == "setting"
 
         is_hardware_dependent = name in HARDWARE_DEPENDENT_REST
+
+        # Fall back to field inventory when schema inference has no writable fields
+        writable = _writable_fields(schema)
+        known_fields: list[str] = []
+        if not writable:
+            fi_key = f"rest_{name}"
+            if fi_key in fi:
+                known_fields = [f for f in fi[fi_key] if f != "_id"]
 
         tool = {
             "resource": name,
@@ -122,7 +132,8 @@ def build_context(inventory: APIInventory) -> dict:
             "is_hardware_dependent": is_hardware_dependent,
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
-            "writable_fields": _writable_fields(schema),
+            "writable_fields": writable,
+            "known_fields": known_fields,
             "create_payload": MINIMAL_CREATE_PAYLOADS.get(name, {}),
             "required_create_fields": REQUIRED_CREATE_FIELDS.get(name, ""),
             "full_object_update": name in FULL_OBJECT_UPDATE_REST,
@@ -142,6 +153,14 @@ def build_context(inventory: APIInventory) -> dict:
         method = overrides.get("method", ep.method)
         post_body = overrides.get("body", {})
 
+        # Fall back to field inventory when schema has no common fields
+        sample_fields = [f.name for f in schema.values() if f.common][:5]
+        known_fields_stat: list[str] = []
+        if not sample_fields:
+            fi_key = f"stat_{name}"
+            if fi_key in fi:
+                known_fields_stat = [f for f in fi[fi_key] if f != "_id"]
+
         tool = {
             "resource": name,
             "display_name": display_name,
@@ -151,7 +170,8 @@ def build_context(inventory: APIInventory) -> dict:
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
             "note": ep.note,
-            "sample_fields": [fi.name for fi in schema.values() if fi.common][:5],
+            "sample_fields": sample_fields,
+            "known_fields": known_fields_stat,
         }
         tool["module"] = STAT_MODULES.get(name, "monitor")
         ctx["stat_tools"].append(tool)
@@ -186,6 +206,13 @@ def build_context(inventory: APIInventory) -> dict:
         singular, plural = V2_RESOURCE_NAMES.get(name, (name, name + "s"))
         schema = infer_schema(ep.samples)
 
+        writable_v2 = _writable_fields(schema)
+        known_fields_v2: list[str] = []
+        if not writable_v2:
+            fi_key = f"v2_{name}"
+            if fi_key in fi:
+                known_fields_v2 = [f for f in fi[fi_key] if f != "_id"]
+
         tool = {
             "resource": name,
             "singular": singular,
@@ -194,7 +221,8 @@ def build_context(inventory: APIInventory) -> dict:
             "methods": ep.methods,
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
-            "writable_fields": _writable_fields(schema),
+            "writable_fields": writable_v2,
+            "known_fields": known_fields_v2,
             "create_hint": V2_CREATE_HINTS.get(name, ""),
         }
         tool["module"] = V2_MODULES.get(name, "advanced")

@@ -1,0 +1,5643 @@
+{
+  "rest_networkconf": {
+    "category": "rest",
+    "name": "networkconf",
+    "path": "rest/networkconf",
+    "field_count": 39,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "auto_scale_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpd_conflict_checking": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpd_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpd_start": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpd_stop": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpdv6_dns_auto": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpdv6_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpdv6_leasetime": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpdv6_start": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpdv6_stop": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "dhcpguard_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "domain_name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "external_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "igmp_snooping": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "ip_subnet": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_client_address_assignment": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_interface_type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_pd_start": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_pd_stop": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_ra_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_ra_preferred_lifetime": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_ra_priority": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "ipv6_setting_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "is_nat": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "lte_lan_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "mdns_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "networkgroup": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "purpose": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "setting_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "vlan": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "vlan_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wan_dhcpv6_pd_size_auto": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      }
+    }
+  },
+  "rest_wlanconf": {
+    "category": "rest",
+    "name": "wlanconf",
+    "path": "rest/wlanconf",
+    "field_count": 68,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "ap_group_ids": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "ap_group_mode": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "b_supported": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "bc_filter_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "bc_filter_list": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "bss_transition": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "dtim_6e": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "dtim_mode": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "dtim_na": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "dtim_ng": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "enhanced_iot": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "external_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "fast_roaming_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "group_rekey": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "hide_ssid": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "hotspot2conf_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "iapp_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "l2_isolation": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mac_filter_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mac_filter_list": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mac_filter_policy": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mcastenhance_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mdns_proxy_custom": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "mdns_proxy_mode": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "minrate_na_advertising_rates": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_na_data_rate_kbps": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_na_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_ng_advertising_rates": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_ng_data_rate_kbps": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_ng_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "minrate_setting_preference": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "mlo_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "networkconf_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "no2ghz_oui": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "optimize_iot_wifi_connectivity": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "passphrase_autogenerated": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "pmf_mode": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "private_preshared_keys": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "private_preshared_keys_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "proxy_arp": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "radius_das_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "radius_mac_auth_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "radius_macacl_empty_password": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "radius_macacl_format": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "sae_groups": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "sae_psk": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "schedule": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "schedule_with_duration": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "security": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "setting_preference": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "uapsd_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wep_idx": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 3
+      },
+      "wlan_band": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wlan_bands": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wpa3_enhanced_192": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wpa3_fast_roaming": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "wpa3_support": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "wpa3_transition": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 3
+      },
+      "wpa_enc": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "wpa_mode": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "x_iapp_key": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      },
+      "x_passphrase": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 3
+      }
+    }
+  },
+  "rest_wlangroup": {
+    "category": "rest",
+    "name": "wlangroup",
+    "path": "rest/wlangroup",
+    "field_count": 7,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "attr_hidden": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "attr_no_edit": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      }
+    }
+  },
+  "rest_portconf": {
+    "category": "rest",
+    "name": "portconf",
+    "path": "rest/portconf",
+    "field_count": 26,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "autoneg": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "dot1x_ctrl": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "dot1x_idle_timeout": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "egress_rate_limit_kbps": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "egress_rate_limit_kbps_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "excluded_networkconf_ids": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "forward": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "isolation": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "lldpmed_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "lldpmed_notify_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "native_networkconf_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "op_mode": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "poe_mode": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "setting_preference": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_bcast_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_bcast_rate": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_mcast_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_mcast_rate": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_ucast_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stormctrl_ucast_rate": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "stp_port_mode": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "tagged_vlan_mgmt": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "voice_networkconf_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      }
+    }
+  },
+  "rest_radiusprofile": {
+    "category": "rest",
+    "name": "radiusprofile",
+    "path": "rest/radiusprofile",
+    "field_count": 9,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "acct_servers": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "auth_servers": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "external_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "use_usg_auth_server": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "rest_usergroup": {
+    "category": "rest",
+    "name": "usergroup",
+    "path": "rest/usergroup",
+    "field_count": 7,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "qos_rate_max_down": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "qos_rate_max_up": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      }
+    }
+  },
+  "rest_user": {
+    "category": "rest",
+    "name": "user",
+    "path": "rest/user",
+    "field_count": 21,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "disconnect_timestamp": {
+        "type": "int",
+        "seen_in": 139,
+        "total_records": 143
+      },
+      "first_seen": {
+        "type": "int",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 83,
+        "total_records": 143
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_1x_identity": {
+        "type": "str",
+        "seen_in": 20,
+        "total_records": 143
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 135,
+        "total_records": 143
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 135,
+        "total_records": 143
+      },
+      "last_ip": {
+        "type": "str",
+        "seen_in": 100,
+        "total_records": 143
+      },
+      "last_radio": {
+        "type": "str",
+        "seen_in": 33,
+        "total_records": 143
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_mac": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_name": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_remote_port": {
+        "type": "int",
+        "seen_in": 110,
+        "total_records": 143
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "network_members_group_ids": {
+        "type": "list",
+        "seen_in": 110,
+        "total_records": 143
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "wlanconf_id": {
+        "type": "str",
+        "seen_in": 33,
+        "total_records": 143
+      }
+    }
+  },
+  "rest_setting": {
+    "category": "rest",
+    "name": "setting",
+    "path": "rest/setting",
+    "field_count": 209,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 38,
+        "total_records": 38
+      },
+      "ad_blocking_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "advanced_feature_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "advanced_filtering_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "alert_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auth": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_adjust_channels_to_country": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_channel_presets_type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_engine_id_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_upgrade": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "auto_upgrade_hour": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "autobackup_cron_expr": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "autobackup_days": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "autobackup_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "autobackup_max_files": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "autobackup_timezone": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "available_controller_channels": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "available_firmware_channels": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "backup_to_cloud_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "brightness": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "broadcast_ping": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "channels_6e": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "channels_blacklist": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "channels_na": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "channels_ng": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "code": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "community": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "content_filtering_blocking_page_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "cron_expr": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "custom_services": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_setting_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_time_in_hours_for_5minutes_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_time_in_hours_for_daily_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_time_in_hours_for_hourly_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_time_in_hours_for_monthly_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "data_retention_time_in_hours_for_others": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "debug_tools_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "default": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "default_security_posture": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "device_auth": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "device_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "dhcp_snoop": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "discoverable": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "dns_filtering": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "dns_verification": {
+        "type": "dict",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "dot1x_fallback_networkconf_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "dot1x_portctrl_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "download": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ec_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "enable_analytics": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "enabled": {
+        "type": "bool",
+        "seen_in": 11,
+        "total_records": 38
+      },
+      "enabled_categories": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "endpoint_scanning": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "exclude_devices": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "excluded_network_ids": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "expire": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "expire_number": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "expire_unit": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "export_frequency": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "facebook_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "facebook_wifi_gw_name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "fingerprintingEnabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "firmware_channel": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "flowctrl_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ftp_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "google_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "gre_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "h323_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "honeypot_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ht_modes_na": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ht_modes_ng": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "icmp_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "idle_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ips_mode": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "jumboframe_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 38,
+        "total_records": 38
+      },
+      "layout_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "led_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "live_updates": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "log_all_contents": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "memory_optimized": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "minimum_usable_hd_space": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "minimum_usable_sd_space": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "mode": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "mss_clamp": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "multiple_sites_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "network_defaults": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "network_overrides": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ntp_server_1": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ntp_server_2": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ntp_server_3": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ntp_server_4": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "offload_accounting": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "offload_l2_blocking": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "offload_sch": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "optimize": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "other_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "password_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "payment_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "port": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "portal_customized": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_authentication_text": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_bg_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_bg_image_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_bg_image_tile": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_bg_type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_box_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_box_link_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_box_opacity": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_box_radius": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_box_text_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_button_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_button_text": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_button_text_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_languages": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_link_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_logo_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_logo_position": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_logo_size": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_success_text": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_text_color": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_title": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_tos": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_customized_welcome_text": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_hostname": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "portal_use_hostname": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "pptp_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "predefined_services": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "provider": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "psk": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "radios": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "radios_configuration": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "radius_auth_type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "radius_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "radiusprofile_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "receive_redirects": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "redirect_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "redirect_https": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "redirect_to_https": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "redirect_url": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "refresh_rate": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "restricted_subnet_1": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "restricted_subnet_2": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "restricted_subnet_3": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "rssi": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "send_redirects": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "server_names": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "setting_preference": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "sip_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 32,
+        "total_records": 38
+      },
+      "speed_defaults": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "speed_overrides": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ssid": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "sso_login_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "state": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "stp_version": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "switch_exclusions": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "syn_cookies": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "sync": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_close_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_close_wait_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_established_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_fin_wait_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_last_ack_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_syn_recv_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_syn_sent_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tcp_time_wait_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "template_engine": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "tftp_module": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "time_series_per_client_stats_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "timeout_setting_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "timezone": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "touch_event": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ubic_uuid": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 38
+      },
+      "udp_other_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "udp_stream_timeout": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "ugw3_wan2_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "unifi_idp_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "uplink_type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "upload": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "upnp_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "upnp_nat_pmp_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "upnp_secure_mode": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "version": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "voucher_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "wechat_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_api_token": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_certificate_arn": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_certificate_pem": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_element_essid": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_element_psk": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_mesh_essid": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_mesh_psk": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_mgmt_key": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_password": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_pregenerated_dh_key": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_private_key": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_auth_password_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_bind_wildcard": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_keys": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_md5passwd": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_password": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_sha512passwd": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      },
+      "x_ssh_username": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 38
+      }
+    }
+  },
+  "rest_scheduletask": {
+    "category": "rest",
+    "name": "scheduletask",
+    "path": "rest/scheduletask",
+    "field_count": 7,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "action": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "cron_expr": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "execute_only_once": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "upgrade_targets": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "rest_map": {
+    "category": "rest",
+    "name": "map",
+    "path": "rest/map",
+    "field_count": 18,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "content_type": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "filename": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "filesize": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "height": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "last_modified": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "md5": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "offset_left": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "offset_top": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "selected": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "type": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "unit": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "upp": {
+        "type": "float",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "url": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 2
+      },
+      "width": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 2
+      },
+      "zoom": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 2
+      }
+    }
+  },
+  "rest_dpigroup": {
+    "category": "rest",
+    "name": "dpigroup",
+    "path": "rest/dpigroup",
+    "field_count": 5,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "rest_alarm": {
+    "category": "rest",
+    "name": "alarm",
+    "path": "rest/alarm",
+    "field_count": 15,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_displayName": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_model": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_name": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "archived": {
+        "type": "bool",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "datetime": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "freq": {
+        "type": "int",
+        "seen_in": 7,
+        "total_records": 10
+      },
+      "is_negative": {
+        "type": "bool",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "msg": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "radar_channel": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 10
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "subsystem": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "time": {
+        "type": "int",
+        "seen_in": 10,
+        "total_records": 10
+      }
+    }
+  },
+  "rest_event": {
+    "category": "rest",
+    "name": "event",
+    "path": "rest/event",
+    "field_count": 27,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "ap": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 411
+      },
+      "ap_displayName": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 411
+      },
+      "ap_model": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 411
+      },
+      "ap_name": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 411
+      },
+      "channel_from": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 411
+      },
+      "channel_to": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 411
+      },
+      "datetime": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "freq": {
+        "type": "int",
+        "seen_in": 7,
+        "total_records": 411
+      },
+      "guest": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 411
+      },
+      "is_negative": {
+        "type": "bool",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "msg": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "radar_channel": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 411
+      },
+      "radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 411
+      },
+      "radio_from": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 411
+      },
+      "radio_to": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 411
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "subsystem": {
+        "type": "str",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "sw": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 411
+      },
+      "sw_displayName": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 411
+      },
+      "sw_model": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 411
+      },
+      "sw_name": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 411
+      },
+      "time": {
+        "type": "int",
+        "seen_in": 411,
+        "total_records": 411
+      },
+      "user": {
+        "type": "str",
+        "seen_in": 340,
+        "total_records": 411
+      },
+      "version_from": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 411
+      },
+      "version_to": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 411
+      }
+    }
+  },
+  "stat_device": {
+    "category": "stat",
+    "name": "device",
+    "path": "stat/device",
+    "field_count": 176,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "_uptime": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "adopt_ip": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "adopt_url": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "adoptable_when_upgraded": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "adopted": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "adopted_at": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "adopted_by_client": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "adoption_completed": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "anomalies": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "anon_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "antenna_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "architecture": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "atf_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "bandsteering_mode": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "ble_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "board_rev": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "bytes": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "bytes-d": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "bytes-r": {
+        "type": "float",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "cfgversion": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "config_network": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "connect_request_ip": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "connect_request_port": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "connected_at": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "connection_network_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "connection_network_name": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "country_code": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "countrycode_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "credential_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "default": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "detailed_states": {
+        "type": "dict",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "device_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "dhcp_server_table": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "disabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "disconnected_at": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "discovered_via": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "displayable_version": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "dot1x_portctrl_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "downlink_lldp_macs": {
+        "type": "list",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "downlink_table": {
+        "type": "list",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "element_peer_mac": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "ethernet_table": {
+        "type": "list",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "external_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "fixed_ap_available": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "flowctrl_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "fw2_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "fw3_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "fw_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "gateway_mac": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "guest-num_sta": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "guest-wlan-num_sta": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "guest_kicks": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "guest_token": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "has_eth1": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "has_fan": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "has_speaker": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "has_temperature": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "hash_id": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "heightInMeters": {
+        "type": "float",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "hide_ch_width": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "hw_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "inform_ip": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "inform_url": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "internet": {
+        "type": "bool",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "ip": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "ipv6": {
+        "type": "list",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "is_access_point": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "isolated": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "jumboframe_enabled": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "kernel_version": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "known_cfgversion": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "last_uplink": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "led_override": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "led_override_color": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "led_override_color_brightness": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "link_aggregation_groups": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "lldp_table": {
+        "type": "list",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "locating": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "manufacturer_id": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "map_id": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "mesh_sta_vap_enabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "meshv3_peer_mac": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "mgmt_network_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "min_inform_interval_seconds": {
+        "type": "int",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "model": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "model_in_eol": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "model_in_lts": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "model_incompatible": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "next_interval": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "num_sta": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "outdoor_mode_override": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "overheating": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "port_overrides": {
+        "type": "list",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "port_table": {
+        "type": "list",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "power_source_ctrl_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "prev_non_busy_state": {
+        "type": "int",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "provisioned_at": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "quick_scan_state": {
+        "type": "dict",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "quickscan_scanning": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "radio_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "radio_table_stats": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "reboot_duration": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "required_version": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "rollupgrade": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "rx_bytes": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "rx_bytes-d": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "safe_for_autoupgrade": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "satisfaction": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "scan_radio_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "scanning": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "serial": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "service_mac": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "setup_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "shortname": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "slimcfg_caps": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "snmp_contact": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "snmp_location": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "spectrum_scanning": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "ssh_session_table": {
+        "type": "list",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "start_connected_millis": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "start_disconnected_millis": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "startup_timestamp": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "stat": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "state": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "stp_priority": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "stp_version": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "support_wifi6e": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "supported_afc_regions": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "supports_fingerprint_ml": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "switch_caps": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "sys_error_caps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "sys_stats": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "sysid": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "syslog_key": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "system-stats": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "total_max_effective_power": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "total_max_power": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "total_used_power": {
+        "type": "float",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "two_phase_adopt": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "tx_bytes": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "tx_bytes-d": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "type": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "unsupported": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "unsupported_reason": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "upgradable": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "upgrade_duration": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "uplink": {
+        "type": "dict",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "uplink_depth": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "uplink_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "uptime": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "user-num_sta": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "user-wlan-num_sta": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "vap_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "version": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "vwireEnabled": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "vwire_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "vwire_vap_table": {
+        "type": "list",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "wifi_caps": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "wifi_caps2": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "wlangroup_id_na": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "wlangroup_id_ng": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "x": {
+        "type": "float",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "x_aes_gcm": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "x_authkey": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "x_fingerprint": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "x_has_ssh_hostkey": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "x_ssh_hostkey_fingerprint": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "x_vwirekey": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "y": {
+        "type": "float",
+        "seen_in": 4,
+        "total_records": 5
+      }
+    }
+  },
+  "stat_device_basic": {
+    "category": "stat",
+    "name": "device_basic",
+    "path": "stat/device-basic",
+    "field_count": 8,
+    "fields": {
+      "adopted": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "disabled": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "in_gateway_mode": {
+        "type": "bool",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "model": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 4,
+        "total_records": 5
+      },
+      "state": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "type": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      }
+    }
+  },
+  "stat_sta": {
+    "category": "stat",
+    "name": "sta",
+    "path": "stat/sta",
+    "field_count": 93,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "_is_guest_by_uap": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "_is_guest_by_usw": {
+        "type": "bool",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "_last_seen_by_uap": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "_last_seen_by_usw": {
+        "type": "int",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "_uptime_by_uap": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "_uptime_by_usw": {
+        "type": "int",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "anomalies": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "anon_client_id": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "ap_mac": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "assoc_time": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "authorized": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "bssid": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "bytes-r": {
+        "type": "float",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "ccq": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "channel": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "channelWidth": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "channel_width": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "detailed_states": {
+        "type": "dict",
+        "seen_in": 1,
+        "total_records": 26
+      },
+      "dhcpend_time": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "disconnect_timestamp": {
+        "type": "int",
+        "seen_in": 22,
+        "total_records": 26
+      },
+      "eagerly_discovered": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "essid": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "first_seen": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 22,
+        "total_records": 26
+      },
+      "hostname_source": {
+        "type": "str",
+        "seen_in": 20,
+        "total_records": 26
+      },
+      "idletime": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "ip": {
+        "type": "str",
+        "seen_in": 25,
+        "total_records": 26
+      },
+      "is_11r": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "is_mlo": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_1x_identity": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 26
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_ip": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_mac": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_name": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_remote_port": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "latest_assoc_time": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "network": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "network_id": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "network_members_group_ids": {
+        "type": "list",
+        "seen_in": 10,
+        "total_records": 26
+      },
+      "noise": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "nss": {
+        "type": "int",
+        "seen_in": 11,
+        "total_records": 26
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "powersave_enabled": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "qos_policy_applied": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio_name": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio_proto": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "roam_count": {
+        "type": "int",
+        "seen_in": 4,
+        "total_records": 26
+      },
+      "rssi": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rx_bytes": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rx_bytes-r": {
+        "type": "float",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rx_packets": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rx_rate": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "satisfaction": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "satisfaction_avg": {
+        "type": "dict",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "satisfaction_now": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "satisfaction_real": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "satisfaction_reason": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "signal": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "sw_depth": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "sw_mac": {
+        "type": "str",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "sw_port": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "tx_bytes": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_bytes-r": {
+        "type": "float",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_mcs": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_packets": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_power": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_rate": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_retries": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_retry_burst_count": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "uptime": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "user_group_id_computed": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "user_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "wifi_tx_attempts": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wifi_tx_dropped": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wifi_tx_retries_percentage": {
+        "type": "float",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wired-rx_bytes": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired-rx_bytes-r": {
+        "type": "float",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired-rx_packets": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired-tx_bytes": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired-tx_bytes-r": {
+        "type": "float",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired-tx_packets": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 26
+      },
+      "wired_rate_mbps": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "wlanconf_id": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      }
+    }
+  },
+  "stat_alluser": {
+    "category": "stat",
+    "name": "alluser",
+    "path": "stat/alluser",
+    "field_count": 21,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "disconnect_timestamp": {
+        "type": "int",
+        "seen_in": 139,
+        "total_records": 143
+      },
+      "first_seen": {
+        "type": "int",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 83,
+        "total_records": 143
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_1x_identity": {
+        "type": "null",
+        "seen_in": 20,
+        "total_records": 143
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 135,
+        "total_records": 143
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 135,
+        "total_records": 143
+      },
+      "last_ip": {
+        "type": "str",
+        "seen_in": 100,
+        "total_records": 143
+      },
+      "last_radio": {
+        "type": "str",
+        "seen_in": 33,
+        "total_records": 143
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_mac": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_name": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "last_uplink_remote_port": {
+        "type": "int",
+        "seen_in": 110,
+        "total_records": 143
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "network_members_group_ids": {
+        "type": "list",
+        "seen_in": 110,
+        "total_records": 143
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 143,
+        "total_records": 143
+      },
+      "wlanconf_id": {
+        "type": "str",
+        "seen_in": 33,
+        "total_records": 143
+      }
+    }
+  },
+  "stat_health": {
+    "category": "stat",
+    "name": "health",
+    "path": "stat/health",
+    "field_count": 14,
+    "fields": {
+      "num_adopted": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "num_ap": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "num_disabled": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "num_disconnected": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "num_guest": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "num_gw": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "num_iot": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "num_pending": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 5
+      },
+      "num_sw": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 5
+      },
+      "num_user": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "rx_bytes-r": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      },
+      "status": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "subsystem": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 5
+      },
+      "tx_bytes-r": {
+        "type": "int",
+        "seen_in": 2,
+        "total_records": 5
+      }
+    }
+  },
+  "stat_alarm": {
+    "category": "stat",
+    "name": "alarm",
+    "path": "stat/alarm",
+    "field_count": 15,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_displayName": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_model": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "ap_name": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "archived": {
+        "type": "bool",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "datetime": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "freq": {
+        "type": "int",
+        "seen_in": 7,
+        "total_records": 10
+      },
+      "is_negative": {
+        "type": "bool",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "msg": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "radar_channel": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 10
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "subsystem": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 10
+      },
+      "time": {
+        "type": "int",
+        "seen_in": 10,
+        "total_records": 10
+      }
+    }
+  },
+  "stat_event": {
+    "category": "stat",
+    "name": "event",
+    "path": "stat/event",
+    "field_count": 30,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "admin": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 413
+      },
+      "ap": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 413
+      },
+      "ap_displayName": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 413
+      },
+      "ap_model": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 413
+      },
+      "ap_name": {
+        "type": "str",
+        "seen_in": 403,
+        "total_records": 413
+      },
+      "channel_from": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 413
+      },
+      "channel_to": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 413
+      },
+      "datetime": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "freq": {
+        "type": "int",
+        "seen_in": 7,
+        "total_records": 413
+      },
+      "guest": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 413
+      },
+      "ip": {
+        "type": "str",
+        "seen_in": 2,
+        "total_records": 413
+      },
+      "is_admin": {
+        "type": "bool",
+        "seen_in": 2,
+        "total_records": 413
+      },
+      "is_negative": {
+        "type": "bool",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "msg": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "radar_channel": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 413
+      },
+      "radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 413
+      },
+      "radio_from": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 413
+      },
+      "radio_to": {
+        "type": "str",
+        "seen_in": 368,
+        "total_records": 413
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "subsystem": {
+        "type": "str",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "sw": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 413
+      },
+      "sw_displayName": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 413
+      },
+      "sw_model": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 413
+      },
+      "sw_name": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 413
+      },
+      "time": {
+        "type": "int",
+        "seen_in": 413,
+        "total_records": 413
+      },
+      "user": {
+        "type": "str",
+        "seen_in": 340,
+        "total_records": 413
+      },
+      "version_from": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 413
+      },
+      "version_to": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 413
+      }
+    }
+  },
+  "stat_rogueap": {
+    "category": "stat",
+    "name": "rogueap",
+    "path": "stat/rogueap",
+    "field_count": 24,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 36,
+        "total_records": 54
+      },
+      "age": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "ap_mac": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "band": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "bssid": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "bw": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "center_freq": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "channel": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "essid": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "freq": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "is_adhoc": {
+        "type": "bool",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "is_rogue": {
+        "type": "bool",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "is_ubnt": {
+        "type": "bool",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "noise": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "radio": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "radio_name": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "report_time": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "rssi": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "rssi_age": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "security": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "signal": {
+        "type": "int",
+        "seen_in": 54,
+        "total_records": 54
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 54,
+        "total_records": 54
+      }
+    }
+  },
+  "stat_sysinfo": {
+    "category": "stat",
+    "name": "sysinfo",
+    "path": "stat/sysinfo",
+    "field_count": 37,
+    "fields": {
+      "anonymous_controller_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "autobackup": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "build": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_days": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_time_in_hours_for_5minutes_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_time_in_hours_for_daily_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_time_in_hours_for_hourly_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_time_in_hours_for_monthly_scale": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "data_retention_time_in_hours_for_others": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "debug_device": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "debug_mgmt": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "debug_sdn": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "debug_setting_preference": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "debug_system": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "default_site_device_auth_password_alert": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "facebook_wifi_registered": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "has_webrtc_support": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "https_port": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "image_maps_use_google_engine": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "inform_port": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "ip_addrs": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "live_chat": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "override_inform_host": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "portal_http_port": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "previous_version": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "radius_disconnect_running": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "sso_app_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "store_enabled": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "timezone": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "unsupported_device_count": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "unsupported_device_list": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "update_available": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "update_downloaded": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "uptime": {
+        "type": "int",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "version": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "stat_dashboard": {
+    "category": "stat",
+    "name": "dashboard",
+    "path": "stat/dashboard",
+    "field_count": 9,
+    "fields": {
+      "airtime_avg": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "dropped_rate_avg": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "retries_rate_avg": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "rx_bytes-r": {
+        "type": "int",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "time": {
+        "type": "int",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "tx_bytes-r": {
+        "type": "int",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "tx_retries_total": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "wifi_tx_attempts_total": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      },
+      "wifi_tx_dropped_total": {
+        "type": "float",
+        "seen_in": 25,
+        "total_records": 25
+      }
+    }
+  },
+  "stat_anomalies": {
+    "category": "stat",
+    "name": "anomalies",
+    "path": "stat/anomalies",
+    "field_count": 3,
+    "fields": {
+      "anomaly": {
+        "type": "str",
+        "seen_in": 13,
+        "total_records": 13
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 13,
+        "total_records": 13
+      },
+      "timestamps": {
+        "type": "list",
+        "seen_in": 13,
+        "total_records": 13
+      }
+    }
+  },
+  "stat_ccode": {
+    "category": "stat",
+    "name": "ccode",
+    "path": "stat/ccode",
+    "field_count": 3,
+    "fields": {
+      "code": {
+        "type": "str",
+        "seen_in": 207,
+        "total_records": 207
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 207,
+        "total_records": 207
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 207,
+        "total_records": 207
+      }
+    }
+  },
+  "stat_current_channel": {
+    "category": "stat",
+    "name": "current_channel",
+    "path": "stat/current-channel",
+    "field_count": 32,
+    "fields": {
+      "afc": {
+        "type": "dict",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_160": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_320": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_40": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_80": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_indoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_outdoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_6e_psc": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_1080": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_2160": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_4320": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_ext_1080": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_ext_2160": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_ext_outdoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ad_outdoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_160": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_240": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_40": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_80": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_dfs": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_indoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_na_outdoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ng": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ng_40": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ng_indoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "channels_ng_outdoor": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "code": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "hints": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "key": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "stat_sdn": {
+    "category": "stat",
+    "name": "sdn",
+    "path": "stat/sdn",
+    "field_count": 11,
+    "fields": {
+      "cloud_env": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "connected": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "connecting": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "has_sso_auth": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "has_webrtc": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "is_cloud_key": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "is_udm": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "registered": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "sso_login_enabled": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "ubic_env": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  },
+  "stat_session": {
+    "category": "stat",
+    "name": "session",
+    "path": "stat/session",
+    "field_count": 20,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "ap_mac": {
+        "type": "str",
+        "seen_in": 2575,
+        "total_records": 100322
+      },
+      "assoc_time": {
+        "type": "int",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "duration": {
+        "type": "int",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "gw_mac": {
+        "type": "null",
+        "seen_in": 97747,
+        "total_records": 100322
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "ip": {
+        "type": "null",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "name": {
+        "type": "null",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "o": {
+        "type": "str",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "oid": {
+        "type": "str",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "roaming_sessions": {
+        "type": "list",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "rx_bytes": {
+        "type": "int",
+        "seen_in": 100322,
+        "total_records": 100322
+      },
+      "satisfaction": {
+        "type": "float",
+        "seen_in": 2405,
+        "total_records": 100322
+      },
+      "satisfaction_avg": {
+        "type": "int",
+        "seen_in": 2575,
+        "total_records": 100322
+      },
+      "sw_mac": {
+        "type": "str",
+        "seen_in": 97747,
+        "total_records": 100322
+      },
+      "sw_port": {
+        "type": "str",
+        "seen_in": 97747,
+        "total_records": 100322
+      },
+      "tx_bytes": {
+        "type": "int",
+        "seen_in": 100322,
+        "total_records": 100322
+      }
+    }
+  },
+  "stat_report": {
+    "category": "stat",
+    "name": "report",
+    "path": "stat/report/daily.site",
+    "field_count": 4,
+    "fields": {
+      "num_sta": {
+        "type": "int",
+        "seen_in": 7,
+        "total_records": 7
+      },
+      "o": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 7
+      },
+      "oid": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 7
+      },
+      "site": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 7
+      }
+    }
+  },
+  "v2_clients_active": {
+    "category": "v2",
+    "name": "clients_active",
+    "path": "clients/active",
+    "field_count": 76,
+    "fields": {
+      "anomalies": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "ap_mac": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "assoc_time": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "authorized": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "blocked": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "bssid": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "ccq": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "channel": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "channel_width": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "detailed_states": {
+        "type": "dict",
+        "seen_in": 1,
+        "total_records": 26
+      },
+      "dhcpend_time": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "display_name": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "essid": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "fingerprint": {
+        "type": "dict",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "first_seen": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 22,
+        "total_records": 26
+      },
+      "id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "idletime": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "ip": {
+        "type": "str",
+        "seen_in": 25,
+        "total_records": 26
+      },
+      "is_allowed_in_visual_programming": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "is_mlo": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 26
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 10,
+        "total_records": 26
+      },
+      "last_ip": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 26
+      },
+      "last_radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_mac": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_name": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "last_uplink_remote_port": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "latest_assoc_time": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "local_dns_record_enabled": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "mimo": {
+        "type": "str",
+        "seen_in": 11,
+        "total_records": 26
+      },
+      "network_id": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "network_members_group_ids": {
+        "type": "list",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "network_name": {
+        "type": "str",
+        "seen_in": 16,
+        "total_records": 26
+      },
+      "noise": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "noted": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "powersave_enabled": {
+        "type": "bool",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio_name": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "radio_proto": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rate_imbalance": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "roam_count": {
+        "type": "int",
+        "seen_in": 4,
+        "total_records": 26
+      },
+      "rssi": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "rx_bytes": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "rx_bytes-r": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "rx_packets": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "rx_rate": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "signal": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "status": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "sw_port": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "tags": {
+        "type": "list",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "tx_bytes": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "tx_bytes-r": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "tx_mcs_index": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "tx_packets": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "tx_rate": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "type": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "unifi_device": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "uplink_mac": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "uptime": {
+        "type": "int",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "use_fixedip": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "user_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "virtual_network_override_enabled": {
+        "type": "bool",
+        "seen_in": 26,
+        "total_records": 26
+      },
+      "wifi_experience_average": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wifi_experience_score": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wifi_tx_attempts": {
+        "type": "int",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wifi_tx_retries_percentage": {
+        "type": "float",
+        "seen_in": 12,
+        "total_records": 26
+      },
+      "wired_rate_mbps": {
+        "type": "int",
+        "seen_in": 14,
+        "total_records": 26
+      },
+      "wlanconf_id": {
+        "type": "str",
+        "seen_in": 12,
+        "total_records": 26
+      }
+    }
+  },
+  "v2_clients_history": {
+    "category": "v2",
+    "name": "clients_history",
+    "path": "clients/history",
+    "field_count": 37,
+    "fields": {
+      "blocked": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "channel": {
+        "type": "int",
+        "seen_in": 3,
+        "total_records": 8
+      },
+      "display_name": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "fingerprint": {
+        "type": "dict",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "first_seen": {
+        "type": "int",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "hostname": {
+        "type": "str",
+        "seen_in": 5,
+        "total_records": 8
+      },
+      "id": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "is_allowed_in_visual_programming": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "is_guest": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "is_mlo": {
+        "type": "bool",
+        "seen_in": 3,
+        "total_records": 8
+      },
+      "is_wired": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "last_connection_network_id": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 8
+      },
+      "last_connection_network_name": {
+        "type": "str",
+        "seen_in": 7,
+        "total_records": 8
+      },
+      "last_ip": {
+        "type": "str",
+        "seen_in": 6,
+        "total_records": 8
+      },
+      "last_radio": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 8
+      },
+      "last_seen": {
+        "type": "int",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "last_uplink_mac": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "last_uplink_name": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "last_uplink_remote_port": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 8
+      },
+      "local_dns_record_enabled": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "mac": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "network_members_group_ids": {
+        "type": "list",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "noted": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "oui": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "site_id": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "status": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "sw_port": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 8
+      },
+      "tags": {
+        "type": "list",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "type": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "unifi_device": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "uplink_mac": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "use_fixedip": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "user_id": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "usergroup_id": {
+        "type": "str",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "virtual_network_override_enabled": {
+        "type": "bool",
+        "seen_in": 8,
+        "total_records": 8
+      },
+      "wired_rate_mbps": {
+        "type": "int",
+        "seen_in": 5,
+        "total_records": 8
+      },
+      "wlanconf_id": {
+        "type": "str",
+        "seen_in": 3,
+        "total_records": 8
+      }
+    }
+  },
+  "v2_apgroups": {
+    "category": "v2",
+    "name": "apgroups",
+    "path": "apgroups",
+    "field_count": 6,
+    "fields": {
+      "_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_hidden_id": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "attr_no_delete": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "device_macs": {
+        "type": "list",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "for_wlanconf": {
+        "type": "bool",
+        "seen_in": 1,
+        "total_records": 1
+      },
+      "name": {
+        "type": "str",
+        "seen_in": 1,
+        "total_records": 1
+      }
+    }
+  }
+}

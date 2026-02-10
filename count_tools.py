@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-INVENTORY_PATH = ROOT / "endpoint-inventory.json"
+INVENTORY_PATH = ROOT / "spec" / "endpoint-inventory.json"
 
 # Import the authoritative sets from the generator so we stay in sync.
 from generator.naming import (

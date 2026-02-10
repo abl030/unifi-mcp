@@ -59,7 +59,7 @@ _RO = count_readonly_breakdown()
 _RO_TOTAL = _RO["readonly"]  # all read-only tools in v1,v2 mode
 
 # Read-only always-on: non-mutating globals + report_issue
-_raw_for_ro = json.loads(Path("endpoint-inventory.json").read_text())
+_raw_for_ro = json.loads(Path("spec/endpoint-inventory.json").read_text())
 _RO_ALWAYS_ON = (
     len([n for n in _raw_for_ro["global_endpoints"] if n not in MUTATING_GLOBALS])
     + 1  # report_issue
@@ -78,7 +78,7 @@ _RO_V2_TOTAL = sum(_MODULES[m]["v2_ro"] for m in MODULE_ORDER) + _RO_ALWAYS_ON
 
 def _derive_mutating_tools() -> set[str]:
     """Derive ALL mutating tool names from spec + naming data."""
-    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    raw = json.loads(Path("spec/endpoint-inventory.json").read_text())
     mutating: set[str] = set()
 
     # REST CRUD: create_*, update_*, delete_*
@@ -130,13 +130,13 @@ _MUTATING_TOOLS = _derive_mutating_tools()
 
 def _derive_always_on_tools() -> set[str]:
     """Derive always-on tool names from the inventory."""
-    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    raw = json.loads(Path("spec/endpoint-inventory.json").read_text())
     return {f"unifi_{name}" for name in raw["global_endpoints"]} | {"unifi_report_issue", "unifi_get_overview"}
 
 
 def _derive_module_tools() -> dict[str, set[str]]:
     """Derive expected tool names per module from spec + naming data."""
-    raw = json.loads(Path("endpoint-inventory.json").read_text())
+    raw = json.loads(Path("spec/endpoint-inventory.json").read_text())
     tools: dict[str, set[str]] = {m: set() for m in MODULE_ORDER}
 
     # REST tools
@@ -205,7 +205,7 @@ _MODULE_TOOLS = _derive_module_tools()
 _V2_MODULE_TOOLS: dict[str, set[str]] = {}
 for _mod in MODULE_ORDER:
     _v2_names = set()
-    _raw = json.loads(Path("endpoint-inventory.json").read_text())
+    _raw = json.loads(Path("spec/endpoint-inventory.json").read_text())
     for _name, _ep in _raw.get("v2_endpoints", {}).items():
         if V2_MODULES.get(_name) == _mod:
             _s, _p = V2_RESOURCE_NAMES.get(_name, (_name, _name + "s"))

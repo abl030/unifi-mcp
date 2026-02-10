@@ -430,11 +430,14 @@ The UniFi API has no official OpenAPI spec. Rather than hand-writing 285 tool fu
 ### Architecture
 
 ```
-endpoint-inventory.json     # API surface: 196 endpoints from real controller
-api-samples/                # 120+ real (scrubbed) JSON responses for schema inference
+spec/
+  endpoint-inventory.json   # API surface: 196 endpoints from real controller
+  probe-spec.json           # Declarative endpoint list for probe
+  field-inventory.json      # Field names from production controller
+  api-samples/              # 120+ real (scrubbed) JSON responses for schema inference
 generate.py                 # Entry point: load -> infer -> render -> write
 generator/
-  loader.py                 # Parse inventory + samples
+  loader.py                 # Parse spec/ data into structured types
   schema_inference.py       # JSON values -> Python types + enum detection
   naming.py                 # Tool names, command mappings, test payloads
   context_builder.py        # Assemble Jinja2 template context
@@ -554,7 +557,7 @@ docker compose -f docker-compose.test.yml down -v
 
 ### Module toggle tests (no controller needed)
 
-`test_modules_toggle.py` validates that every `UNIFI_MODULES` configuration loads exactly the right tools. All expected values are **auto-derived** from `endpoint-inventory.json` + `generator/naming.py` — zero hardcoded numbers. When the API surface changes, these tests auto-adapt.
+`test_modules_toggle.py` validates that every `UNIFI_MODULES` configuration loads exactly the right tools. All expected values are **auto-derived** from `spec/endpoint-inventory.json` + `generator/naming.py` — zero hardcoded numbers. When the API surface changes, these tests auto-adapt.
 
 ```bash
 uv run --extra test python -m pytest test_modules_toggle.py -v   # 62 tests

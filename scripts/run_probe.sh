@@ -135,5 +135,5 @@ uv run python probe.py \
 
 echo ""
 echo "=== Done ==="
-echo "Updated: endpoint-inventory.json"
-echo "Samples: api-samples/"
+echo "Updated: spec/endpoint-inventory.json"
+echo "Samples: spec/api-samples/"

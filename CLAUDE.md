@@ -12,9 +12,10 @@ Build a **self-contained, auto-generated MCP server** for the UniFi Network Cont
 
 This directory contains everything you need to understand the UniFi API surface:
 
-- `endpoint-inventory.json` — Complete map of every discovered API endpoint with HTTP methods, live status codes, and record counts from a real v10.0.162 standalone controller
-- `api-samples/` — Real (scrubbed) JSON responses from every working endpoint, giving you exact field names and types for schema inference
-- `probe-spec.json` — Declarative list of ALL endpoints to probe (existing + community-discovered)
+- `spec/endpoint-inventory.json` — Complete map of every discovered API endpoint with HTTP methods, live status codes, and record counts from a real v10.0.162 standalone controller
+- `spec/api-samples/` — Real (scrubbed) JSON responses from every working endpoint, giving you exact field names and types for schema inference
+- `spec/probe-spec.json` — Declarative list of ALL endpoints to probe (existing + community-discovered)
+- `spec/field-inventory.json` — Field names and types from a production controller (richer than test samples)
 - `probe.py` — Single-file probe script that hammers a live controller to discover endpoints
 - `scripts/run_probe.sh` — Automated: start container → seed admin → run probe → teardown
 
@@ -45,7 +46,7 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 
 ## Architecture
 
-### The Probe (`probe.py` + `probe-spec.json`)
+### The Probe (`probe.py` + `spec/probe-spec.json`)
 
 A reusable endpoint discovery tool. When Ubiquiti releases a new controller version, re-run the probe to discover new/changed/removed endpoints:
 
@@ -64,11 +65,11 @@ uv run python probe.py --dry-run
 
 **Sample scrubbing:** All sensitive fields (`x_password`, `x_passphrase`, `x_shadow`, `x_private_key`, etc.) are replaced with `"REDACTED"` before writing to disk.
 
-**Output:** Updates `endpoint-inventory.json` (same schema as before, plus new categories: `list_endpoints`, `guest_endpoints`, `websocket_endpoints`) and writes sample files to `api-samples/`.
+**Output:** Updates `spec/endpoint-inventory.json` (same schema as before, plus new categories: `list_endpoints`, `guest_endpoints`, `websocket_endpoints`) and writes sample files to `spec/api-samples/`.
 
 ### The Generator (`generate.py`)
 
-A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and outputs:
+A single script that reads `spec/endpoint-inventory.json` + `spec/api-samples/*.json` + `spec/field-inventory.json` and outputs:
 
 1. **`server.py`** — A complete FastMCP server with one tool per API operation:
    - `rest/*` endpoints → `list_{resource}`, `get_{resource}`, `create_{resource}`, `update_{resource}`, `delete_{resource}` tools
@@ -167,7 +168,7 @@ GET /guest/s/{site}/{resource}
 
 ## Key Resources and Their Schemas
 
-Refer to `api-samples/` for exact field structures. Key ones:
+Refer to `spec/api-samples/` for exact field structures. Key ones:
 
 - **rest/networkconf** — Networks/VLANs: `name`, `purpose` (corporate/guest), `vlan_enabled`, `ip_subnet`, `dhcpd_*`
 - **rest/portconf** — Switch port profiles: `name`, `forward`, `native_networkconf_id`, `tagged_vlan_mgmt`, `poe_mode`
@@ -217,6 +218,7 @@ This is the specific use case that motivated this project — configuring switch
   - The `/status` endpoint returns `"up": true` when ready (don't check `server_running` — it may not exist)
   - Login may return 400 for a few seconds after seeding; poll until 200
 - **Adding new REST resources to the generator**: When the probe discovers new REST endpoints, they won't generate tools until added to `RESOURCE_NAMES` in `generator/naming.py`. The template (`server.py.j2`) silently skips REST resources not in `RESOURCE_NAMES` (there is no `{% else %}` fallback). Run `count_tools.py` to see which are skipped.
+- **Field inventory fallback**: When `infer_schema()` returns empty (no api-samples data), the generator falls back to `spec/field-inventory.json` for field names. These appear as `Known fields:` in docstrings (vs the richer type+enum descriptions from schema inference).
 
 ## Tech Stack
 
@@ -285,7 +287,7 @@ Priority order: Try option 1 first (free, fast), then option 2 if MongoDB seedin
 
 ## Excluded Endpoints (LLM Probe Results)
 
-Endpoints tested by the LLM probe that were NOT_FOUND or UNCERTAIN on v10.0.162. These are excluded from `endpoint-inventory.json` and tool generation.
+Endpoints tested by the LLM probe that were NOT_FOUND or UNCERTAIN on v10.0.162. These are excluded from `spec/endpoint-inventory.json` and tool generation.
 
 ### NOT_FOUND (28 endpoints)
 
@@ -336,8 +338,8 @@ Endpoints tested by the LLM probe that were NOT_FOUND or UNCERTAIN on v10.0.162.
 
 ## Getting Started
 
-1. Read `endpoint-inventory.json` to understand the full API surface
-2. Read a few `api-samples/*.json` files to understand response shapes
+1. Read `spec/endpoint-inventory.json` to understand the full API surface
+2. Read a few `spec/api-samples/*.json` files to understand response shapes
 3. Build the generator that produces the MCP server + tests
 4. Get the server running locally first (`uvx` or `python -m server`)
 5. Then build out the Docker test harness

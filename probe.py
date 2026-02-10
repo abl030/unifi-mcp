@@ -22,9 +22,9 @@ from pathlib import Path
 import httpx
 
 ROOT = Path(__file__).parent
-DEFAULT_SPEC = ROOT / "probe-spec.json"
-DEFAULT_OUTPUT = ROOT / "endpoint-inventory.json"
-DEFAULT_SAMPLES_DIR = ROOT / "api-samples"
+DEFAULT_SPEC = ROOT / "spec" / "probe-spec.json"
+DEFAULT_OUTPUT = ROOT / "spec" / "endpoint-inventory.json"
+DEFAULT_SAMPLES_DIR = ROOT / "spec" / "api-samples"
 
 # ── Safety ──────────────────────────────────────────────────────────────────
 # Commands that are safe to execute via POST (read-only / no side effects).

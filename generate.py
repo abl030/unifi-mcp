@@ -24,8 +24,9 @@ from generator.loader import load_inventory
 from generator.naming import HARDWARE_DEPENDENT_REST, MINIMAL_CREATE_PAYLOADS, READ_ONLY_REST
 
 ROOT = Path(__file__).parent
-INVENTORY_PATH = ROOT / "endpoint-inventory.json"
-SAMPLES_DIR = ROOT / "api-samples"
+INVENTORY_PATH = ROOT / "spec" / "endpoint-inventory.json"
+SAMPLES_DIR = ROOT / "spec" / "api-samples"
+FIELD_INVENTORY_PATH = ROOT / "spec" / "field-inventory.json"
 TEMPLATES_DIR = ROOT / "templates"
 OUTPUT_DIR = ROOT / "generated"
 TESTS_DIR = OUTPUT_DIR / "tests"
@@ -96,7 +97,7 @@ def _get_update_field(resource: str) -> tuple[str | None, str | None]:
 def generate() -> None:
     """Run the full generation pipeline."""
     print("Loading endpoint inventory...")
-    inventory = load_inventory(INVENTORY_PATH, SAMPLES_DIR)
+    inventory = load_inventory(INVENTORY_PATH, SAMPLES_DIR, FIELD_INVENTORY_PATH)
     print(f"  Controller version: {inventory.controller_version}")
     print(f"  REST endpoints: {len(inventory.rest_endpoints)}")
     print(f"  Stat endpoints: {len(inventory.stat_endpoints)}")
