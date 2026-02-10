@@ -1,0 +1,68 @@
+[10:52:46] === Task 1/1: 01-global-endpoints ===
+[10:52:46]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-105234/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[10:52:46]   task file: bank-tester/tasks/01-global-endpoints.md (711 bytes)
+Perfect! All 5 global endpoint tools executed successfully. Let me provide the structured report.
+
+---TASK-REPORT-START---
+task_id: 01-global-endpoints
+status: success
+total_tool_calls: 6
+first_attempt_failures: 4
+details:
+  - tool: unifi_self
+    attempt: 1
+    params: {}
+    error: "Expecting value: line 1 column 1 (char 0)"
+    diagnosis: Controller was still starting up (status showed "up": false), authentication endpoint not yet ready
+    retry_params: {}
+    retry_success: true
+    category: unexpected_error
+  - tool: unifi_sites
+    attempt: 1
+    params: {}
+    error: "Sibling tool call errored"
+    diagnosis: Controller was still starting up, cascading failure from unifi_self error
+    retry_params: {}
+    retry_success: true
+    category: unexpected_error
+  - tool: unifi_stat_sites
+    attempt: 1
+    params: {}
+    error: "Sibling tool call errored"
+    diagnosis: Controller was still starting up, cascading failure from unifi_self error
+    retry_params: {}
+    retry_success: true
+    category: unexpected_error
+  - tool: unifi_stat_admin
+    attempt: 1
+    params: {}
+    error: "Sibling tool call errored"
+    diagnosis: Controller was still starting up, cascading failure from unifi_self error
+    retry_params: {}
+    retry_success: true
+    category: unexpected_error
+cleanup_complete: true
+notes: |
+  All 5 global endpoint tools exercised successfully after controller startup delay.
+  
+  Friction points:
+  1. **Startup race condition**: When testing immediately after container start, the controller returns "up": false in the status endpoint, but authenticated endpoints fail with JSON parsing errors. The status endpoint works before authentication is ready, creating a false positive for "controller ready" state.
+  
+  2. **Error message quality**: The "Expecting value: line 1 column 1 (char 0)" error suggests the server returned empty response or HTML instead of JSON, but this wasn't surfaced to the user. A clearer error like "Controller returned non-JSON response (may still be starting)" would be more helpful.
+  
+  3. **Tool discoverability**: All tool names were intuitive and matched the task description exactly. The `unifi_` prefix made searching straightforward.
+  
+  4. **Docstring quality**: The status tool correctly noted "No authentication required" but other tools had minimal descriptions ("Self.", "Sites."). More context about what each endpoint returns would be helpful (e.g., "Returns current authenticated admin user details" for unifi_self).
+  
+  5. **No parameters needed**: All global tools correctly require no parameters, making them very easy to use.
+  
+  Recommendation: The bank tester harness should wait for both `"up": true` in status AND successful authentication (e.g., call unifi_self) before declaring the controller ready for testing.
+tools_invoked:
+  - mcp__unifi__unifi_status
+  - mcp__unifi__unifi_self
+  - mcp__unifi__unifi_sites
+  - mcp__unifi__unifi_stat_sites
+  - mcp__unifi__unifi_stat_admin
+---TASK-REPORT-END---
+[10:53:41]   PASS (exit 0, 55s, output=2999B, stderr=0B)
+

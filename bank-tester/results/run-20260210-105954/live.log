@@ -1,0 +1,77 @@
+[11:00:06] === Task 1/1: 16-v2-firewall-policies-and-zones ===
+[11:00:06]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-105954/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[11:00:06]   task file: bank-tester/tasks/16-v2-firewall-policies-and-zones.md (1010 bytes)
+All create attempts fail with 400. This suggests the v2 firewall policies endpoint may require specific setup or may not be functional without hardware. Let me document this and continue with what works (list operations and zones):
+
+```
+---TASK-REPORT-START---
+task_id: 16-v2-firewall-policies-and-zones
+status: partial
+total_tool_calls: 10
+first_attempt_failures: 2
+details:
+  - tool: unifi_list_firewall_policies
+    attempt: 1
+    params: {}
+    error: "Expecting value: line 1 column 1 (char 0)"
+    diagnosis: Initial call failed with JSON parsing error, but subsequent call worked. May be a transient server startup issue or race condition.
+    retry_params: {}
+    retry_success: true
+    category: unexpected_error
+  - tool: unifi_create_firewall_policy
+    attempt: 1
+    params: {"name": "bt_sys16_fw_policy", "enabled": true}
+    error: "Client error '400' for url 'https://127.0.0.1:8443/v2/api/site/default/firewall-policies'"
+    diagnosis: All create attempts failed with 400 regardless of payload structure (tried minimal name-only, name+enabled, and name+enabled+action+matching). The v2 firewall policies API may require specific prerequisites (firewall rules, zones configuration, or hardware) that are not present in a bare controller setup.
+    retry_params: {"name": "bt_sys16_fw_policy", "enabled": true, "action": "accept", "matching": {"type": "all"}}
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_create_firewall_policy
+    attempt: 2
+    params: {"name": "bt_sys16_fw_policy", "enabled": true, "action": "accept", "matching": {"type": "all"}}
+    error: "Client error '400' for url 'https://127.0.0.1:8443/v2/api/site/default/firewall-policies'"
+    diagnosis: Same 400 error with more complete payload
+    retry_params: {"name": "bt_sys16_fw_policy"}
+    retry_success: false
+    category: hardware_dependent
+  - tool: unifi_create_firewall_policy
+    attempt: 3
+    params: {"name": "bt_sys16_fw_policy"}
+    error: "Client error '400' for url 'https://127.0.0.1:8443/v2/api/site/default/firewall-policies'"
+    diagnosis: Same 400 error with minimal payload. This endpoint is not functional without additional prerequisites.
+    retry_params: null
+    retry_success: false
+    category: hardware_dependent
+cleanup_complete: true
+notes: |
+  The v2 firewall policies API appears to require prerequisites not present in a bare controller:
+  - list_firewall_policies works (returns empty list)
+  - list_firewall_zones works (returns empty list)
+  - create_firewall_policy fails with 400 regardless of payload
+  - Initial list_firewall_policies call failed with JSON parse error but retry succeeded (transient issue)
+  
+  Tool discoverability: Good. All tools were easy to find and had clear names.
+  Docstrings: Adequate but could benefit from:
+    - Example payload structures for create/update operations
+    - Prerequisites or dependencies (e.g., "requires firewall rules" or "requires adopted gateway")
+    - Common error scenarios (400 = missing prerequisites vs bad payload)
+  
+  The confirm=True workflow worked correctly (dry-run preview, then execute).
+  
+  Since create/update/delete are blocked by the 400 error, I was unable to test:
+  - unifi_update_firewall_policy
+  - unifi_delete_firewall_policy
+  - unifi_update_firewall_zone (no zones exist to update)
+  
+  Successfully tested:
+  - unifi_list_firewall_policies (2 calls, 1 success after retry)
+  - unifi_list_firewall_zones (1 call, success)
+  - unifi_create_firewall_policy (4 calls including preview, all failed with 400)
+tools_invoked:
+  - unifi_list_firewall_policies
+  - unifi_create_firewall_policy
+  - unifi_list_firewall_zones
+---TASK-REPORT-END---
+```
+[11:01:06]   PASS (exit 0, 60s, output=3683B, stderr=0B)
+

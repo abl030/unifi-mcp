@@ -1,0 +1,47 @@
+[10:54:05] === Task 1/1: 02-network-and-user-group-crud ===
+[10:54:05]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-105353/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[10:54:05]   task file: bank-tester/tasks/02-network-and-user-group-crud.md (1650 bytes)
+Perfect! All operations completed successfully. Let me generate the structured report.
+
+```
+---TASK-REPORT-START---
+task_id: 02-network-and-user-group-crud
+status: success
+total_tool_calls: 12
+first_attempt_failures: 0
+details: []
+cleanup_complete: true
+notes: |
+  All 10 tools exercised successfully with no failures. The MCP server returned JSON strings in the "result" field rather than parsed objects, but this did not cause any operational issues. All CRUD operations (create, list, get, update, delete) worked as expected for both networks and user groups.
+  
+  Network operations tested:
+  - Created VLAN-only network with vlan=999
+  - Listed and verified presence in results
+  - Retrieved by ID successfully
+  - Updated name field and verified change persisted
+  - Deleted successfully
+  
+  User group operations tested:
+  - Created user group with minimal config (name only)
+  - Listed and verified presence in results
+  - Retrieved by ID successfully
+  - Updated name field and verified change persisted
+  - Deleted successfully
+  
+  The confirm=True parameter worked correctly as a safety gate for all mutation operations.
+tools_invoked:
+  - mcp__unifi__unifi_create_network
+  - mcp__unifi__unifi_list_networks
+  - mcp__unifi__unifi_get_network
+  - mcp__unifi__unifi_update_network
+  - mcp__unifi__unifi_delete_network
+  - mcp__unifi__unifi_create_user_group
+  - mcp__unifi__unifi_list_user_groups
+  - mcp__unifi__unifi_get_user_group
+  - mcp__unifi__unifi_update_user_group
+  - mcp__unifi__unifi_delete_user_group
+  - mcp__unifi__unifi_status
+---TASK-REPORT-END---
+```
+[10:55:10]   PASS (exit 0, 65s, output=1581B, stderr=0B)
+

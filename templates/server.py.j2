@@ -120,8 +120,20 @@ class UniFiClient:
                 f"Check UNIFI_USERNAME and UNIFI_PASSWORD."
             )
 
-        resp.raise_for_status()
-        data = resp.json()
+        # Parse response body before raising for status — UniFi often
+        # returns useful error details in the JSON body for 400/404/500.
+        try:
+            data = resp.json()
+        except Exception:
+            # Non-JSON response (empty body, HTML error page, etc.)
+            if resp.status_code >= 400:
+                raise RuntimeError(
+                    f"HTTP {resp.status_code} on {method} {full_path} "
+                    f"(non-JSON response, {len(resp.content)} bytes). "
+                    f"Controller may still be starting up."
+                )
+            resp.raise_for_status()
+            return []
 
         # v1 API envelope
         if isinstance(data, dict) and "meta" in data:
@@ -129,6 +141,15 @@ class UniFiClient:
                 msg = data["meta"].get("msg", "Unknown error")
                 raise RuntimeError(f"UniFi API error on {method} {full_path}: {msg}")
             return data.get("data", [])
+
+        # For non-envelope errors (v2 API, raw error objects)
+        if resp.status_code >= 400:
+            if isinstance(data, dict):
+                # Try common error fields
+                msg = data.get("message") or data.get("error") or data.get("msg") or str(data)
+            else:
+                msg = str(data)
+            raise RuntimeError(f"HTTP {resp.status_code} on {method} {full_path}: {msg}")
 
         return data
 

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "unifi": {
+      "command": "FASTMCP_PATH_PLACEHOLDER",
+      "args": ["run", "REPO_DIR_PLACEHOLDER/generated/server.py"],
+      "env": {
+        "UNIFI_HOST": "127.0.0.1",
+        "UNIFI_USERNAME": "admin",
+        "UNIFI_PASSWORD": "ADMIN_PASS_PLACEHOLDER",
+        "UNIFI_SITE": "default",
+        "UNIFI_VERIFY_SSL": "false"
+      }
+    }
+  }
+}

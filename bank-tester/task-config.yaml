@@ -1,0 +1,1157 @@
+# UniFi MCP Bank Tester — Task Configuration
+# Drives generate-tasks.py to produce task markdown files.
+#
+# Endpoint types:
+#   crud: true          → REST CRUD lifecycle (create→list→get→update→delete)
+#   read_only: true     → GET-only verification
+#   stat: true          → stat endpoint (GET or POST per STAT_OVERRIDES)
+#   cmd: true           → command endpoint
+#   settings_read: true → read settings with unifi_get_setting
+#   settings_write: true → write settings with unifi_update_setting
+#   v2_crud: true       → v2 API CRUD
+#   hardware_dependent: true → expect 400/404/500 errors gracefully
+
+tasks:
+
+  # ============================================================
+  # Sprint 1: Foundation CRUD (Tasks 01-07) — Safe, no hardware
+  # ============================================================
+
+  - number: 1
+    title: "Global Endpoints"
+    subsystem: global
+    endpoints:
+      - tool: unifi_status
+        read_only: true
+        notes: "No auth required, returns controller status"
+      - tool: unifi_self
+        read_only: true
+        notes: "Returns current admin user info"
+      - tool: unifi_sites
+        read_only: true
+        notes: "Returns list of sites"
+      - tool: unifi_stat_sites
+        read_only: true
+        notes: "Returns site stats"
+      - tool: unifi_stat_admin
+        read_only: true
+        notes: "Returns admin stats"
+
+  - number: 2
+    title: "Network and User Group CRUD"
+    subsystem: networking
+    endpoints:
+      - resource: networkconf
+        crud: true
+        create_values:
+          name: bt_sys02_network
+          purpose: vlan-only
+          vlan_enabled: true
+          vlan: 999
+        update_field: name
+        update_value: bt_sys02_updated
+      - resource: usergroup
+        crud: true
+        create_values:
+          name: bt_sys02_usergroup
+        update_field: name
+        update_value: bt_sys02_usergroup_upd
+
+  - number: 3
+    title: "Firewall Groups and Rules CRUD"
+    subsystem: firewall
+    endpoints:
+      - resource: firewallgroup
+        crud: true
+        create_values:
+          name: bt_sys03_fwgroup
+          group_type: address-group
+          group_members:
+            - "192.168.99.0/24"
+        update_field: name
+        update_value: bt_sys03_fwgroup_upd
+      - resource: firewallrule
+        crud: true
+        create_values:
+          name: bt_sys03_fwrule
+          action: drop
+          ruleset: WAN_IN
+          protocol: all
+          rule_index: 4000
+          protocol_match_excepted: false
+          src_firewallgroup_ids: []
+          src_mac_address: ""
+          src_address: ""
+          src_networkconf_id: ""
+          src_networkconf_type: NETv4
+          dst_firewallgroup_ids: []
+          dst_address: ""
+          dst_networkconf_id: ""
+          dst_networkconf_type: NETv4
+          state_new: true
+          state_established: true
+          state_related: true
+          state_invalid: false
+          logging: false
+          ipsec: ""
+          enabled: true
+        update_field: name
+        update_value: bt_sys03_fwrule_upd
+
+  - number: 4
+    title: "Port Profiles and Port Forwards CRUD"
+    subsystem: networking
+    endpoints:
+      - resource: portconf
+        crud: true
+        create_values:
+          name: bt_sys04_portprofile
+          forward: customize
+        update_field: name
+        update_value: bt_sys04_portprofile_upd
+      - resource: portforward
+        crud: true
+        create_values:
+          name: bt_sys04_portfwd
+          fwd: "192.168.1.100"
+          fwd_port: "8080"
+          dst_port: "9090"
+          proto: tcp_udp
+        update_field: name
+        update_value: bt_sys04_portfwd_upd
+
+  - number: 5
+    title: "Dynamic DNS and Tags CRUD"
+    subsystem: networking
+    endpoints:
+      - resource: dynamicdns
+        crud: true
+        create_values:
+          service: dyndns
+          host_name: bt_sys05.example.com
+          login: testuser
+          x_password: testpass
+        update_field: host_name
+        update_value: bt_sys05_upd.example.com
+      - resource: tag
+        crud: true
+        create_values:
+          name: bt_sys05_tag
+          member_table: []
+        update_field: name
+        update_value: bt_sys05_tag_upd
+
+  - number: 6
+    title: "Accounts, RADIUS Profiles, WLAN Groups CRUD"
+    subsystem: networking
+    endpoints:
+      - resource: account
+        crud: true
+        create_values:
+          name: bt_sys06_account
+          x_password: testpassword
+        update_field: name
+        update_value: bt_sys06_account_upd
+      - resource: radiusprofile
+        crud: true
+        create_values:
+          name: bt_sys06_radius
+          auth_servers:
+            - ip: "192.168.1.200"
+              port: 1812
+              x_secret: "secret"
+        update_field: name
+        update_value: bt_sys06_radius_upd
+      - resource: wlangroup
+        crud: true
+        create_values:
+          name: bt_sys06_wlangroup
+        update_field: name
+        update_value: bt_sys06_wlangroup_upd
+
+  - number: 7
+    title: "Hotspot Operators, Packages, Hotspot2 Config CRUD"
+    subsystem: hotspot
+    endpoints:
+      - resource: hotspotop
+        crud: true
+        create_values:
+          name: bt_sys07_operator
+          x_password: testpass123
+        update_field: name
+        update_value: bt_sys07_operator_upd
+      - resource: hotspotpackage
+        crud: true
+        create_values:
+          name: bt_sys07_package
+          amount: 0
+          currency: USD
+        update_field: name
+        update_value: bt_sys07_package_upd
+      - resource: hotspot2conf
+        crud: true
+        create_values:
+          name: bt_sys07_hs2conf
+        update_field: name
+        update_value: bt_sys07_hs2conf_upd
+
+  # ============================================================
+  # Sprint 2: Stats & Safe Commands (Tasks 08-13) — Read-only
+  # ============================================================
+
+  - number: 8
+    title: "Safe Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_get_speedtest_status
+        cmd: true
+        notes: "No params needed"
+      - tool: unifi_check_firmware_update
+        cmd: true
+        notes: "No params needed"
+      - tool: unifi_get_admins
+        cmd: true
+        notes: "No params needed"
+      - tool: unifi_list_backups
+        cmd: true
+        notes: "No params needed"
+      - tool: unifi_archive_all_alarms
+        cmd: true
+        mutation: true
+        notes: "Safe — just archives all alarms. Requires confirm=True"
+      - tool: unifi_clear_dpi
+        cmd: true
+        mutation: true
+        notes: "Clears DPI data. Requires confirm=True"
+      - tool: unifi_restart_http_portal
+        cmd: true
+        mutation: true
+        notes: "Restarts HTTP portal. Requires confirm=True"
+
+  - number: 9
+    title: "Health and System Stats"
+    subsystem: stats
+    endpoints:
+      - tool: unifi_list_health
+        stat: true
+      - tool: unifi_list_sysinfo
+        stat: true
+      - tool: unifi_list_dashboard
+        stat: true
+      - tool: unifi_list_country_codes
+        stat: true
+      - tool: unifi_list_events
+        read_only: true
+        notes: "REST read-only endpoint"
+      - tool: unifi_list_alarms
+        read_only: true
+        notes: "REST read-only endpoint"
+      - tool: unifi_list_stat_events
+        stat: true
+      - tool: unifi_list_stat_alarms
+        stat: true
+
+  - number: 10
+    title: "Client and DPI Stats"
+    subsystem: stats
+    endpoints:
+      - tool: unifi_list_clients
+        stat: true
+      - tool: unifi_list_client_dpi
+        stat: true
+      - tool: unifi_list_site_dpi
+        stat: true
+      - tool: unifi_list_all_users
+        stat: true
+      - tool: unifi_list_sessions
+        stat: true
+        notes: "Requires POST with mac parameter"
+      - tool: unifi_list_guests
+        stat: true
+      - tool: unifi_list_authorizations
+        stat: true
+      - tool: unifi_list_dpi_stats
+        stat: true
+
+  - number: 11
+    title: "Network and Device Stats"
+    subsystem: stats
+    endpoints:
+      - tool: unifi_list_routing_stats
+        stat: true
+      - tool: unifi_list_port_forward_stats
+        stat: true
+      - tool: unifi_list_dynamic_dns_stats
+        stat: true
+      - tool: unifi_list_sdn_status
+        stat: true
+      - tool: unifi_list_devices
+        stat: true
+      - tool: unifi_list_devices_basic
+        stat: true
+      - tool: unifi_list_current_channels
+        stat: true
+      - tool: unifi_list_spectrum_scans
+        stat: true
+
+  - number: 12
+    title: "Security and Advanced Stats"
+    subsystem: stats
+    endpoints:
+      - tool: unifi_list_rogue_aps
+        stat: true
+      - tool: unifi_list_anomalies
+        stat: true
+      - tool: unifi_list_ips_events
+        stat: true
+      - tool: unifi_list_remote_user_vpn
+        stat: true
+      - tool: unifi_list_vouchers
+        stat: true
+      - tool: unifi_list_payments
+        stat: true
+      - tool: unifi_list_gateway_stats
+        stat: true
+
+  - number: 13
+    title: "Reporting Stats"
+    subsystem: stats
+    endpoints:
+      - tool: unifi_list_report
+        stat: true
+      - tool: unifi_list_speedtest_results
+        stat: true
+      - tool: unifi_list_report_5min_gateway
+        stat: true
+      - tool: unifi_list_report_hourly_gateway
+        stat: true
+      - tool: unifi_list_report_daily_gateway
+        stat: true
+      - tool: unifi_list_report_monthly_site
+        stat: true
+      - tool: unifi_list_report_monthly_ap
+        stat: true
+      - tool: unifi_list_report_monthly_user
+        stat: true
+      - tool: unifi_list_report_monthly_gateway
+        stat: true
+      - tool: unifi_list_report_5min_ap
+        stat: true
+
+  # ============================================================
+  # Sprint 3: Settings (Tasks 14-15) — 3 tools
+  # ============================================================
+
+  - number: 14
+    title: "Settings Read"
+    subsystem: settings
+    notes: |
+      All 35 setting categories read via unifi_get_setting with key parameter.
+      Also test unifi_list_settings to list all categories.
+    endpoints:
+      - tool: unifi_list_settings
+        read_only: true
+      - tool: unifi_get_setting
+        settings_read: true
+        keys:
+          - super_identity
+          - snmp
+          - mgmt
+          - country
+          - locale
+          - guest_access
+          - ntp
+          - connectivity
+          - auto_speedtest
+          - baresip
+          - broadcast
+          - doh
+          - dpi
+          - element_adopt
+          - ether_lighting
+          - global_ap
+          - global_switch
+          - ips
+          - lcm
+          - magic_site_to_site_vpn
+          - network_optimization
+          - porta
+          - radio_ai
+          - radius
+          - rsyslogd
+          - super_cloudaccess
+          - super_events
+          - super_fwupdate
+          - super_mail
+          - super_mgmt
+          - super_sdn
+          - super_smtp
+          - teleport
+          - usg
+          - usw
+
+  - number: 15
+    title: "Settings Write"
+    subsystem: settings
+    notes: |
+      Test unifi_update_setting on safe settings. Read current → update → verify → restore.
+    endpoints:
+      - settings_write: true
+        key: snmp
+        update_field: community
+        update_value: bt_test_community
+        restore_value: public
+      - settings_write: true
+        key: locale
+        update_field: timezone
+        update_value: America/New_York
+        notes: "Read current timezone first, restore after"
+
+  # ============================================================
+  # Sprint 4: v2 API & Advanced CRUD (Tasks 16-20)
+  # ============================================================
+
+  - number: 16
+    title: "V2 Firewall Policies and Zones"
+    subsystem: v2
+    endpoints:
+      - resource: firewall_policies
+        v2_crud: true
+        tools:
+          - unifi_list_firewall_policies
+          - unifi_create_firewall_policy
+          - unifi_update_firewall_policy
+          - unifi_delete_firewall_policy
+        create_values:
+          name: bt_sys16_fw_policy
+          enabled: true
+        update_field: name
+        update_value: bt_sys16_fw_policy_upd
+      - resource: firewall_zones
+        v2_read: true
+        tools:
+          - unifi_list_firewall_zones
+          - unifi_update_firewall_zone
+
+  - number: 17
+    title: "V2 Traffic Rules, Routes, Clients, AP Groups"
+    subsystem: v2
+    endpoints:
+      - resource: traffic_rules
+        v2_crud: true
+        tools:
+          - unifi_list_traffic_rules
+          - unifi_create_traffic_rule
+          - unifi_update_traffic_rule
+          - unifi_delete_traffic_rule
+        create_values:
+          description: bt_sys17_traffic_rule
+          enabled: true
+          action: BLOCK
+          matching_target: INTERNET
+          target_devices:
+            - type: ALL
+        update_field: description
+        update_value: bt_sys17_traffic_rule_upd
+      - resource: trafficroutes
+        v2_read: true
+        tools:
+          - unifi_list_traffic_routes
+          - unifi_update_traffic_route
+      - resource: clients_active
+        v2_read: true
+        tools:
+          - unifi_list_active_clients
+      - resource: clients_history
+        v2_read: true
+        tools:
+          - unifi_list_clients_history
+      - resource: apgroups
+        v2_read: true
+        tools:
+          - unifi_list_ap_groups
+
+  - number: 18
+    title: "DPI Apps and Groups CRUD"
+    subsystem: dpi
+    endpoints:
+      - resource: dpigroup
+        crud: true
+        create_values:
+          name: bt_sys18_dpigroup
+        update_field: name
+        update_value: bt_sys18_dpigroup_upd
+      - resource: dpiapp
+        crud: true
+        create_values:
+          name: bt_sys18_dpiapp
+        update_field: name
+        update_value: bt_sys18_dpiapp_upd
+
+  - number: 19
+    title: "Maps, Schedules, DHCP Options CRUD"
+    subsystem: management
+    endpoints:
+      - resource: map
+        crud: true
+        create_values:
+          name: bt_sys19_map
+        update_field: name
+        update_value: bt_sys19_map_upd
+      - resource: scheduletask
+        crud: true
+        create_values:
+          name: bt_sys19_schedule
+          action: upgrade
+          cron_expr: "0 2 * * *"
+        update_field: name
+        update_value: bt_sys19_schedule_upd
+      - resource: dhcpoption
+        crud: true
+        create_values:
+          name: bt_sys19_dhcpoption
+        update_field: name
+        update_value: bt_sys19_dhcpoption_upd
+
+  - number: 20
+    title: "Heatmaps, Spatial Records CRUD"
+    subsystem: management
+    endpoints:
+      - resource: heatmap
+        crud: true
+        create_values:
+          name: bt_sys20_heatmap
+        update_field: name
+        update_value: bt_sys20_heatmap_upd
+      - resource: heatmappoint
+        crud: true
+        create_values:
+          name: bt_sys20_heatmappoint
+        update_field: name
+        update_value: bt_sys20_heatmappoint_upd
+      - resource: spatialrecord
+        crud: true
+        create_values:
+          name: bt_sys20_spatial
+        update_field: name
+        update_value: bt_sys20_spatial_upd
+
+  # ============================================================
+  # Sprint 5: Mutation Commands (Tasks 21-25)
+  # ============================================================
+
+  - number: 21
+    title: "Site Management Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_add_site
+        cmd: true
+        mutation: true
+        params:
+          desc: bt_sys21_site
+        notes: "Creates a new site. Requires confirm=True"
+      - tool: unifi_set_site_name
+        cmd: true
+        mutation: true
+        params:
+          desc: bt_sys21_renamed
+        notes: "Renames current site. Requires confirm=True"
+      - tool: unifi_set_site_leds
+        cmd: true
+        mutation: true
+        params:
+          led_enabled: true
+        notes: "Enable/disable site LEDs. Requires confirm=True"
+      - tool: unifi_update_site
+        cmd: true
+        mutation: true
+        params:
+          desc: bt_sys21_updated
+        notes: "Update site description. Requires confirm=True"
+      - tool: unifi_delete_site
+        cmd: true
+        mutation: true
+        params:
+          site: bt_sys21_site
+        notes: "Delete the site created above. Requires confirm=True. Run LAST."
+
+  - number: 22
+    title: "Admin Management Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_create_admin
+        cmd: true
+        mutation: true
+        params:
+          name: bt_sys22_admin
+          email: bt_sys22@test.local
+          x_password: TestPassword123!
+          role: admin
+        notes: "Creates a new admin. Requires confirm=True"
+      - tool: unifi_assign_existing_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id_from_create>"
+          role: admin
+        notes: "Assign an existing admin to this site. Requires confirm=True"
+      - tool: unifi_invite_admin
+        cmd: true
+        mutation: true
+        params:
+          email: bt_sys22_invite@test.local
+          name: bt_sys22_invited
+          role: admin
+        notes: "Invite an admin. Requires confirm=True"
+      - tool: unifi_update_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id_from_create>"
+          role: readonly
+        notes: "Update admin role. Requires confirm=True. Use _id from create step"
+      - tool: unifi_revoke_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id_from_create>"
+        notes: "Revoke admin access. Requires confirm=True"
+      - tool: unifi_grant_super_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id>"
+        notes: "Grant super admin. Requires confirm=True. May fail without CloudKey"
+      - tool: unifi_revoke_super_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id>"
+        notes: "Revoke super admin. Requires confirm=True"
+      - tool: unifi_delete_admin
+        cmd: true
+        mutation: true
+        params:
+          admin: "<admin_id_from_create>"
+        notes: "Delete admin. Requires confirm=True. Run LAST."
+
+  - number: 23
+    title: "Client Commands"
+    subsystem: commands
+    endpoints:
+      # Create a user first, then test client commands against it
+      - resource: user
+        crud: true
+        create_values:
+          mac: "00:11:22:33:44:55"
+          name: bt_sys23_client
+        notes: "Create a known client record to test commands against"
+      - tool: unifi_block_client
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+        notes: "Block client by MAC. Requires confirm=True"
+      - tool: unifi_unblock_client
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+        notes: "Unblock client. Requires confirm=True"
+      - tool: unifi_kick_client
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+        notes: "Kick client. Requires confirm=True. May return error if client not connected"
+      - tool: unifi_reconnect_client
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+        notes: "Reconnect client. Requires confirm=True. May return error if client not connected"
+      - tool: unifi_authorize_guest
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+          minutes: 60
+        notes: "Authorize guest for 60 min. Requires confirm=True"
+      - tool: unifi_unauthorize_guest
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:55"
+        notes: "Unauthorize guest. Requires confirm=True"
+      - tool: unifi_forget_client
+        cmd: true
+        mutation: true
+        params:
+          macs:
+            - "00:11:22:33:44:55"
+        notes: "Forget client. Requires confirm=True. Uses 'macs' list param. Run LAST (deletes the user)."
+
+  - number: 24
+    title: "Backup Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_generate_backup
+        cmd: true
+        mutation: true
+        notes: "Generate a backup. Requires confirm=True"
+      - tool: unifi_generate_backup_site
+        cmd: true
+        mutation: true
+        notes: "Generate site-only backup. Requires confirm=True"
+      - tool: unifi_create_backup
+        cmd: true
+        mutation: true
+        notes: "System backup command. Requires confirm=True"
+      - tool: unifi_download_backup
+        cmd: true
+        mutation: false
+        params:
+          filename: "<filename_from_list>"
+        notes: "Download a backup file. Get filename from unifi_list_backups"
+      - tool: unifi_delete_backup
+        cmd: true
+        mutation: true
+        params:
+          filename: "<filename_from_list>"
+        notes: "Delete backup. Requires confirm=True. Use filename from list_backups"
+
+  - number: 25
+    title: "Hotspot and Voucher Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_create_voucher
+        cmd: true
+        mutation: true
+        params:
+          expire: 1440
+          n: 1
+          quota: 1
+        notes: "Create a voucher. Requires confirm=True"
+      - tool: unifi_hotspot_authorize_guest
+        cmd: true
+        mutation: true
+        params:
+          mac: "00:11:22:33:44:66"
+          minutes: 60
+        notes: "Authorize hotspot guest. Requires confirm=True"
+      - tool: unifi_extend_guest_validity
+        cmd: true
+        mutation: true
+        params:
+          _id: "<voucher_id>"
+        notes: "Extend guest validity. Requires confirm=True. Use _id from create_voucher"
+      - tool: unifi_revoke_voucher
+        cmd: true
+        mutation: true
+        params:
+          _id: "<voucher_id>"
+        notes: "Revoke voucher. Requires confirm=True"
+      - tool: unifi_delete_voucher
+        cmd: true
+        mutation: true
+        params:
+          _id: "<voucher_id>"
+        notes: "Delete voucher. Requires confirm=True. Run LAST"
+
+  # ============================================================
+  # Sprint 6: Hardware-Dependent (Tasks 26-28)
+  # ============================================================
+
+  - number: 26
+    title: "Hardware-Dependent REST"
+    subsystem: hardware
+    notes: |
+      These endpoints require adopted devices. Expect 400/404/500 errors.
+      The test verifies the tool exists and returns a sensible error, not that it succeeds.
+    endpoints:
+      - resource: wlanconf
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_wlan
+          security: wpapsk
+          wpa_mode: wpa2
+          wpa_enc: ccmp
+          x_passphrase: testpassword12345678
+        update_field: name
+        update_value: bt_sys26_wlan_upd
+        notes: "Requires AP group (needs adopted APs). Expect ApGroupMissing error"
+      - resource: routing
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_route
+          type: static-route
+          static-route_network: "10.99.99.0/24"
+          static-route_nexthop: "192.168.1.1"
+          enabled: true
+        update_field: name
+        update_value: bt_sys26_route_upd
+        notes: "Requires gateway device. Expect 500 error"
+      - resource: dnsrecord
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_dns
+        update_field: name
+        update_value: bt_sys26_dns_upd
+        notes: "May require specific device types"
+      - resource: broadcastgroup
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_bcast
+        update_field: name
+        update_value: bt_sys26_bcast_upd
+      - resource: mediafile
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_media
+        update_field: name
+        update_value: bt_sys26_media_upd
+      - resource: radiusaccount
+        hardware_dependent: true
+        crud: true
+        create_values:
+          name: bt_sys26_radaccount
+        update_field: name
+        update_value: bt_sys26_radaccount_upd
+      - tool: unifi_list_device_configs
+        read_only: true
+        hardware_dependent: true
+        notes: "REST read-only, may return empty without devices"
+      - tool: unifi_list_channel_plans
+        read_only: true
+        hardware_dependent: true
+      - tool: unifi_list_virtual_devices
+        read_only: true
+        hardware_dependent: true
+      - tool: unifi_list_known_rogue_aps
+        read_only: true
+        hardware_dependent: true
+      - tool: unifi_list_elements
+        read_only: true
+        hardware_dependent: true
+
+  - number: 27
+    title: "Device Commands"
+    subsystem: commands
+    notes: |
+      These commands require adopted devices. Expect errors about missing devices.
+      The test verifies the tool exists and returns sensible errors.
+    endpoints:
+      - tool: unifi_adopt_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_restart_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_force_provision_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_power_cycle_port
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          port_idx: 1
+      - tool: unifi_run_speedtest
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+      - tool: unifi_locate_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_unlocate_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_upgrade_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_upgrade_device_external
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          url: "https://example.com/firmware.bin"
+      - tool: unifi_migrate_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          inform_url: "http://192.168.1.1:8080/inform"
+      - tool: unifi_cancel_migrate_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_spectrum_scan
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_rename_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          name: bt_sys27_device
+      - tool: unifi_led_override_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          led_override: "on"
+      - tool: unifi_disable_ap
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_rolling_upgrade
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+      - tool: unifi_cancel_rolling_upgrade
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+      - tool: unifi_upgrade_all_devices
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+      - tool: unifi_advanced_adopt_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          url: "http://192.168.1.1:8080/inform"
+          key: "testkey123"
+      - tool: unifi_set_rollupgrade
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_unset_rollupgrade
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_enable_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_disable_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_cable_test
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          port_idx: 1
+      - tool: unifi_set_inform_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          inform_url: "http://192.168.1.1:8080/inform"
+      - tool: unifi_move_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+          site: default
+      - tool: unifi_delete_device
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_element_adoption
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        params:
+          mac: "00:00:00:00:00:01"
+      - tool: unifi_reboot_cloudkey
+        cmd: true
+        mutation: true
+        hardware_dependent: true
+        notes: "May fail on standalone controller (not CloudKey)"
+
+  - number: 28
+    title: "Alarm and Event Commands"
+    subsystem: commands
+    endpoints:
+      - tool: unifi_archive_alarm
+        cmd: true
+        mutation: true
+        params:
+          _id: "000000000000000000000000"
+        notes: "Archive specific alarm by _id. Use a fake _id — expect graceful error"
+      - tool: unifi_alarm_archive
+        cmd: true
+        mutation: true
+        params:
+          _id: "000000000000000000000000"
+        notes: "Alternative alarm archive tool. Use a fake _id"
+
+  # ============================================================
+  # Sprint 7: Port Override + Adversarial + Destructive (Tasks 29-30)
+  # ============================================================
+
+  - number: 29
+    title: "Port Override Helper and User CRUD"
+    subsystem: special
+    endpoints:
+      - tool: unifi_set_port_override
+        cmd: true
+        hardware_dependent: true
+        mutation: true
+        notes: "Requires a device _id and port_overrides array. Expect error without devices"
+      - resource: user
+        crud: true
+        create_values:
+          mac: "00:11:22:33:44:77"
+          name: bt_sys29_user
+        update_field: name
+        update_value: bt_sys29_user_upd
+        notes: "Full user CRUD test"
+
+  - number: 30
+    title: "Adversarial Tests"
+    adversarial_only: true
+    subsystem: adversarial
+    test_cases:
+      - tool: unifi_create_network
+        description: "Missing required 'name' field"
+        params:
+          purpose: vlan-only
+          confirm: true
+        expected: "Error about missing name field"
+      - tool: unifi_create_network
+        description: "Invalid enum value for 'purpose'"
+        params:
+          name: bt_adv_bad_purpose
+          purpose: invalid_purpose_value
+          confirm: true
+        expected: "Error about invalid purpose value"
+      - tool: unifi_update_network
+        description: "Non-existent resource ID"
+        params:
+          id: "000000000000000000000000"
+          data:
+            name: bt_adv_nonexistent
+          confirm: true
+        expected: "Error about resource not found"
+      - tool: unifi_delete_network
+        description: "Non-existent resource ID"
+        params:
+          id: "000000000000000000000000"
+          confirm: true
+        expected: "Error about resource not found"
+      - tool: unifi_get_setting
+        description: "Non-existent setting key"
+        params:
+          key: nonexistent_setting_key_xyz
+        expected: "Error or empty result about setting not found"
+      - tool: unifi_update_setting
+        description: "Invalid data type for setting"
+        params:
+          key: snmp
+          data: "not_a_dict"
+          confirm: true
+        expected: "Error about invalid data type"
+      - tool: unifi_block_client
+        description: "Invalid MAC address format"
+        params:
+          mac: "not-a-mac"
+          confirm: true
+        expected: "Error about invalid MAC format"
+      - tool: unifi_create_firewall_rule
+        description: "Missing required fields for firewall rule"
+        params:
+          name: bt_adv_incomplete_rule
+          confirm: true
+        expected: "Error about missing required fields"
+      - tool: unifi_create_port_forward
+        description: "Invalid port number"
+        params:
+          name: bt_adv_bad_port
+          fwd: "192.168.1.100"
+          fwd_port: "99999"
+          dst_port: "-1"
+          proto: tcp_udp
+          confirm: true
+        expected: "Error about invalid port number"
+      - tool: unifi_status
+        description: "Valid no-param call (should always succeed)"
+        params: {}
+        expected: "Success — controller status"
+
+  # ============================================================
+  # Destructive (opt-in only)
+  # ============================================================
+
+  - number: 99
+    title: "Destructive Operations"
+    destructive: true
+    subsystem: system
+    notes: |
+      These will power off/reboot the controller. Only run with INCLUDE_DESTRUCTIVE=1.
+      The test verifies the tool triggers the action and the controller becomes unreachable.
+    endpoints:
+      - tool: unifi_logout
+        cmd: true
+        notes: "Logs out the current session. Will break subsequent tests"
+      - tool: unifi_system_reboot
+        cmd: true
+        mutation: true
+        notes: "Reboots the controller. Wait 120s for it to come back"
+      - tool: unifi_system_poweroff
+        cmd: true
+        mutation: true
+        notes: "Powers off the controller. Container will stop"

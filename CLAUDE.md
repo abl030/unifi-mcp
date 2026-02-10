@@ -346,3 +346,102 @@ uv run python count_tools.py
 Docker must be enabled on NixOS: add `virtualisation.docker.enable = true;` to `/etc/nixos/configuration.nix` and rebuild. User must be in the `docker` group.
 
 If the docker socket path is wrong (e.g. trying podman), set `DOCKER_HOST=unix:///var/run/docker.sock`.
+
+## Bank Tester — LLM QA for 286 Tools
+
+**STATUS: This section is a living tracker. Update it as phases complete.**
+
+The bank tester (`bank-tester/`) uses Claude as a QA tester to exercise every generated MCP tool against a live Docker-based UniFi controller. Adapted from the pfSense bank tester (96.6% coverage on 677 tools).
+
+### Architecture
+
+```
+bank-tester/
+  generate-tasks.py      # Reads task-config.yaml + naming.py → task markdown
+  task-config.yaml        # Declarative endpoint definitions + test values
+  TESTER-CLAUDE.md        # System prompt for tester Claude
+  run-bank-test.sh        # Docker container + claude -p orchestrator
+  analyze-results.py      # Parse TASK-REPORT blocks, compute coverage
+  mcp-config.json         # MCP server config template
+  tasks/                  # Auto-generated markdown (one per task)
+  results/run-*/          # Per-run: *.txt output + summary.md
+```
+
+### Running
+
+```bash
+# Generate task files (31 tasks, 100% tool coverage):
+uv run python bank-tester/generate-tasks.py
+
+# Run all tasks with Sonnet (starts Docker controller automatically):
+bash bank-tester/run-bank-test.sh
+
+# Run specific task(s):
+bash bank-tester/run-bank-test.sh 01
+bash bank-tester/run-bank-test.sh "01 03 05"
+
+# Use Opus model:
+MODEL=opus bash bank-tester/run-bank-test.sh
+
+# Analyze results:
+python3 bank-tester/analyze-results.py bank-tester/results/run-*/
+```
+
+### Plan Phases
+
+<!-- UPDATE THIS AS PHASES COMPLETE -->
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| **Phase 1: Build Harness** | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
+| **Phase 2: Generate Tasks** | Run `generate-tasks.py`, verify 100% tool coverage (286/286) | DONE |
+| **Phase 3: Sonnet First Pass** | Run all 31 tasks against Docker controller with Sonnet | NOT STARTED |
+| **Phase 4: Triage Failures** | Analyze results, categorize failures (generator-fixable vs test-config vs needs-opus) | NOT STARTED |
+| **Phase 5: Fix & Re-run** | Fix generator/naming/templates for generator-fixable failures, re-run | NOT STARTED |
+| **Phase 6: Opus Escalation** | Re-run remaining failures with Opus for deeper diagnosis | NOT STARTED |
+| **Phase 7: Final Report** | Aggregate results, produce final coverage percentage and unfixed failure list | NOT STARTED |
+
+### Task Sprints (31 tasks, 7 sprints)
+
+| Sprint | Tasks | Tools | Description |
+|--------|-------|-------|-------------|
+| 1 | 01-07 | ~70 | Foundation CRUD (networks, firewall, ports, DNS, tags, accounts, hotspot) |
+| 2 | 08-13 | ~48 | Stats & safe commands (health, clients, DPI, network, security, reports) |
+| 3 | 14-15 | 3 | Settings (read all 35 categories, write+restore safe ones) |
+| 4 | 16-20 | ~50 | v2 API & advanced CRUD (firewall policies, traffic rules, DPI, maps, heatmaps) |
+| 5 | 21-25 | ~40 | Mutation commands (sites, admins, clients, backups, vouchers) |
+| 6 | 26-28 | ~50 | Hardware-dependent (expect errors — wlans, routes, device commands) |
+| 7 | 29-30 | ~15 | Port override helper, user CRUD, adversarial tests |
+| opt-in | 99 | 3 | Destructive (logout, reboot, poweroff) |
+
+### Smoke Test Results (Phase 2.5)
+
+Tasks 01, 02, 03, 08, 14, 16, 30 tested individually to verify plumbing:
+
+| Task | Status | Tools | Failures | Key Findings |
+|------|--------|-------|----------|--------------|
+| 01 | SUCCESS | 5/5 | 0 | Auth endpoints lag behind /status readiness (startup race) |
+| 02 | SUCCESS | 10/10 | 0 | Network + usergroup CRUD fully works, 100% first-attempt |
+| 03 | SUCCESS | 10/10 | 0 | Firewall group + rule CRUD fully works |
+| 08 | PARTIAL | 7/7 | 1 | `unifi_clear_dpi` 404 — cmd/stat endpoint missing |
+| 14 | SUCCESS | 2/2 | 0 | 18/36 settings returned data, 18 "not found" (expected) |
+| 16 | PARTIAL | 3/6 | 2 | v2 firewall policy create returns 400 (needs prerequisites) |
+| 30 | SUCCESS | 9/9 | 8 | 6/10 errors `missing` quality (generic 400s), MAC not validated |
+
+### Test Image Enhancement Backlog
+
+The bare `jacobalberty/unifi:latest` controller has limitations that cause expected failures. Before the full Sonnet pass, tabulate issues here for a future enhanced test image:
+
+| Issue | Affected Tasks | Fix Required |
+|-------|---------------|--------------|
+| **No adopted devices** | 26, 27, 28, 29 | Mock device via MongoDB seeding or UniFi inform simulator |
+| **v2 firewall policies need prerequisites** | 16 | May need gateway device + firewall zones configured |
+| **18/36 settings not initialized** | 14 | Pre-seed settings via MongoDB or initial API calls |
+| **cmd/stat endpoint missing (clear-dpi)** | 08 | Verify endpoint exists on this controller version; may need DPI enabled |
+| **No clients/sessions** | 10, 23 | Seed fake client records via MongoDB for stat/sta testing |
+| **No backups exist** | 24 | Generate a backup during setup for download/delete testing |
+| **No vouchers exist** | 25 | Need to create vouchers before revoke/delete testing |
+| **Generic 400 errors (no detail)** | 30 | Enhance generator error parsing (API-side limitation) |
+| **No MAC validation** | 30 | Add client-side MAC format validation in generator |
+
+Priority: Try MongoDB device seeding first (free, fast). If controller rejects fake devices, build an inform protocol simulator.

@@ -1,0 +1,137 @@
+[11:01:30] === Task 1/1: 30-adversarial-tests ===
+[11:01:30]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-110117/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[11:01:30]   task file: bank-tester/tasks/30-adversarial-tests.md (3081 bytes)
+```
+---TASK-REPORT-START---
+task_id: 30-adversarial
+status: success
+total_tool_calls: 11
+first_attempt_failures: 8
+details:
+  - tool: mcp__unifi__unifi_create_network
+    attempt: 1
+    params: {"data": {"purpose": "vlan-only"}, "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/networkconf'"
+    diagnosis: Missing required 'name' field, but error message only shows HTTP 400 with MDN link - not helpful
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+  - tool: mcp__unifi__unifi_create_network
+    attempt: 1
+    params: {"data": {"name": "bt_adv_bad_purpose", "purpose": "invalid_purpose_value"}, "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/networkconf'"
+    diagnosis: Invalid enum value for 'purpose', but error only shows generic HTTP 400 - no mention of valid values
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+  - tool: mcp__unifi__unifi_update_network
+    attempt: 1
+    params: {"id": "000000000000000000000000", "data": {"name": "bt_adv_nonexistent"}, "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/networkconf/000000000000000000000000'"
+    diagnosis: Non-existent resource ID, but error only shows HTTP 400 - should be 404 or say "resource not found"
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+  - tool: mcp__unifi__unifi_delete_network
+    attempt: 1
+    params: {"id": "000000000000000000000000", "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/networkconf/000000000000000000000000'"
+    diagnosis: Non-existent resource ID, but error only shows HTTP 400 - should be 404 or say "resource not found"
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+  - tool: mcp__unifi__unifi_get_setting
+    attempt: 1
+    params: {"key": "nonexistent_setting_key_xyz"}
+    error: "Setting 'nonexistent_setting_key_xyz' not found"
+    diagnosis: Clear message - explains exactly what's wrong
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_clear
+
+  - tool: mcp__unifi__unifi_update_setting
+    attempt: 1
+    params: {"key": "snmp", "data": "not_a_dict", "confirm": true}
+    error: "1 validation error for call[unifi_update_setting]\ndata\n  Input should be a valid dictionary [type=dict_type, input_value='not_a_dict', input_type=str]"
+    diagnosis: Excellent Pydantic error - shows exact problem, expected type, and received type with link to docs
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_clear
+
+  - tool: mcp__unifi__unifi_block_client
+    attempt: 1
+    params: {"mac": "not-a-mac", "confirm": true}
+    error: None (succeeded - UniFi API accepted invalid MAC format)
+    diagnosis: API silently accepted invalid MAC "not-a-mac" and created a blocked client record - no validation
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: true
+    category: unexpected_error
+
+  - tool: mcp__unifi__unifi_create_firewall_rule
+    attempt: 1
+    params: {"data": {"name": "bt_adv_incomplete_rule"}, "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/firewallrule'"
+    diagnosis: Missing required fields, but error only shows HTTP 400 - no hint about which fields are required
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+  - tool: mcp__unifi__unifi_create_port_forward
+    attempt: 1
+    params: {"data": {"name": "bt_adv_bad_port", "fwd": "192.168.1.100", "fwd_port": "99999", "dst_port": "-1", "proto": "tcp_udp"}, "confirm": true}
+    error: "Client error '400 ' for url 'https://127.0.0.1:8443/api/s/default/rest/portforward'"
+    diagnosis: Invalid port numbers (99999, -1), but error only shows HTTP 400 - no mention of valid port range
+    retry_params: N/A (adversarial test - no retry)
+    retry_success: false
+    category: error_quality_missing
+
+cleanup_complete: true
+notes: |
+  **Error Message Quality Summary:**
+  
+  CLEAR (2/10):
+  - unifi_get_setting: "Setting 'nonexistent_setting_key_xyz' not found" - perfect
+  - unifi_update_setting: Pydantic validation with full details - excellent
+  
+  MISSING (6/10):
+  - All network CRUD operations returned generic "Client error '400'" with MDN link
+  - No details from UniFi API about what's wrong (missing field, invalid enum, non-existent ID)
+  - Port forward and firewall rule creation also generic 400s
+  
+  UNEXPECTED (1/10):
+  - unifi_block_client accepted "not-a-mac" as valid MAC address - no validation
+  
+  SUCCESS (1/10):
+  - unifi_status worked correctly as expected
+  
+  **Key Findings:**
+  1. Pydantic type validation (client-side) works excellently
+  2. Setting operations have good error messages
+  3. REST CRUD operations return opaque HTTP 400 errors - the UniFi API doesn't provide detailed error messages, and the MCP server doesn't parse or enhance them
+  4. MAC address validation is completely missing - API accepts garbage
+  5. Most errors give no actionable guidance on how to fix the problem
+  
+  **Recommendation:** The MCP server should:
+  - Add client-side validation for MACs, port ranges, IP formats before sending to API
+  - Parse UniFi API error responses (if they contain JSON with details) and extract useful messages
+  - Add hints in error messages about common mistakes (e.g., "400 error on create_network - check that 'name' field is present and 'purpose' is one of: corporate, guest, vlan-only, wan")
+
+tools_invoked:
+  - mcp__unifi__unifi_create_network
+  - mcp__unifi__unifi_update_network
+  - mcp__unifi__unifi_delete_network
+  - mcp__unifi__unifi_get_setting
+  - mcp__unifi__unifi_update_setting
+  - mcp__unifi__unifi_block_client
+  - mcp__unifi__unifi_create_firewall_rule
+  - mcp__unifi__unifi_create_port_forward
+  - mcp__unifi__unifi_status
+  - mcp__unifi__unifi_unblock_client
+---TASK-REPORT-END---
+```
+[11:03:11]   PASS (exit 0, 101s, output=6249B, stderr=0B)
+

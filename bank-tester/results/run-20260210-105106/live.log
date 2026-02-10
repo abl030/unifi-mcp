@@ -1,0 +1,72 @@
+[10:51:20] === Task 1/1: 01-global-endpoints ===
+[10:51:21]   cmd: claude -p --mcp-config bank-tester/results/run-20260210-105106/mcp-config-live.json --strict-mcp-config --permission-mode bypassPermissions --output-format text --model sonnet --max-budget-usd 200.00
+[10:51:21]   task file: bank-tester/tasks/01-global-endpoints.md (711 bytes)
+---TASK-REPORT-START---
+task_id: 01-global-endpoints
+status: failed
+total_tool_calls: 10
+first_attempt_failures: 5
+details:
+  - tool: mcp__unifi__unifi_status
+    attempt: 1
+    params: {}
+    error: "[Errno -2] Name or service not known"
+    diagnosis: "DNS resolution failure - the MCP server's UNIFI_HOST environment variable is not pointing to a reachable controller. This is an infrastructure issue, not a tool design problem."
+    retry_params: null
+    retry_success: false
+    category: unexpected_error
+  - tool: mcp__unifi__unifi_self
+    attempt: 1
+    params: {}
+    error: "[Errno -2] Name or service not known"
+    diagnosis: "Same DNS resolution failure - controller host not configured or unreachable."
+    retry_params: null
+    retry_success: false
+    category: unexpected_error
+  - tool: mcp__unifi__unifi_sites
+    attempt: 1
+    params: {}
+    error: "[Errno -2] Name or service not known"
+    diagnosis: "Same DNS resolution failure - controller host not configured or unreachable."
+    retry_params: null
+    retry_success: false
+    category: unexpected_error
+  - tool: mcp__unifi__unifi_stat_sites
+    attempt: 1
+    params: {}
+    error: "[Errno -2] Name or service not known"
+    diagnosis: "Same DNS resolution failure - controller host not configured or unreachable."
+    retry_params: null
+    retry_success: false
+    category: unexpected_error
+  - tool: mcp__unifi__unifi_stat_admin
+    attempt: 1
+    params: {}
+    error: "[Errno -2] Name or service not known"
+    diagnosis: "Same DNS resolution failure - controller host not configured or unreachable."
+    retry_params: null
+    retry_success: false
+    category: unexpected_error
+cleanup_complete: true
+notes: |
+  Infrastructure failure: All 5 global endpoint tools failed with "[Errno -2] Name or service not known", indicating the UniFi controller is not reachable at the configured hostname. This is not a tool design issue but rather an environment configuration problem.
+  
+  The MCP server likely needs UNIFI_HOST, UNIFI_USERNAME, UNIFI_PASSWORD, and other environment variables to be set to point to a running UniFi controller instance.
+  
+  Tool discoverability observations:
+  - All 5 tools were easily found using ToolSearch with exact names
+  - Tool names follow clear pattern: unifi_{endpoint_name}
+  - No parameters required for these global endpoints (as expected)
+  - Docstrings are minimal but sufficient for these simple read-only endpoints
+  - unifi_status docstring helpfully notes "No authentication required"
+  
+  Cannot assess actual API behavior or response structure quality without a working controller connection.
+tools_invoked:
+  - mcp__unifi__unifi_status
+  - mcp__unifi__unifi_self
+  - mcp__unifi__unifi_sites
+  - mcp__unifi__unifi_stat_sites
+  - mcp__unifi__unifi_stat_admin
+---TASK-REPORT-END---
+[10:52:06]   PASS (exit 0, 45s, output=2816B, stderr=0B)
+
