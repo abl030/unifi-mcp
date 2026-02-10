@@ -213,6 +213,7 @@ def _format_response(
     data: Any,
     summary: str | None = None,
     missing_fields: list[str] | None = None,
+    note: str | None = None,
 ) -> dict:
     """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
@@ -225,6 +226,8 @@ def _format_response(
         result["data"] = data
     elif data is not None:
         result["data"] = data
+    if note:
+        result["note"] = note
     if missing_fields:
         result["missing_fields"] = missing_fields
     return result
@@ -700,9 +703,25 @@ async def unifi_list_{{ tool.display_name }}(
 {% else %}
         data = await client.request("GET", "{{ tool.path }}", site=site or None)
 {% endif %}
+{% if tool.is_gateway_dependent %}
+        # Normalize trivially-empty responses (e.g. [{}] from DPI)
+        if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+            data = []
+        # Detect missing gateway
+        gw_note = None
+        if not data:
+            health = await client.request("GET", "stat/health", site=site or None)
+            wan_status = next(
+                (h.get("status") for h in health
+                 if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                "unknown",
+            )
+            if wan_status == "unknown":
+                gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
+{% endif %}
         total = len(data)
         data, missing = _paginate_and_filter(data, limit, offset, fields)
-        return _format_response(data, f"Found {total} {{ tool.display_name }} records", missing_fields=missing)
+        return _format_response(data, f"Found {total} {{ tool.display_name }} records", missing_fields=missing{{ ', note=gw_note' if tool.is_gateway_dependent else '' }})
     except RuntimeError as e:
         return _tool_error(e)
 

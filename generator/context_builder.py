@@ -26,6 +26,7 @@ from generator.naming import (
     RESOURCE_NAMES,
     SAFE_TEST_COMMANDS,
     SKIP_COMMANDS,
+    GATEWAY_DEPENDENT_STATS,
     STAT_NAMES,
     STAT_NOTES,
     STAT_OVERRIDES,
@@ -174,6 +175,7 @@ def build_context(inventory: APIInventory) -> dict:
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
             "note": merged_note,
+            "is_gateway_dependent": name in GATEWAY_DEPENDENT_STATS,
             "sample_fields": sample_fields,
             "known_fields": known_fields_stat,
         }

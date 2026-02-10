@@ -213,6 +213,7 @@ def _format_response(
     data: Any,
     summary: str | None = None,
     missing_fields: list[str] | None = None,
+    note: str | None = None,
 ) -> dict:
     """Format API response data as structured dict for tool output."""
     if UNIFI_REDACT_SECRETS:
@@ -225,6 +226,8 @@ def _format_response(
         result["data"] = data
     elif data is not None:
         result["data"] = data
+    if note:
+        result["note"] = note
     if missing_fields:
         result["missing_fields"] = missing_fields
     return result
@@ -4506,9 +4509,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/dpi", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} dpi_stats records", missing_fields=missing)
+            return _format_response(data, f"Found {total} dpi_stats records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4536,9 +4553,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/dynamicdns", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} dynamic_dns_stats records", missing_fields=missing)
+            return _format_response(data, f"Found {total} dynamic_dns_stats records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4596,9 +4627,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/gateway", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} gateway_stats records", missing_fields=missing)
+            return _format_response(data, f"Found {total} gateway_stats records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4686,9 +4731,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/portforward", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} port_forward_stats records", missing_fields=missing)
+            return _format_response(data, f"Found {total} port_forward_stats records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4809,9 +4868,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("POST", "stat/report/5minutes.gw", json_data={}, site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} report_5min_gateway records", missing_fields=missing)
+            return _format_response(data, f"Found {total} report_5min_gateway records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4839,9 +4912,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("POST", "stat/report/archive.speedtest", json_data={}, site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} speedtest_results records", missing_fields=missing)
+            return _format_response(data, f"Found {total} speedtest_results records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4869,9 +4956,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("POST", "stat/report/daily.gw", json_data={}, site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} report_daily_gateway records", missing_fields=missing)
+            return _format_response(data, f"Found {total} report_daily_gateway records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4899,9 +5000,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("POST", "stat/report/hourly.gw", json_data={}, site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} report_hourly_gateway records", missing_fields=missing)
+            return _format_response(data, f"Found {total} report_hourly_gateway records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -4957,9 +5072,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("POST", "stat/report/monthly.gw", json_data={}, site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} report_monthly_gateway records", missing_fields=missing)
+            return _format_response(data, f"Found {total} report_monthly_gateway records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -5073,9 +5202,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/routing", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} routing_stats records", missing_fields=missing)
+            return _format_response(data, f"Found {total} routing_stats records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -5133,9 +5276,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/sitedpi", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} site_dpi records", missing_fields=missing)
+            return _format_response(data, f"Found {total} site_dpi records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 
@@ -5163,9 +5320,23 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/stadpi", site=site or None)
+            # Normalize trivially-empty responses (e.g. [{}] from DPI)
+            if isinstance(data, list) and all(isinstance(d, dict) and not d for d in data):
+                data = []
+            # Detect missing gateway
+            gw_note = None
+            if not data:
+                health = await client.request("GET", "stat/health", site=site or None)
+                wan_status = next(
+                    (h.get("status") for h in health
+                     if isinstance(h, dict) and h.get("subsystem") == "wan"),
+                    "unknown",
+                )
+                if wan_status == "unknown":
+                    gw_note = "No UniFi gateway detected (wan: unknown). This endpoint requires a USG, UDM, or UCG."
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
-            return _format_response(data, f"Found {total} client_dpi records", missing_fields=missing)
+            return _format_response(data, f"Found {total} client_dpi records", missing_fields=missing, note=gw_note)
         except RuntimeError as e:
             return _tool_error(e)
 

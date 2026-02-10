@@ -293,6 +293,11 @@ STAT_OVERRIDES: dict[str, dict] = {
 
 # Additional notes for stat tool docstrings (merged with ep.note from inventory)
 _GW_NOTE = "Requires a UniFi gateway (USG/UDM/UCG). Returns empty data if no gateway is adopted."
+GATEWAY_DEPENDENT_STATS: set[str] = {
+    "report_archive_speedtest", "portforward", "routing", "dpi",
+    "sitedpi", "stadpi", "gateway", "dynamicdns",
+    "report_5min_gw", "report_hourly_gw", "report_daily_gw", "report_monthly_gw",
+}
 STAT_NOTES: dict[str, str] = {
     "report_archive_speedtest": _GW_NOTE,
     "portforward": _GW_NOTE,
