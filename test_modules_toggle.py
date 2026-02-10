@@ -42,7 +42,7 @@ from generator.naming import (
 
 _COUNTS = count_from_spec()
 _MODULES = count_module_breakdown(_COUNTS)
-_ALWAYS_ON = _COUNTS["tools"]["global"] + _COUNTS["tools"]["report_issue"]
+_ALWAYS_ON = _COUNTS["tools"]["global"] + _COUNTS["tools"]["report_issue"] + _COUNTS["tools"]["overview"]
 _TOTAL = _COUNTS["tools"]["total"]
 _V1_TOTAL = sum(_MODULES[m]["v1"] for m in MODULE_ORDER) + _ALWAYS_ON
 _V2_TOTAL = sum(_MODULES[m]["v2"] for m in MODULE_ORDER) + _ALWAYS_ON
@@ -63,6 +63,7 @@ _raw_for_ro = json.loads(Path("endpoint-inventory.json").read_text())
 _RO_ALWAYS_ON = (
     len([n for n in _raw_for_ro["global_endpoints"] if n not in MUTATING_GLOBALS])
     + 1  # report_issue
+    + 1  # overview
 )
 
 # Per-module read-only expected count when loaded alone
@@ -130,7 +131,7 @@ _MUTATING_TOOLS = _derive_mutating_tools()
 def _derive_always_on_tools() -> set[str]:
     """Derive always-on tool names from the inventory."""
     raw = json.loads(Path("endpoint-inventory.json").read_text())
-    return {f"unifi_{name}" for name in raw["global_endpoints"]} | {"unifi_report_issue"}
+    return {f"unifi_{name}" for name in raw["global_endpoints"]} | {"unifi_report_issue", "unifi_get_overview"}
 
 
 def _derive_module_tools() -> dict[str, set[str]]:

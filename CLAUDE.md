@@ -29,7 +29,7 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **1 WebSocket** endpoint (community — events stream)
 - Plus: 35 `set/setting/*` endpoints, 35 `get/setting/*` endpoints, 4 `cnt/*` endpoints, 2 `upd/*` endpoints, 1 `group/*` endpoint, 1 `dl/*` endpoint
 
-### Generated Tools: 284 total
+### Generated Tools: 285 total
 - **154 REST** tools (28 CRUD × 5 + 1 CRUD-no-delete × 4 + settings × 3 + 5 read-only × 1)
 - **39 Stat** tools (1 per stat endpoint)
 - **66 Cmd** tools (66 of 68 commands; `set-site-name` and `delete-admin` skipped)
@@ -37,6 +37,7 @@ Run `uv run python count_tools.py` to recompute these from the spec.
 - **8 Global** tools (1 per global endpoint)
 - **1 Port override** helper tool
 - **1 Report issue** helper tool (error reporting via `gh issue create`)
+- **1 Overview** composite tool (network summary in a single call)
 
 ## Architecture
 
@@ -92,9 +93,10 @@ A single script that reads `endpoint-inventory.json` + `api-samples/*.json` and 
 - Uses **FastMCP** (same framework as the current hand-maintained server)
 - Single `UniFiClient` class handles auth, session management, cookie handling
 - Supports both standalone controllers and UniFi OS (with/without `/proxy/network` prefix)
-- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`, `UNIFI_READ_ONLY`
-- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 123 tools. Global tools (8) and report_issue are always registered.
-- `UNIFI_READ_ONLY=true` strips all mutating tools at registration time (default: `false`). Only list/get/stat tools and non-mutation commands remain (284 → 123 tools). Composes with `UNIFI_MODULES`. Example: `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` → 50 tools.
+- Environment variables for configuration: `UNIFI_HOST`, `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_PORT`, `UNIFI_SITE`, `UNIFI_VERIFY_SSL`, `UNIFI_MODULES`, `UNIFI_READ_ONLY`, `UNIFI_REDACT_SECRETS`
+- `UNIFI_MODULES` controls which tool groups are registered (default: `v1,v2`). Supports 9 fine-grained sub-modules: `device`, `client`, `wifi`, `network`, `firewall`, `monitor`, `admin`, `hotspot`, `advanced`. Shortcuts: `v1` = all 9 sub-modules, `v2` = all v2 API tools. Example: `UNIFI_MODULES=device,client,wifi,network,monitor` → 124 tools. Always-on tools (8 global + report_issue + overview) are always registered.
+- `UNIFI_READ_ONLY=true` strips all mutating tools at registration time (default: `false`). Only list/get/stat tools and non-mutation commands remain (285 → 124 tools). Composes with `UNIFI_MODULES`. Example: `UNIFI_MODULES=device,client,monitor UNIFI_READ_ONLY=true` → 51 tools.
+- `UNIFI_REDACT_SECRETS=true` (default) replaces sensitive fields (`x_passphrase`, `x_password`, etc.) with `<redacted>` in all tool responses. Set to `false` for raw values.
 - Graceful error handling with clear error messages in tool responses
 
 ### Docker Test Harness
@@ -425,7 +427,7 @@ python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (284/284) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (285/285) | DONE |
 | Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
 | Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
@@ -499,3 +501,30 @@ Also fixed: MongoDB seed script — `.toString()` → `.str` for privilege IDs, 
 Also fixed: `generate-tasks.py` now respects `NO_REST_DELETE` (was generating stale `delete_user` refs). Removed stale `set_site_name` from task 21 config.
 
 **Remaining: 34 failures** (23 hardware, 5 standalone limitation, 3 API limitation, 3 adversarial)
+
+#### Sprint F: Response Quality — DONE
+
+**Result**: All tool responses now return structured JSON. Secrets redacted by default. Tool count: 284 → 285 (added overview).
+
+| Fix | Change |
+|-----|--------|
+| `_format_response` structured JSON | Returns `{"summary": "...", "count": N, "data": [...]}` for lists, `{"data": {...}}` for single items |
+| `_redact_secrets` helper | Recursively replaces sensitive fields (`x_passphrase`, `x_password`, etc.) with `<redacted>` |
+| `UNIFI_REDACT_SECRETS` env var | Default `true` — secure by default. Set `false` for raw values |
+| `seed_admin.sh` bugfix | Fixed `insertOne()` → `insert()`, `.toString()` → `.str`, added `is_super: true` |
+
+Verified: 34/34 tests in `tests/test_sprint_f.py` passed against live Docker controller — JSON structure, redaction, CRUD lifecycle, overview, pagination, field selection.
+
+#### Sprint G: Scalability — DONE
+
+**Result**: All list tools now support `limit`/`offset`/`fields` parameters. Added `unifi_get_overview` composite tool. Net tool count: 285.
+
+| Feature | Details |
+|---------|---------|
+| `limit` param | Max records to return (0 = all, backward compatible) |
+| `offset` param | Skip N records before returning |
+| `fields` param | Comma-separated field names; `_id` always included |
+| `_paginate_and_filter()` | Client-side slicing (UniFi v1 has no server-side pagination) |
+| `unifi_get_overview` | Always-on, read-only. Fetches health/devices/networks/wlans/clients/alarms/sysinfo in one call |
+
+LLM discovery test: Claude rated the experience 4/5, naturally discovered and used `unifi_get_overview`, `fields`, and `limit` from tool descriptions alone.

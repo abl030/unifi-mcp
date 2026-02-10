@@ -32,6 +32,7 @@ UNIFI_MODULES = set(
     m.strip() for m in os.environ.get("UNIFI_MODULES", "v1,v2").split(",") if m.strip()
 )
 UNIFI_READ_ONLY = os.environ.get("UNIFI_READ_ONLY", "false").lower() == "true"
+UNIFI_REDACT_SECRETS = os.environ.get("UNIFI_REDACT_SECRETS", "true").lower() != "false"
 
 
 # ---------------------------------------------------------------------------
@@ -172,14 +173,67 @@ async def _get_client() -> UniFiClient:
 
 
 # ---------------------------------------------------------------------------
+# Helper: secret redaction
+# ---------------------------------------------------------------------------
+
+_REDACT_FIELDS = frozenset({
+    "x_passphrase", "x_iapp_key", "x_password", "x_shadow",
+    "x_private_key", "x_certificate_pem", "x_certificate_arn",
+    "x_api_token", "x_mgmt_key", "x_secret", "x_psk",
+    "x_mesh_psk", "x_element_psk",
+})
+_REDACT_SUBSTRINGS = ("password", "passphrase", "secret", "preshared_key")
+
+
+def _redact_secrets(obj: Any) -> Any:
+    """Recursively replace sensitive field values with '<redacted>'."""
+    if isinstance(obj, dict):
+        return {
+            k: "<redacted>" if (k in _REDACT_FIELDS or any(s in k.lower() for s in _REDACT_SUBSTRINGS)) else _redact_secrets(v)
+            for k, v in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_redact_secrets(item) for item in obj]
+    return obj
+
+
+# ---------------------------------------------------------------------------
 # Helper: format response
 # ---------------------------------------------------------------------------
 
 def _format_response(data: Any, summary: str | None = None) -> str:
-    """Format API response data for tool output."""
+    """Format API response data as structured JSON for tool output."""
+    if UNIFI_REDACT_SECRETS:
+        data = _redact_secrets(data)
+    result: dict[str, Any] = {}
     if summary:
-        return f"{summary}\n\n{json.dumps(data, indent=2, default=str)}"
-    return json.dumps(data, indent=2, default=str)
+        result["summary"] = summary
+    if isinstance(data, list):
+        result["count"] = len(data)
+        result["data"] = data
+    elif data is not None:
+        result["data"] = data
+    return json.dumps(result, indent=2, default=str)
+
+
+# ---------------------------------------------------------------------------
+# Helper: pagination and field selection
+# ---------------------------------------------------------------------------
+
+def _paginate_and_filter(data: list, limit: int, offset: int, fields: str) -> list:
+    """Apply offset, limit, and field selection to a list of records."""
+    if offset:
+        data = data[offset:]
+    if limit:
+        data = data[:limit]
+    if fields:
+        field_set = {f.strip() for f in fields.split(",")}
+        field_set.add("_id")  # always include _id for reference
+        data = [
+            {k: v for k, v in item.items() if k in field_set}
+            for item in data if isinstance(item, dict)
+        ]
+    return data
 
 
 _MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
@@ -250,14 +304,27 @@ async def unifi_report_issue(
 # --- Settings (special handling: keyed by 'key' field) ---
 
 @mcp.tool()
-async def unifi_list_settings(site: str = "") -> str:
+async def unifi_list_settings(
+    site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
+) -> str:
     """List all site settings. Returns all setting categories.
+
+    Args:
+        site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'key,name'). Always includes _id.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "rest/setting", site=site or None)
-    return _format_response(data, f"Found {len(data)} setting categories")
+    total = len(data)
+    data = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} setting categories")
 
 
 @mcp.tool()
@@ -312,34 +379,60 @@ async def unifi_update_setting(
 # --- {{ tool.singular | title }} (read-only) ---
 
 @mcp.tool()
-async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
+async def unifi_list_{{ tool.plural }}(
+    site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
+) -> str:
     """List all {{ tool.plural }}.
 
     Returns {{ tool.plural }} from the UniFi controller.
+
+    Args:
+        site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
-    return _format_response(data, f"Found {len(data)} {{ tool.plural }}")
+    total = len(data)
+    data = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.plural }}")
 
 {% elif tool.is_crud %}
 
 # --- {{ tool.singular | title }} CRUD ---
 
 @mcp.tool()
-async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
+async def unifi_list_{{ tool.plural }}(
+    site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
+) -> str:
     """List all {{ tool.plural }}.
 {% if tool.writable_fields %}
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
 
+    Args:
+        site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
-    return _format_response(data, f"Found {len(data)} {{ tool.plural }}")
+    total = len(data)
+    data = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.plural }}")
 
 
 @mcp.tool()
@@ -471,6 +564,9 @@ async def unifi_list_report(
     interval: str = "hourly",
     report_type: str = "site",
     site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
 ) -> str:
     """Get statistical reports.
 
@@ -478,6 +574,9 @@ async def unifi_list_report(
         interval: Report interval: '5minutes', 'hourly', or 'daily'.
         report_type: Report type: 'site', 'user', 'ap'.
         site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
 
     Note: {{ tool.note }}
 
@@ -486,12 +585,19 @@ async def unifi_list_report(
     client = await _get_client()
     path = f"stat/report/{interval}.{report_type}"
     data = await client.request("POST", path, json_data={}, site=site or None)
-    return _format_response(data, f"Found {len(data)} report records")
+    total = len(data)
+    data = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} report records")
 
 {% else %}
 
 @mcp.tool()
-async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
+async def unifi_list_{{ tool.display_name }}(
+    site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
+) -> str:
     """List {{ tool.display_name }} statistics.
 {% if tool.note %}
 
@@ -502,6 +608,12 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
     Key fields: {{ tool.sample_fields | join(', ') }}
 {% endif %}
 
+    Args:
+        site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
     client = await _get_client()
@@ -510,7 +622,9 @@ async def unifi_list_{{ tool.display_name }}(site: str = "") -> str:
 {% else %}
     data = await client.request("GET", "{{ tool.path }}", site=site or None)
 {% endif %}
-    return _format_response(data, f"Found {len(data)} {{ tool.display_name }} records")
+    total = len(data)
+    data = _paginate_and_filter(data, limit, offset, fields)
+    return _format_response(data, f"Found {total} {{ tool.display_name }} records")
 
 {% endif %}
 {% endmacro %}
@@ -596,12 +710,23 @@ if not UNIFI_READ_ONLY:
 {% if "GET" in tool.methods %}
 
 @mcp.tool()
-async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
+async def unifi_list_{{ tool.plural }}(
+    site: str = "",
+    limit: int = 0,
+    offset: int = 0,
+    fields: str = "",
+) -> str:
     """List all {{ tool.plural }} (v2 API).
 {% if tool.writable_fields %}
 
     Key fields: {{ tool.writable_fields[:8] | map(attribute='description') | join(', ') }}
 {% endif %}
+
+    Args:
+        site: Site name (default: from env).
+        limit: Max records to return (0 = all).
+        offset: Number of records to skip.
+        fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
 
     If this tool returns an unexpected error, call unifi_report_issue to report it.
     """
@@ -609,7 +734,9 @@ async def unifi_list_{{ tool.plural }}(site: str = "") -> str:
     effective_site = site or UNIFI_SITE
     data = await client.request("GET", "/{{ tool.path }}".replace("{site}", effective_site))
     if isinstance(data, list):
-        return _format_response(data, f"Found {len(data)} {{ tool.plural }}")
+        total = len(data)
+        data = _paginate_and_filter(data, limit, offset, fields)
+        return _format_response(data, f"Found {total} {{ tool.plural }}")
     return _format_response(data)
 
 {% endif %}
@@ -894,6 +1021,84 @@ async def unifi_{{ tool.name }}({{ 'site: str = ""' if '{site}' in tool.path els
 
 {% endif %}
 {% endfor %}
+
+# ===========================================================================
+# Network Overview Tool (always-on, read-only)
+# ===========================================================================
+
+
+@mcp.tool()
+async def unifi_get_overview(site: str = "") -> str:
+    """Get a concise network overview in a single call.
+
+    Returns controller version, health status, device/network/WLAN summaries,
+    client count, and active alarm count. Use this as a starting point before
+    calling detailed tools.
+
+    Args:
+        site: Site name (default: from env).
+
+    If this tool returns an unexpected error, call unifi_report_issue to report it.
+    """
+    client = await _get_client()
+    s = site or UNIFI_SITE
+
+    health = await client.request("GET", "stat/health", site=s)
+    devices = await client.request("GET", "stat/device", site=s)
+    networks = await client.request("GET", "rest/networkconf", site=s)
+    wlans = await client.request("GET", "rest/wlanconf", site=s)
+    clients = await client.request("GET", "stat/sta", site=s)
+    alarms = await client.request("GET", "stat/alarm", site=s)
+    sysinfo = await client.request("GET", "stat/sysinfo", site=s)
+
+    version = ""
+    if sysinfo and isinstance(sysinfo, list) and sysinfo[0]:
+        version = sysinfo[0].get("version", "")
+
+    overview = {
+        "controller_version": version,
+        "health": {
+            h.get("subsystem", "?"): h.get("status", "?")
+            for h in health if isinstance(h, dict)
+        },
+        "device_summary": [
+            {
+                "name": d.get("name", ""),
+                "type": d.get("type", ""),
+                "model": d.get("model", ""),
+                "mac": d.get("mac", ""),
+                "status": "connected" if d.get("state") == 1 else "disconnected",
+                "ip": d.get("ip", ""),
+            }
+            for d in devices if isinstance(d, dict)
+        ],
+        "network_summary": [
+            {
+                "name": n.get("name", ""),
+                "purpose": n.get("purpose", ""),
+                "subnet": n.get("ip_subnet", ""),
+                "vlan": n.get("vlan", None),
+                "enabled": n.get("enabled", True),
+            }
+            for n in networks if isinstance(n, dict)
+        ],
+        "wlan_summary": [
+            {
+                "name": w.get("name", ""),
+                "security": w.get("security", ""),
+                "enabled": w.get("enabled", True),
+                "wpa_mode": w.get("wpa_mode", ""),
+            }
+            for w in wlans if isinstance(w, dict)
+        ],
+        "total_clients": len(clients) if isinstance(clients, list) else 0,
+        "active_alarms": len([
+            a for a in alarms
+            if isinstance(a, dict) and not a.get("archived")
+        ]) if isinstance(alarms, list) else 0,
+    }
+    return _format_response(overview, "Network overview")
+
 
 # ---------------------------------------------------------------------------
 # Entry point
