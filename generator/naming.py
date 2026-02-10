@@ -291,6 +291,23 @@ STAT_OVERRIDES: dict[str, dict] = {
     "session": {"method": "POST", "body": {"type": "all", "start": 0, "end": 9999999999}},
 }
 
+# Additional notes for stat tool docstrings (merged with ep.note from inventory)
+_GW_NOTE = "Requires a UniFi gateway (USG/UDM/UCG). Returns empty data if no gateway is adopted."
+STAT_NOTES: dict[str, str] = {
+    "report_archive_speedtest": _GW_NOTE,
+    "portforward": _GW_NOTE,
+    "routing": _GW_NOTE,
+    "dpi": _GW_NOTE,
+    "sitedpi": _GW_NOTE,
+    "stadpi": _GW_NOTE,
+    "gateway": _GW_NOTE,
+    "dynamicdns": _GW_NOTE,
+    "report_5min_gw": _GW_NOTE,
+    "report_hourly_gw": _GW_NOTE,
+    "report_daily_gw": _GW_NOTE,
+    "report_monthly_gw": _GW_NOTE,
+}
+
 # Commands that are safe but need a real device (return error without one)
 # These are still tested — we assert the correct error response to prove the endpoint works
 DEVICE_DEPENDENT_COMMANDS: set[tuple[str, str]] = {

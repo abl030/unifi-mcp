@@ -27,6 +27,7 @@ from generator.naming import (
     SAFE_TEST_COMMANDS,
     SKIP_COMMANDS,
     STAT_NAMES,
+    STAT_NOTES,
     STAT_OVERRIDES,
     UNTESTABLE_GLOBALS,
     V2_RESOURCE_NAMES,
@@ -161,6 +162,9 @@ def build_context(inventory: APIInventory) -> dict:
             if fi_key in fi:
                 known_fields_stat = [f for f in fi[fi_key] if f != "_id"]
 
+        # Generator note overrides inventory note when present
+        merged_note = STAT_NOTES.get(name) or ep.note
+
         tool = {
             "resource": name,
             "display_name": display_name,
@@ -169,7 +173,7 @@ def build_context(inventory: APIInventory) -> dict:
             "post_body": repr(post_body) if post_body else "{}",
             "has_samples": bool(ep.samples),
             "schema": _schema_to_dict(schema),
-            "note": ep.note,
+            "note": merged_note,
             "sample_fields": sample_fields,
             "known_fields": known_fields_stat,
         }
