@@ -387,104 +387,107 @@ MODEL=opus bash bank-tester/run-bank-test.sh
 python3 bank-tester/analyze-results.py bank-tester/results/run-*/
 ```
 
-### Plan Phases
-
-<!-- UPDATE THIS AS PHASES COMPLETE -->
+### Completed Phases
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| **Phase 1: Build Harness** | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
-| **Phase 2: Generate Tasks** | Run `generate-tasks.py`, verify 100% tool coverage (286/286) | DONE |
-| **Phase 3: Sonnet First Pass** | Run all 30 tasks against Docker controller with Sonnet | DONE |
-| **Phase 4: Triage Failures** | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
-| **Phase 5: Fix & Re-run** | Fix generator/naming/templates for generator-fixable failures, re-run | NOT STARTED |
-| **Phase 6: Opus Escalation** | Re-run remaining failures with Opus for deeper diagnosis | NOT STARTED |
-| **Phase 7: Final Report** | Aggregate results, produce final coverage percentage and unfixed failure list | NOT STARTED |
+| Build Harness | Create all bank-tester files (config, generator, runner, analyzer, tester prompt) | DONE |
+| Generate Tasks | Run `generate-tasks.py`, verify 100% tool coverage (286/286) | DONE |
+| Sonnet First Pass | Run all 30 tasks against Docker controller with Sonnet | DONE |
+| Triage Failures | Analyze results, categorize failures — see `bank-tester/RESEARCH.md` | DONE |
 
-### Task Sprints (31 tasks, 7 sprints)
+**First pass results**: 30 tasks, 398 tool calls, 70 first-attempt failures (82.4% success rate). Breakdown: 31 hardware-dependent, 21 generator-fixable, 7 API limitation, 5 test-env, 3 test-config, 3 adversarial. Full details in `bank-tester/RESEARCH.md`.
 
-| Sprint | Tasks | Tools | Description |
-|--------|-------|-------|-------------|
-| 1 | 01-07 | ~70 | Foundation CRUD (networks, firewall, ports, DNS, tags, accounts, hotspot) |
-| 2 | 08-13 | ~48 | Stats & safe commands (health, clients, DPI, network, security, reports) |
-| 3 | 14-15 | 3 | Settings (read all 35 categories, write+restore safe ones) |
-| 4 | 16-20 | ~50 | v2 API & advanced CRUD (firewall policies, traffic rules, DPI, maps, heatmaps) |
-| 5 | 21-25 | ~40 | Mutation commands (sites, admins, clients, backups, vouchers) |
-| 6 | 26-28 | ~50 | Hardware-dependent (expect errors — wlans, routes, device commands) |
-| 7 | 29-30 | ~15 | Port override helper, user CRUD, adversarial tests |
-| opt-in | 99 | 3 | Destructive (logout, reboot, poweroff) |
+### Next Sprints
 
-### Sonnet First Pass Results (Phase 3)
+#### Sprint A: Fix Generator + Sonnet Verification (21 generator-fixable failures → 0)
 
-**30 tasks run, 398 tool calls, 70 first-attempt failures (82.4% success rate)**
+**Goal**: Fix all 21 generator-fixable first-attempt failures, regenerate MCP server, write a hand-crafted test task targeting exactly these calls, run with Sonnet, verify 0 first-attempt failures.
 
-Full analysis in `bank-tester/RESEARCH.md`. Summary:
+**Step 1: Fix the generator** (templates, naming, schema_inference)
 
-| Category | Failures | % | Fixable? |
-|----------|----------|---|----------|
-| Hardware-dependent | 31 | 44% | Need device simulation |
-| Generator-fixable | 21 | 30% | Yes — Phase 5 |
-| API limitation | 7 | 10% | No — v10.0.162 limits |
-| Test environment | 5 | 7% | Setup changes |
-| Test config | 3 | 4% | Task spec fixes |
-| Adversarial (expected) | 3 | 4% | By design |
+| # | Issue | Failures | What to Fix |
+|---|-------|----------|-------------|
+| 1 | `update_setting` wrong endpoint | 6 | Investigate `set/setting/*` PUT vs `rest/setting` PUT. LLM probe confirmed set/setting/* are PUT-only. Generator may be routing to wrong path. |
+| 2 | `list_sessions` missing POST body | 1 | Stat endpoint needs `{"type":"all","start":0,"end":9999999999}`. Hardcode defaults or expose params. Check `STAT_OVERRIDES` in generator. |
+| 3 | `create_hotspot_package` undocumented fields | 1 | Check api-samples for hotspotpackage. Add required fields to docstring. May need to re-probe with create. |
+| 4 | `create_dhcp_option` undocumented fields | 3 | Check api-samples for dhcpoption. Add required fields to docstring. |
+| 5 | `create_heatmap` undocumented fields | 1 | Check api-samples for heatmap. Likely needs map_id + coordinates. |
+| 6 | `create_heatmap_point` undocumented fields | 1 | Check api-samples for heatmappoint. |
+| 7 | `create_spatial_record` undocumented fields | 1 | Check api-samples for spatialrecord. |
+| 8 | `update_schedule_task` full object required | 1 | Add docstring note: "Include all original fields when updating" |
+| 9 | `update_map` type confusion | 1 | Investigate JSON-to-string parsing issue in tool invocation |
+| 10 | `create_traffic_rule` missing enums | 1 | Add `target_devices[].type` enum values: ALL_CLIENTS, CLIENT, NETWORK |
+| 11 | `update_traffic_rule` full object on PUT | 1 | Add docstring: "v2 API requires full object on PUT, not partial updates" |
+| 12 | `update_traffic_route` full object on PUT | 1 | Same as above |
+| 13 | `clear_dpi` wrong endpoint | 1 | Mapped to cmd/stat (404). Find correct cmd manager. |
+| 14 | `block_client` no MAC validation | 1 | Add client-side MAC format regex before API call |
 
-#### Per-Task First-Attempt Failures
+**Step 2: Regenerate MCP server**
 
-| Task | Calls | Fails | Status | Notes |
-|------|-------|-------|--------|-------|
-| 01 | 6 | 4 | partial | Startup race (test_env) |
-| 02 | 12 | 0 | success | |
-| 03 | 12 | 0 | success | |
-| 04 | 12 | 0 | success | |
-| 05 | 12 | 0 | success | |
-| 06 | 18 | 0 | success | |
-| 07 | 17 | 1 | partial | hotspot_package undocumented fields |
-| 08 | 8 | 1 | partial | clear_dpi wrong endpoint |
-| 09 | 8 | 0 | success | |
-| 10 | 11 | 1 | partial | list_sessions missing params |
-| 11 | 8 | 0 | success | |
-| 12 | 7 | 1 | partial | gateway_stats needs hardware |
-| 13 | 10 | 0 | success | |
-| 14 | 37 | 0 | success | |
-| 15 | 13 | 6 | failed | update_setting wrong endpoint? |
-| 16 | 10 | 2 | partial | firewall policy needs hardware |
-| 17 | 13 | 2 | partial | v2 enum values + full-object PUT |
-| 18 | 12 | 0 | success | |
-| 19 | 21 | 5 | partial | dhcp_option + schedule_task |
-| 20 | 16 | 3 | failed | heatmap/spatial undocumented fields |
-| 21 | 10 | 4 | partial | site name/delete/leds |
-| 22 | 8 | 5 | partial | admin assign/invite/super |
-| 23 | 14 | 6 | partial | client commands need real clients |
-| 24 | 10 | 2 | partial | cmd/backup manager missing |
-| 25 | 7 | 3 | partial | hotspot authorize/extend/revoke |
-| 26 | 35 | 0 | success | hardware errors expected + clear |
-| 27 | 29 | 14 | success | device commands need real devices |
-| 28 | 2 | 0 | success | |
-| 29 | 10 | 2 | partial | port_override + delete_user |
-| 30 | 10 | 8 | partial | adversarial (errors by design) |
+```bash
+uv run python generate.py
+uv run python count_tools.py  # verify tool count unchanged
+```
 
-#### Generator Fix Priority (Phase 5)
+**Step 3: Write hand-crafted Sonnet verification test**
 
-| Priority | Issue | Failures | Fix |
-|----------|-------|----------|-----|
-| P0 | `update_setting` wrong endpoint | 6 | Investigate set/setting/* vs rest/setting PUT |
-| P0 | `list_sessions` missing POST body | 1 | Hardcode or expose type/start/end params |
-| P1 | 5 resources missing required field docs | 9 | Improve api-samples + schema inference |
-| P1 | v2 update requires full object | 2 | Add docstring note to v2 update tools |
-| P2 | Traffic rule missing enum values | 1 | Surface enums from schema_inference |
-| P2 | `clear_dpi` wrong endpoint | 1 | Verify correct cmd manager |
-| P2 | MAC address validation | 1 | Add client-side regex validation |
+Create `bank-tester/tasks/fix-generator-fixable.md` — a single task file that calls each of the 21 fixed tools in the exact way that previously failed. Copy the pattern from the auto-generated tasks but target specifically:
+- `unifi_update_setting` with key=ntp, data={...}
+- `unifi_list_sessions` (should work with no params now)
+- `unifi_create_hotspot_package` with correct required fields
+- `unifi_create_dhcp_option` with correct required fields
+- `unifi_create_heatmap/heatmap_point/spatial_record` with correct fields
+- `unifi_update_schedule_task` (full object)
+- `unifi_create_traffic_rule` with correct enum values
+- `unifi_update_traffic_rule` (full object)
+- `unifi_clear_dpi` (correct endpoint)
+- `unifi_block_client` with mac="not-a-mac" (should fail with validation error now)
 
-### Test Image Enhancement Backlog
+**Step 4: Run with Sonnet and verify**
 
-| Issue | Affected Tasks | Fix Required |
-|-------|---------------|--------------|
-| **No adopted devices** | 16, 23, 24, 25, 26, 27, 28, 29 | Mock device via MongoDB seeding or UniFi inform simulator |
-| **No connected clients** | 10, 23 | Seed fake client records via MongoDB |
-| **Hotspot feature not enabled** | 25 | Enable hotspot portal in controller config |
-| **cmd/backup manager missing** | 24 | May be version-specific; verify on newer controller |
-| **No SMTP configured** | 22 | Configure SMTP or skip invite_admin test |
-| **Startup race condition** | 01 | Wait for auth endpoints (not just /status) |
+```bash
+bash bank-tester/run-bank-test.sh fix-generator
+```
 
-Priority: Try MongoDB device seeding first (free, fast). If controller rejects fake devices, build an inform protocol simulator.
+Target: 0 first-attempt failures on all generator-fixable tools.
+
+#### Sprint B: Opus Diagnosis of Remaining Failures (39 non-generator failures)
+
+**Goal**: Write a hand-crafted test task covering all remaining first-attempt failures (hardware-dependent, API limitation, test-env, test-config). Run with Opus. Opus diagnoses each failure and recommends whether to fix via Docker test image enhancement, generator change, or accept as unfixable.
+
+**Step 1: Write Opus diagnosis test**
+
+Create `bank-tester/tasks/opus-diagnose-remaining.md` — a single task targeting all 39 remaining failures, organized by category. For each call, include the error from the Sonnet run and ask Opus to:
+1. Attempt the call
+2. Try alternative approaches (different params, different endpoint)
+3. Diagnose root cause
+4. Recommend fix category: `DOCKER_IMAGE` (MongoDB seeding, config), `GENERATOR` (missed in Sprint A), `UNFIXABLE` (API limitation)
+
+Failures to include:
+
+**Hardware-dependent (31):**
+- Device commands (adopt, restart, provision, power_cycle, locate, upgrade, migrate, spectrum_scan, move, delete, rename) — 14 from task 27
+- Client commands (block, unblock, kick, reconnect, authorize_guest, unauthorize_guest) — 6 from task 23
+- `set_port_override`, `list_gateway_stats`, `create_firewall_policy`, `generate_backup`, `generate_backup_site`, `hotspot_authorize_guest`, `extend_guest_validity`, `set_site_leds`, `update_traffic_route`, `create_user` (stale MAC)
+
+**API limitation (7):**
+- `set_site_name`, `delete_site` (x3), `grant_super_admin`, `revoke_super_admin`, `revoke_voucher`
+
+**Test environment (5):**
+- `unifi_self`, `sites`, `stat_sites`, `stat_admin` (startup race) + `invite_admin` (SMTP)
+
+**Test config (3):**
+- `assign_existing_admin`, `delete_admin`, `delete_user`
+
+**Step 2: Run with Opus**
+
+```bash
+MODEL=opus bash bank-tester/run-bank-test.sh opus-diagnose
+```
+
+**Step 3: Act on Opus findings**
+
+- `DOCKER_IMAGE` fixes → enhance `docker-compose.test.yml` or `run-bank-test.sh` (MongoDB seeding, config)
+- `GENERATOR` fixes → another generator fix cycle + Sonnet verification
+- `UNFIXABLE` → document in RESEARCH.md as known limitations
