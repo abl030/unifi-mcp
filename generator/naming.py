@@ -314,6 +314,11 @@ STAT_NOTES: dict[str, str] = {
     "report_hourly_gw": _GW_NOTE,
     "report_daily_gw": _GW_NOTE,
     "report_monthly_gw": _GW_NOTE,
+    "sta": (
+        "Wireless clients are automatically enriched with network_name "
+        "(the VLAN/network name from networkconf, resolved via essid → wlanconf). "
+        "No manual join needed — just use fields=essid,network_name to see SSID-to-VLAN mappings."
+    ),
 }
 
 # Commands that are safe but need a real device (return error without one)
