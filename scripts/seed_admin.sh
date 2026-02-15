@@ -43,39 +43,33 @@ HASH=$(docker exec "$CONTAINER" openssl passwd -6 "$PASSWORD" 2>/dev/null || \
 
 echo "Seeding admin user '$USERNAME' into MongoDB..."
 
-docker exec "$CONTAINER" $MONGO_CMD --port 27117 --quiet ace <<MONGOSCRIPT
-// Check if admin already exists
-var existing = db.admin.findOne({"name": "$USERNAME"});
+# Use --eval instead of heredoc to avoid $HASH being mangled by bash interpolation
+docker exec "$CONTAINER" $MONGO_CMD --port 27117 --quiet ace --eval "
+var existing = db.admin.findOne({name: '$USERNAME'});
 if (existing) {
-    print("Admin '$USERNAME' already exists, skipping insert.");
+    print('Admin $USERNAME already exists, skipping insert.');
 } else {
-    // Insert admin — use insert() not insertOne() (the latter silently fails on legacy mongo)
     db.admin.insert({
-        "email": "$EMAIL",
-        "last_site_name": "default",
-        "name": "$USERNAME",
-        "x_shadow": "$HASH",
-        "is_super": true
+        email: '$EMAIL',
+        last_site_name: 'default',
+        name: '$USERNAME',
+        x_shadow: '$HASH',
+        is_super: true
     });
-
-    // Get the admin's _id — use .str not .toString() (.toString() returns "ObjectId(...)")
-    var admin = db.admin.findOne({"name": "$USERNAME"});
+    var admin = db.admin.findOne({name: '$USERNAME'});
     var adminId = admin._id.str;
-    print("Created admin with id: " + adminId);
-
-    // Grant admin privilege for all existing sites
+    print('Created admin with id: ' + adminId);
     var sites = db.site.find().toArray();
     sites.forEach(function(site) {
         db.privilege.insert({
-            "admin_id": adminId,
-            "site_id": site._id.str,
-            "role": "admin",
-            "permissions": []
+            admin_id: adminId,
+            site_id: site._id.str,
+            role: 'admin',
+            permissions: []
         });
-        print("Granted admin privilege for site: " + site.name);
+        print('Granted admin privilege for site: ' + site.name);
     });
-}
-MONGOSCRIPT
+}"
 
 echo "Admin seeded successfully."
 echo ""
