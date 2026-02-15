@@ -293,6 +293,9 @@ STAT_OVERRIDES: dict[str, dict] = {
 
 # Additional notes for stat tool docstrings (merged with ep.note from inventory)
 _GW_NOTE = "Requires a UniFi gateway (USG/UDM/UCG). Returns empty data if no gateway is adopted."
+# Stat endpoints that get client enrichment (network_name from WLAN+network join)
+CLIENT_ENRICHMENT_STATS: set[str] = {"sta"}
+
 GATEWAY_DEPENDENT_STATS: set[str] = {
     "report_archive_speedtest", "portforward", "routing", "dpi",
     "sitedpi", "stadpi", "gateway", "dynamicdns",

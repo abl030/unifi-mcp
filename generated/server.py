@@ -244,6 +244,9 @@ def _paginate_and_filter(
 
     Returns (filtered_data, missing_fields) where missing_fields lists any
     requested field names that don't exist in the data.
+
+    Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed')
+    to filter fields within nested dicts or lists of dicts.
     """
     if offset:
         data = data[offset:]
@@ -251,20 +254,89 @@ def _paginate_and_filter(
         data = data[:limit]
     missing: list[str] = []
     if fields:
-        field_set = {f.strip() for f in fields.split(",")}
-        field_set.add("_id")  # always include _id for reference
-        # Detect fields that don't exist in any record
+        raw_fields = {f.strip() for f in fields.split(",")}
+        # Separate top-level from nested (dot-notation)
+        top_level: set[str] = {"_id"}
+        nested: dict[str, set[str]] = {}  # parent -> {sub_fields}
+        for f in raw_fields:
+            if "." in f:
+                parent, child = f.split(".", 1)
+                top_level.add(parent)
+                nested.setdefault(parent, set()).add(child)
+            else:
+                top_level.add(f)
+        # Detect missing top-level fields
         if data:
             available: set[str] = set()
             for item in data:
                 if isinstance(item, dict):
                     available.update(item.keys())
-            missing = sorted(field_set - available - {"_id"})
-        data = [
-            {k: v for k, v in item.items() if k in field_set}
-            for item in data if isinstance(item, dict)
-        ]
+            # Report missing: flat fields not found, and dot-notation parents not found
+            missing_flat = {f for f in raw_fields if "." not in f} - available - {"_id"}
+            missing_nested = {
+                f for f in raw_fields
+                if "." in f and f.split(".", 1)[0] not in available
+            }
+            missing = sorted(missing_flat | missing_nested)
+        # Filter
+        filtered = []
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            row = {k: v for k, v in item.items() if k in top_level}
+            # Apply nested filtering
+            for parent, sub_fields in nested.items():
+                if parent in row:
+                    val = row[parent]
+                    if isinstance(val, list):
+                        row[parent] = [
+                            {sk: sv for sk, sv in el.items() if sk in sub_fields}
+                            for el in val if isinstance(el, dict)
+                        ]
+                    elif isinstance(val, dict):
+                        row[parent] = {
+                            sk: sv for sk, sv in val.items() if sk in sub_fields
+                        }
+            filtered.append(row)
+        data = filtered
     return data, missing
+
+
+# ---------------------------------------------------------------------------
+# Helper: enrich wireless clients with network_name
+# ---------------------------------------------------------------------------
+
+
+async def _enrich_clients(client: "UniFiClient", data: list, site: str | None) -> list:
+    """Add network_name to wireless clients by joining WLAN and network config.
+
+    The v1 stat/sta endpoint does not include network_name. This joins:
+    client.essid -> wlanconf.name -> wlanconf.networkconf_id -> networkconf.name
+    """
+    # Only enrich if there are wireless clients missing network_name
+    needs_enrichment = any(
+        isinstance(c, dict) and c.get("essid") and not c.get("network_name")
+        for c in data
+    )
+    if not needs_enrichment:
+        return data
+
+    wlans = await client.request("GET", "rest/wlanconf", site=site)
+    networks = await client.request("GET", "rest/networkconf", site=site)
+
+    net_names = {n["_id"]: n.get("name", "") for n in networks if isinstance(n, dict)}
+    essid_to_network: dict[str, str] = {}
+    for w in wlans:
+        if isinstance(w, dict) and w.get("name") and w.get("networkconf_id"):
+            essid_to_network[w["name"]] = net_names.get(w["networkconf_id"], "")
+
+    for c in data:
+        if isinstance(c, dict) and c.get("essid") and not c.get("network_name"):
+            net = essid_to_network.get(c["essid"])
+            if net:
+                c["network_name"] = net
+
+    return data
 
 
 _MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
@@ -355,7 +427,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -387,7 +459,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -419,7 +491,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -451,7 +523,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -481,7 +553,7 @@ if "device" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -1622,7 +1694,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -1737,7 +1809,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -1765,7 +1837,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -1797,7 +1869,7 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -1827,13 +1899,14 @@ if "client" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
         try:
             client = await _get_client()
             data = await client.request("GET", "stat/sta", site=site or None)
+            data = await _enrich_clients(client, data, site or None)
             total = len(data)
             data, missing = _paginate_and_filter(data, limit, offset, fields)
             return _format_response(data, f"Found {total} clients records", missing_fields=missing)
@@ -2129,7 +2202,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2164,7 +2237,7 @@ if "client" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2204,7 +2277,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2236,7 +2309,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2381,7 +2454,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2520,7 +2593,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2550,7 +2623,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2578,7 +2651,7 @@ if "wifi" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2612,7 +2685,7 @@ if "wifi" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2652,7 +2725,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2797,7 +2870,7 @@ if "network" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -2945,7 +3018,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3083,7 +3156,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3220,7 +3293,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3357,7 +3430,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3498,7 +3571,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3639,7 +3712,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3780,7 +3853,7 @@ if "firewall" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -3919,7 +3992,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4046,7 +4119,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4114,7 +4187,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4241,7 +4314,7 @@ if "firewall" in UNIFI_MODULES or "v2" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4318,7 +4391,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4352,7 +4425,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4382,7 +4455,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4414,7 +4487,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4442,7 +4515,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4472,7 +4545,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4502,7 +4575,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4546,7 +4619,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4590,7 +4663,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4620,7 +4693,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4664,7 +4737,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4694,7 +4767,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4724,7 +4797,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4768,7 +4841,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4800,7 +4873,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         Note: intervals: 5minutes, hourly, daily, monthly; types: site, ap, user, gw
 
@@ -4831,7 +4904,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4861,7 +4934,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4905,7 +4978,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4949,7 +5022,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -4993,7 +5066,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5035,7 +5108,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5065,7 +5138,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5107,7 +5180,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5135,7 +5208,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5165,7 +5238,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5195,7 +5268,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5239,7 +5312,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5269,7 +5342,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5313,7 +5386,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5357,7 +5430,7 @@ if "monitor" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5522,7 +5595,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5659,7 +5732,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'key,name'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'key,name'). Supports dot-notation for nested fields. Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5741,7 +5814,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -5880,7 +5953,7 @@ if "admin" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -6804,7 +6877,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -6941,7 +7014,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7078,7 +7151,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7216,7 +7289,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7355,7 +7428,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7496,7 +7569,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7524,7 +7597,7 @@ if "hotspot" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7752,7 +7825,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -7889,7 +7962,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8028,7 +8101,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8167,7 +8240,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8305,7 +8378,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8445,7 +8518,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8584,7 +8657,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8723,7 +8796,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8755,7 +8828,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """
@@ -8897,7 +8970,7 @@ if "advanced" in UNIFI_MODULES or "v1" in UNIFI_MODULES:
             site: Site name (default: from env).
             limit: Max records to return (0 = all).
             offset: Number of records to skip.
-            fields: Comma-separated field names to include (e.g. 'name,mac'). Always includes _id.
+            fields: Comma-separated field names to include (e.g. 'name,mac'). Supports dot-notation for nested fields (e.g. 'port_table.port_idx,port_table.speed'). Always includes _id.
 
         If this tool returns an unexpected error, call unifi_report_issue to report it.
         """

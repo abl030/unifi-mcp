@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from generator.loader import APIInventory
 from generator.naming import (
+    CLIENT_ENRICHMENT_STATS,
     CMD_MODULES,
     COMMAND_PARAMS,
     COMMAND_TOOL_NAMES,
@@ -176,6 +177,7 @@ def build_context(inventory: APIInventory) -> dict:
             "schema": _schema_to_dict(schema),
             "note": merged_note,
             "is_gateway_dependent": name in GATEWAY_DEPENDENT_STATS,
+            "is_client_enrichable": name in CLIENT_ENRICHMENT_STATS,
             "sample_fields": sample_fields,
             "known_fields": known_fields_stat,
         }
