@@ -330,8 +330,8 @@ class TestLiveRESTList:
             client.request("GET", "rest/networkconf")
         )
         total = len(data)
-        filtered = srv._paginate_and_filter(data, limit=0, offset=0, fields="name,purpose")
-        formatted = srv._format_response(filtered, f"Found {total} networks")
+        filtered, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="name,purpose")
+        formatted = srv._format_response(filtered, f"Found {total} networks", missing_fields=missing)
         parsed = parse(formatted)
         assert_structured_list(parsed)
         if parsed["data"]:
@@ -346,7 +346,7 @@ class TestLiveRESTList:
             client.request("GET", "rest/networkconf")
         )
         total = len(data)
-        limited = srv._paginate_and_filter(data, limit=1, offset=0, fields="")
+        limited, _ = srv._paginate_and_filter(data, limit=1, offset=0, fields="")
         formatted = srv._format_response(limited, f"Found {total} networks")
         parsed = parse(formatted)
         # Summary mentions total
@@ -444,8 +444,8 @@ class TestLiveStat:
         data = asyncio.get_event_loop().run_until_complete(
             client.request("GET", "stat/health")
         )
-        filtered = srv._paginate_and_filter(data, limit=0, offset=0, fields="subsystem,status")
-        formatted = srv._format_response(filtered, f"Found {len(data)} health records")
+        filtered, missing = srv._paginate_and_filter(data, limit=0, offset=0, fields="subsystem,status")
+        formatted = srv._format_response(filtered, f"Found {len(data)} health records", missing_fields=missing)
         parsed = parse(formatted)
         if parsed["data"]:
             record = parsed["data"][0]
